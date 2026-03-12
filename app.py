@@ -171,7 +171,7 @@ def generate_vertical_table_html(a, b, op, result=None, is_key=False):
     return html
 
 # ==========================================
-# 🟢 ฟังก์ชันช่วย 2: สร้างเศษส่วนแนวดิ่ง (Vertical Fraction) 
+# 🟢 ฟังก์ชันช่วย 2: สร้างเศษส่วนแนวดิ่ง 
 # ==========================================
 def generate_fraction_html(num, den):
     return f"""
@@ -180,6 +180,35 @@ def generate_fraction_html(num, den):
         <span style="font-size: 26px; font-weight: bold; padding: 0 5px; line-height: 1.1;">{den}</span>
     </div>
     """
+
+# ==========================================
+# 🟢 ฟังก์ชันช่วย 3: แปลงตัวเลขเป็นคำอ่านภาษาไทย (แก้ปัญหาเฉลย)
+# ==========================================
+def generate_thai_number_text(num_str):
+    thai_nums = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"]
+    positions = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"]
+
+    parts = str(num_str).replace(",", "").split(".")
+    int_part = parts[0]
+    dec_part = parts[1] if len(parts) > 1 else ""
+
+    def read_int(s):
+        if s == "0" or s == "": return "ศูนย์"
+        res = ""
+        length = len(s)
+        for i, digit in enumerate(s):
+            d = int(digit)
+            if d == 0: continue
+            pos = length - i - 1
+            if pos == 1 and d == 2: res += "ยี่สิบ"
+            elif pos == 1 and d == 1: res += "สิบ"
+            elif pos == 0 and d == 1 and length > 1: res += "เอ็ด"
+            else: res += thai_nums[d] + positions[pos]
+        return res
+
+    int_text = read_int(int_part)
+    dec_text = ("จุด" + "".join([thai_nums[int(d)] for d in dec_part])) if dec_part else ""
+    return int_text + dec_text
 
 # ==========================================
 # 2. ฟังก์ชันสมองกลสร้างโจทย์และกราฟิก 
@@ -343,7 +372,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     sol = str(n).translate(str.maketrans('0123456789', '๐๑๒๓๔๕๖๗๘๙'))
                 else:
                     n = random.randint(100000, 9999999)
-                    q = f"จงเขียนตัวเลข <b>{n:,}</b> ให้เป็นตัวอักษรภาษาไทย"; sol = f"เลข: {n:,}"
+                    # 🟢 แก้ไขตรงนี้: ดึงฟังก์ชัน generate_thai_number_text มาใช้ให้เป็นตัวหนังสือ
+                    q = f"จงเขียนตัวเลข <b>{n:,}</b> ให้เป็นตัวหนังสือภาษาไทย"
+                    sol = generate_thai_number_text(str(n))
 
             # --- หมวดประถมปลาย (ทศนิยม เศษส่วน สมการ) ---
             elif "ค่าประมาณ" in sub_t:
@@ -394,7 +425,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
 
             elif "ทศนิยม" in sub_t and "อ่าน" in sub_t:
                 n = round(random.uniform(0.1, 99.999), random.randint(1, 3))
-                q = f"จงเขียน <b>{n}</b> เป็นตัวหนังสือภาษาไทย"; sol = f"{n}"
+                # 🟢 แก้ไขตรงนี้: ใช้ฟังก์ชันอ่านภาษาไทยสำหรับทศนิยม
+                q = f"จงเขียน <b>{n}</b> เป็นตัวหนังสือภาษาไทย"
+                sol = generate_thai_number_text(str(n))
 
             elif "ทศนิยม" in sub_t and ("บวก" in sub_t or "ลบ" in sub_t):
                 a = round(random.uniform(10.0, 99.9), 2); b = round(random.uniform(1.0, 9.9), 2)
@@ -476,7 +509,7 @@ def create_page(grade, sub_t, questions, is_key=False):
     return html + "</body></html>"
 
 # ==========================================
-# 3. สร้าง UI ของ Streamlit Web App
+# 4. สร้าง UI ของ Streamlit Web App
 # ==========================================
 st.sidebar.header("⚙️ การตั้งค่าใบงาน")
 selected_grade = st.sidebar.selectbox("1. เลือกระดับชั้น:", list(curriculum_db.keys()))
@@ -484,34 +517,32 @@ selected_main = st.sidebar.selectbox("2. เลือกหัวข้อหล
 selected_sub = st.sidebar.selectbox("3. เลือกหัวข้อย่อย:", curriculum_db[selected_grade][selected_main])
 num_input = st.sidebar.number_input("จำนวนข้อ:", min_value=1, max_value=100, value=10)
 
-st.sidebar.info("💡 **เคล็ดลับ:** หากต้องการโจทย์ชุดใหม่ ให้กดปุ่ม '🚀 สร้างใบงาน' อีกครั้งก่อนโหลด")
+st.sidebar.info("💡 **เคล็ดลับ:** หากต้องการสุ่มโจทย์ชุดใหม่ ให้กดปุ่ม '🚀 สร้างใบงาน' อีกครั้งก่อนโหลด")
 
 if st.sidebar.button("🚀 สร้างใบงาน", type="primary", use_container_width=True):
-    with st.spinner("กำลังประมวลผลลอจิกและวาดกราฟิก..."):
+    with st.spinner("กำลังประมวลผลลอจิกคณิตศาสตร์และสร้างโจทย์..."):
         qs = generate_questions_logic(selected_grade, selected_main, selected_sub, num_input)
         html_w = create_page(selected_grade, selected_sub, qs, is_key=False)
         html_k = create_page(selected_grade, selected_sub, qs, is_key=True)
         filename_base = f"{selected_grade}_{selected_sub}"
         
-        # เตรียมไฟล์ลง Session State
-        st.session_state['worksheet_html'] = html_w
-        st.session_state['answerkey_html'] = html_k
-        st.session_state['filename_base'] = f"{filename_base}_{int(time.time())}"
-        
-        # เตรียมไฟล์ Zip สำรองไว้เผื่อใช้
+        # 🟢 สร้างไฟล์ Zip รวม Worksheet และ AnswerKey ไว้ด้วยกัน
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             zip_file.writestr(f"{filename_base}_Worksheet.html", html_w.encode('utf-8'))
             zip_file.writestr(f"{filename_base}_AnswerKey.html", html_k.encode('utf-8'))
+        
         st.session_state['zip_data'] = zip_buffer.getvalue()
+        st.session_state['worksheet_html'] = html_w
+        st.session_state['answerkey_html'] = html_k
+        # แทรกรหัสเวลาลงในชื่อไฟล์ ป้องกันระบบโหลดไฟล์เดิมซ้ำ
+        st.session_state['filename_base'] = f"{filename_base}_{int(time.time())}"
 
-# 🟢 ส่วนแสดงปุ่มดาวน์โหลด (แยกปุ่มให้ตามคำสั่ง)
-if 'worksheet_html' in st.session_state:
-    st.success("🎉 สร้างใบงานเสร็จสมบูรณ์! เลือกดาวน์โหลดด้านล่างได้เลยครับ")
+# 🟢 แสดงปุ่มดาวน์โหลดเมื่อกดสร้างใบงานเสร็จ
+if 'zip_data' in st.session_state:
+    st.success("🎉 สร้างใบงานเสร็จสมบูรณ์! คลิกดาวน์โหลดด้านล่างได้เลยครับ")
     
-    # สร้าง 2 คอลัมน์สำหรับปุ่มแยก
     col1, col2 = st.columns(2)
-    
     with col1:
         st.download_button(
             label="📄 ดาวน์โหลดใบงาน",
@@ -520,7 +551,6 @@ if 'worksheet_html' in st.session_state:
             mime="text/html",
             use_container_width=True
         )
-        
     with col2:
         st.download_button(
             label="🔑 ดาวน์โหลดเฉลย",
@@ -529,9 +559,8 @@ if 'worksheet_html' in st.session_state:
             mime="text/html",
             use_container_width=True
         )
-        
+    
     st.markdown("---")
-    # ปุ่มสำรองสำหรับโหลดทีเดียวทั้งคู่
     st.download_button(
         label="📥 ดาวน์โหลดทั้งคู่พร้อมกัน (ไฟล์ .zip)",
         data=st.session_state['zip_data'],
