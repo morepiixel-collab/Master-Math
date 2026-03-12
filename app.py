@@ -385,9 +385,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงหาผลลัพธ์ของการหาร: <b>{dividend:,} ÷ {divisor} = ?</b>"; sol = f"{quotient:,}"
 
             elif "เศษเกินเป็นจำนวนคละ" in sub_t:
-                # 🟢 บังคับสุ่มจนกว่าจะหารไม่ลงตัว (ต้องมีเศษเหลือเสมอ)
                 den = random.randint(3, 12)
                 num = random.randint(den + 1, den * 5)
+                # 🟢 บังคับสุ่มจนกว่าจะหารไม่ลงตัวเสมอ
                 while num % den == 0:
                     num = random.randint(den + 1, den * 5)
                 frac_html = generate_fraction_html(num, den)
@@ -460,28 +460,40 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 x = random.randint(5, 50); a = random.randint(1, 20); b = x + a
                 q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x + {a} = {b}</b>"; sol = f"x = {x}"
 
-            # 🟢 วาดไม้โปรแทรกเตอร์ใหม่แบบสมบูรณ์ มีสเกลตัวเลข และเส้นฐานสีฟ้าชี้ไปที่ 0 องศา
+            # 🟢 อัปเกรด: วาดไม้โปรแทรกเตอร์ใหม่แบบสมจริง สเกลละเอียดถึงหลักหน่วย (1, 5, 10)
             elif "ไม้โปรแทรกเตอร์" in sub_t:
-                angle = random.randint(2, 16) * 10
+                # ปลดล็อคการสุ่มองศาอิสระ (15 ถึง 165)
+                angle = random.randint(15, 165)
                 arm_rad = math.radians(angle)
                 ax = 150 + 120 * math.cos(arm_rad)
                 ay = 140 - 120 * math.sin(arm_rad)
                 
                 ticks_svg = ""
-                for i in range(0, 181, 10):
+                # ลูปวาดขีดสเกล 181 ขีด (0 ถึง 180 องศา)
+                for i in range(0, 181):
                     rad = math.radians(i)
                     r_out = 120
-                    r_in = 112 if i % 30 != 0 else 105
+                    if i % 10 == 0:
+                        r_in = 105
+                        stroke_w = "1.5"
+                        # วาดตัวเลขกำกับเฉพาะสเกลหลักสิบ
+                        tx_text = 150 + 88 * math.cos(rad)
+                        ty_text = 140 - 88 * math.sin(rad)
+                        ticks_svg += f'<text x="{tx_text}" y="{ty_text+4}" font-size="10" font-weight="bold" text-anchor="middle" fill="#333">{i}</text>'
+                    elif i % 5 == 0:
+                        r_in = 110
+                        stroke_w = "1.2"
+                    else:
+                        r_in = 115
+                        stroke_w = "0.6"
+                        
                     tx1 = 150 + r_out * math.cos(rad)
                     ty1 = 140 - r_out * math.sin(rad)
                     tx2 = 150 + r_in * math.cos(rad)
                     ty2 = 140 - r_in * math.sin(rad)
-                    ticks_svg += f'<line x1="{tx1}" y1="{ty1}" x2="{tx2}" y2="{ty2}" stroke="#333" stroke-width="1.5"/>'
-                    if i % 30 == 0:
-                        tx_text = 150 + 88 * math.cos(rad)
-                        ty_text = 140 - 88 * math.sin(rad)
-                        ticks_svg += f'<text x="{tx_text}" y="{ty_text+4}" font-size="12" font-weight="bold" text-anchor="middle" fill="#333">{i}</text>'
+                    ticks_svg += f'<line x1="{tx1}" y1="{ty1}" x2="{tx2}" y2="{ty2}" stroke="#333" stroke-width="{stroke_w}"/>'
                 
+                # วาดส่วนโค้งแสดงมุมสีแดง
                 arc_r = 30
                 arc_x = 150 + arc_r * math.cos(arm_rad)
                 arc_y = 140 - arc_r * math.sin(arm_rad)
@@ -548,19 +560,16 @@ if st.sidebar.button("🚀 สร้างใบงาน", type="primary", use_
         html_k = create_page(selected_grade, selected_sub, qs, is_key=True)
         filename_base = f"{selected_grade}_{selected_sub}"
         
-        # เตรียมไฟล์ลง Session State
         st.session_state['worksheet_html'] = html_w
         st.session_state['answerkey_html'] = html_k
         st.session_state['filename_base'] = f"{filename_base}_{int(time.time())}"
         
-        # เตรียมไฟล์ Zip สำรองไว้เผื่อใช้
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             zip_file.writestr(f"{filename_base}_Worksheet.html", html_w.encode('utf-8'))
             zip_file.writestr(f"{filename_base}_AnswerKey.html", html_k.encode('utf-8'))
         st.session_state['zip_data'] = zip_buffer.getvalue()
 
-# 🟢 ส่วนแสดงปุ่มดาวน์โหลด (แยกปุ่มให้ตามคำสั่งเป๊ะ)
 if 'worksheet_html' in st.session_state:
     st.success("🎉 สร้างใบงานเสร็จสมบูรณ์! เลือกดาวน์โหลดด้านล่างได้เลยครับ")
     
