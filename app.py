@@ -182,12 +182,11 @@ def generate_fraction_html(num, den):
     """
 
 # ==========================================
-# 🟢 ฟังก์ชันช่วย 3: แปลงตัวเลขเป็นคำอ่านภาษาไทย (แก้ปัญหาเฉลย)
+# 🟢 ฟังก์ชันช่วย 3: แปลงตัวเลขเป็นคำอ่านภาษาไทย
 # ==========================================
 def generate_thai_number_text(num_str):
     thai_nums = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"]
     positions = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"]
-
     parts = str(num_str).replace(",", "").split(".")
     int_part = parts[0]
     dec_part = parts[1] if len(parts) > 1 else ""
@@ -320,7 +319,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 table_html += f"<div style='background-color: #fdfdfd; text-align: center; padding: 5px; font-weight: bold; color: #e74c3c;'>กำหนดให้ 1 รูปภาพ แทนผลไม้ {multiplier} ผล</div></div>"
                 q = f"จากแผนภูมิ ขายผลไม้ 3 ชนิดรวมกันกี่ผล? {table_html}"; sol = str(sum(counts) * multiplier)
 
-            # --- หมวดการนับ เรียงลำดับ เปรียบเทียบ (ป.1 - ป.3) ---
+            # --- หมวดการนับ เรียงลำดับ เปรียบเทียบ ---
             elif "การนับทีละ 10" in sub_t:
                 inc = random.choice([True, False]); st_val = random.randint(10, 60)
                 seq = [st_val, st_val+10, st_val+20, st_val+30] if inc else [st_val+30, st_val+20, st_val+10, st_val]
@@ -372,11 +371,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     sol = str(n).translate(str.maketrans('0123456789', '๐๑๒๓๔๕๖๗๘๙'))
                 else:
                     n = random.randint(100000, 9999999)
-                    # 🟢 แก้ไขตรงนี้: ดึงฟังก์ชัน generate_thai_number_text มาใช้ให้เป็นตัวหนังสือ
                     q = f"จงเขียนตัวเลข <b>{n:,}</b> ให้เป็นตัวหนังสือภาษาไทย"
                     sol = generate_thai_number_text(str(n))
 
-            # --- หมวดประถมปลาย (ทศนิยม เศษส่วน สมการ) ---
+            # --- หมวดประถมปลาย (ทศนิยม เศษส่วน สมการ เรขาคณิต) ---
             elif "ค่าประมาณ" in sub_t:
                 n = random.randint(1111, 99999); ptype = random.choice(["เต็มสิบ", "เต็มร้อย", "เต็มพัน"])
                 ans = round(n, -1) if ptype == "เต็มสิบ" else (round(n, -2) if ptype == "เต็มร้อย" else round(n, -3))
@@ -387,7 +385,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงหาผลลัพธ์ของการหาร: <b>{dividend:,} ÷ {divisor} = ?</b>"; sol = f"{quotient:,}"
 
             elif "เศษเกินเป็นจำนวนคละ" in sub_t:
-                # 🟢 บังคับให้หารไม่ลงตัวเสมอ เพื่อให้มีเศษจริงๆ (ไม่มีกรณี 12/3 = 4)
+                # 🟢 บังคับสุ่มจนกว่าจะหารไม่ลงตัว (ต้องมีเศษเหลือเสมอ)
                 den = random.randint(3, 12)
                 num = random.randint(den + 1, den * 5)
                 while num % den == 0:
@@ -425,7 +423,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
 
             elif "ทศนิยม" in sub_t and "อ่าน" in sub_t:
                 n = round(random.uniform(0.1, 99.999), random.randint(1, 3))
-                # 🟢 แก้ไขตรงนี้: ใช้ฟังก์ชันอ่านภาษาไทยสำหรับทศนิยม
                 q = f"จงเขียน <b>{n}</b> เป็นตัวหนังสือภาษาไทย"
                 sol = generate_thai_number_text(str(n))
 
@@ -463,12 +460,37 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 x = random.randint(5, 50); a = random.randint(1, 20); b = x + a
                 q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x + {a} = {b}</b>"; sol = f"x = {x}"
 
+            # 🟢 วาดไม้โปรแทรกเตอร์ใหม่แบบสมบูรณ์ มีสเกลตัวเลข และเส้นฐานสีฟ้าชี้ไปที่ 0 องศา
             elif "ไม้โปรแทรกเตอร์" in sub_t:
                 angle = random.randint(2, 16) * 10
-                rad = math.radians(180 - angle)
-                x_end = 100 + 70 * math.cos(rad); y_end = 90 - 70 * math.sin(rad)
-                svg = f"""<br><div style="text-align: center;"><svg width="200" height="120"><path d="M 20 90 A 80 80 0 0 1 180 90" fill="#fdfdfd" stroke="#333" stroke-width="2"/><line x1="20" y1="90" x2="180" y2="90" stroke="#333" stroke-width="2"/><circle cx="100" cy="90" r="4" fill="#e74c3c"/><line x1="100" y1="90" x2="190" y2="90" stroke="#3498db" stroke-width="3"/><line x1="100" y1="90" x2="{x_end}" y2="{y_end}" stroke="#e74c3c" stroke-width="3"/></svg></div>"""
-                q = f"มุมที่แสดงบนไม้โปรแทรกเตอร์มีขนาดกี่องศา? {svg}"; sol = f"{angle} องศา"
+                arm_rad = math.radians(angle)
+                ax = 150 + 120 * math.cos(arm_rad)
+                ay = 140 - 120 * math.sin(arm_rad)
+                
+                ticks_svg = ""
+                for i in range(0, 181, 10):
+                    rad = math.radians(i)
+                    r_out = 120
+                    r_in = 112 if i % 30 != 0 else 105
+                    tx1 = 150 + r_out * math.cos(rad)
+                    ty1 = 140 - r_out * math.sin(rad)
+                    tx2 = 150 + r_in * math.cos(rad)
+                    ty2 = 140 - r_in * math.sin(rad)
+                    ticks_svg += f'<line x1="{tx1}" y1="{ty1}" x2="{tx2}" y2="{ty2}" stroke="#333" stroke-width="1.5"/>'
+                    if i % 30 == 0:
+                        tx_text = 150 + 88 * math.cos(rad)
+                        ty_text = 140 - 88 * math.sin(rad)
+                        ticks_svg += f'<text x="{tx_text}" y="{ty_text+4}" font-size="12" font-weight="bold" text-anchor="middle" fill="#333">{i}</text>'
+                
+                arc_r = 30
+                arc_x = 150 + arc_r * math.cos(arm_rad)
+                arc_y = 140 - arc_r * math.sin(arm_rad)
+                angle_arc = f'<path d="M 180 140 A 30 30 0 0 0 {arc_x} {arc_y}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
+
+                svg = f"""<br><div style="text-align: center;"><svg width="300" height="160"><path d="M 30 140 A 120 120 0 0 1 270 140" fill="#fdfdfd" stroke="#333" stroke-width="2"/><line x1="30" y1="140" x2="270" y2="140" stroke="#333" stroke-width="2"/>{ticks_svg}{angle_arc}<line x1="150" y1="140" x2="270" y2="140" stroke="#3498db" stroke-width="3"/><line x1="150" y1="140" x2="{ax}" y2="{ay}" stroke="#e74c3c" stroke-width="3"/><circle cx="150" cy="140" r="4" fill="#e74c3c"/></svg></div>"""
+                
+                q = f"มุมที่แสดงบนไม้โปรแทรกเตอร์มีขนาดกี่องศา? {svg}"
+                sol = f"{angle} องศา"
                 
             elif "คูณ" in sub_t or "หาร" in sub_t:
                 a, b = random.randint(2, 12), random.randint(2, 12)
@@ -526,31 +548,33 @@ if st.sidebar.button("🚀 สร้างใบงาน", type="primary", use_
         html_k = create_page(selected_grade, selected_sub, qs, is_key=True)
         filename_base = f"{selected_grade}_{selected_sub}"
         
-        # 🟢 สร้างไฟล์ Zip รวม Worksheet และ AnswerKey ไว้ด้วยกัน
+        # เตรียมไฟล์ลง Session State
+        st.session_state['worksheet_html'] = html_w
+        st.session_state['answerkey_html'] = html_k
+        st.session_state['filename_base'] = f"{filename_base}_{int(time.time())}"
+        
+        # เตรียมไฟล์ Zip สำรองไว้เผื่อใช้
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
             zip_file.writestr(f"{filename_base}_Worksheet.html", html_w.encode('utf-8'))
             zip_file.writestr(f"{filename_base}_AnswerKey.html", html_k.encode('utf-8'))
-        
         st.session_state['zip_data'] = zip_buffer.getvalue()
-        st.session_state['worksheet_html'] = html_w
-        st.session_state['answerkey_html'] = html_k
-        # แทรกรหัสเวลาลงในชื่อไฟล์ ป้องกันระบบโหลดไฟล์เดิมซ้ำ
-        st.session_state['filename_base'] = f"{filename_base}_{int(time.time())}"
 
-# 🟢 แสดงปุ่มดาวน์โหลดเมื่อกดสร้างใบงานเสร็จ
-if 'zip_data' in st.session_state:
-    st.success("🎉 สร้างใบงานเสร็จสมบูรณ์! คลิกดาวน์โหลดด้านล่างได้เลยครับ")
+# 🟢 ส่วนแสดงปุ่มดาวน์โหลด (แยกปุ่มให้ตามคำสั่งเป๊ะ)
+if 'worksheet_html' in st.session_state:
+    st.success("🎉 สร้างใบงานเสร็จสมบูรณ์! เลือกดาวน์โหลดด้านล่างได้เลยครับ")
     
     col1, col2 = st.columns(2)
+    
     with col1:
         st.download_button(
-            label="📄 ดาวน์โหลดใบงาน",
+            label="📄 ดาวน์โหลดแบบฝึกหัด",
             data=st.session_state['worksheet_html'],
             file_name=f"{st.session_state['filename_base']}_Worksheet.html",
             mime="text/html",
             use_container_width=True
         )
+        
     with col2:
         st.download_button(
             label="🔑 ดาวน์โหลดเฉลย",
@@ -559,7 +583,7 @@ if 'zip_data' in st.session_state:
             mime="text/html",
             use_container_width=True
         )
-    
+        
     st.markdown("---")
     st.download_button(
         label="📥 ดาวน์โหลดทั้งคู่พร้อมกัน (ไฟล์ .zip)",
