@@ -387,7 +387,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             elif "เศษเกินเป็นจำนวนคละ" in sub_t:
                 den = random.randint(3, 12)
                 num = random.randint(den + 1, den * 5)
-                # 🟢 บังคับสุ่มจนกว่าจะหารไม่ลงตัวเสมอ
                 while num % den == 0:
                     num = random.randint(den + 1, den * 5)
                 frac_html = generate_fraction_html(num, den)
@@ -460,23 +459,20 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 x = random.randint(5, 50); a = random.randint(1, 20); b = x + a
                 q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x + {a} = {b}</b>"; sol = f"x = {x}"
 
-            # 🟢 อัปเกรด: วาดไม้โปรแทรกเตอร์ใหม่แบบสมจริง สเกลละเอียดถึงหลักหน่วย (1, 5, 10)
+            # 🟢 อัปเกรด: วาดไม้โปรแทรกเตอร์ จัดเรียง Layer ใหม่ ให้เส้นสีแดงอยู่ใต้สเกล
             elif "ไม้โปรแทรกเตอร์" in sub_t:
-                # ปลดล็อคการสุ่มองศาอิสระ (15 ถึง 165)
                 angle = random.randint(15, 165)
                 arm_rad = math.radians(angle)
                 ax = 150 + 120 * math.cos(arm_rad)
                 ay = 140 - 120 * math.sin(arm_rad)
                 
                 ticks_svg = ""
-                # ลูปวาดขีดสเกล 181 ขีด (0 ถึง 180 องศา)
                 for i in range(0, 181):
                     rad = math.radians(i)
                     r_out = 120
                     if i % 10 == 0:
                         r_in = 105
                         stroke_w = "1.5"
-                        # วาดตัวเลขกำกับเฉพาะสเกลหลักสิบ
                         tx_text = 150 + 88 * math.cos(rad)
                         ty_text = 140 - 88 * math.sin(rad)
                         ticks_svg += f'<text x="{tx_text}" y="{ty_text+4}" font-size="10" font-weight="bold" text-anchor="middle" fill="#333">{i}</text>'
@@ -493,13 +489,13 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     ty2 = 140 - r_in * math.sin(rad)
                     ticks_svg += f'<line x1="{tx1}" y1="{ty1}" x2="{tx2}" y2="{ty2}" stroke="#333" stroke-width="{stroke_w}"/>'
                 
-                # วาดส่วนโค้งแสดงมุมสีแดง
                 arc_r = 30
                 arc_x = 150 + arc_r * math.cos(arm_rad)
                 arc_y = 140 - arc_r * math.sin(arm_rad)
                 angle_arc = f'<path d="M 180 140 A 30 30 0 0 0 {arc_x} {arc_y}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
 
-                svg = f"""<br><div style="text-align: center;"><svg width="300" height="160"><path d="M 30 140 A 120 120 0 0 1 270 140" fill="#fdfdfd" stroke="#333" stroke-width="2"/><line x1="30" y1="140" x2="270" y2="140" stroke="#333" stroke-width="2"/>{ticks_svg}{angle_arc}<line x1="150" y1="140" x2="270" y2="140" stroke="#3498db" stroke-width="3"/><line x1="150" y1="140" x2="{ax}" y2="{ay}" stroke="#e74c3c" stroke-width="3"/><circle cx="150" cy="140" r="4" fill="#e74c3c"/></svg></div>"""
+                # วาดพื้นหลังสีขาว -> วาดเส้นมุมสีแดงแบบบาง -> วาดส่วนโค้งมุม -> วาดสเกลสีดำทับด้านบนสุด
+                svg = f"""<br><div style="text-align: center;"><svg width="300" height="160"><path d="M 30 140 A 120 120 0 0 1 270 140" fill="#fdfdfd" stroke="#333" stroke-width="2"/><line x1="150" y1="140" x2="270" y2="140" stroke="#3498db" stroke-width="2"/><line x1="150" y1="140" x2="{ax}" y2="{ay}" stroke="#e74c3c" stroke-width="1.5"/>{angle_arc}<line x1="30" y1="140" x2="270" y2="140" stroke="#333" stroke-width="2"/>{ticks_svg}<circle cx="150" cy="140" r="4" fill="#e74c3c"/></svg></div>"""
                 
                 q = f"มุมที่แสดงบนไม้โปรแทรกเตอร์มีขนาดกี่องศา? {svg}"
                 sol = f"{angle} องศา"
@@ -519,6 +515,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             attempts += 1
     return questions
 
+# ==========================================
+# 3. ฟังก์ชันสร้างหน้า HTML
+# ==========================================
 def create_page(grade, sub_t, questions, is_key=False):
     title = "เฉลยแบบฝึกหัด" if is_key else "แบบฝึกหัดคณิตศาสตร์"
     html = f"""<!DOCTYPE html><html lang="th"><head><meta charset="utf-8">
