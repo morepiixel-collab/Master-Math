@@ -558,7 +558,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = sentence + generate_vertical_table_html(a, b, '-', is_key=False)
                 sol = sentence + generate_vertical_table_html(a, b, '-', result=res, is_key=True)
 
-            # 🔴 ไฮไลท์แก้ไขบั๊ก: เพิ่มเงื่อนไข "การหารพื้นฐาน" ให้ถูกต้อง
             elif "การหารพื้นฐาน" in sub_t:
                 a = random.randint(2, 9)
                 b = random.randint(2, 12)
@@ -835,19 +834,60 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงอ่านและเขียนเศษส่วนที่ระบายสีจากรูปภาพต่อไปนี้ : {svg_bar}"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> แบ่งรูปออกเป็น <b>{den}</b> ส่วนเท่าๆ กัน และระบายสีไป <b>{num}</b> ส่วน</span><br><div style='display: flex; align-items: center; margin-top: 10px;'><b>เขียนเป็นเศษส่วนได้: </b> {frac_html} <span style='margin-left: 20px;'><b>อ่านว่า: </b> เศษ {num} ส่วน {den}</span></div>"
 
+            # 🔴 ไฮไลต์แก้ไขลอจิก: แยกระหว่าง ป.3 (ส่วนเท่ากัน) และ ป.5 (ส่วนไม่เท่ากัน)
             elif "บวกลบเศษส่วน" in sub_t or "บวกและการลบเศษส่วน" in sub_t:
-                den = random.randint(5, 15); num1 = random.randint(1, den-1); num2 = random.randint(1, den-1)
-                op = random.choice(["+", "-"])
-                if op == "-" and num1 < num2: num1, num2 = num2, num1 
-                ans_num = num1 + num2 if op == "+" else num1 - num2
-                f1 = generate_fraction_html(num1, den)
-                f2 = generate_fraction_html(num2, den)
-                q = f"จงหาผลลัพธ์ <br><div style='display:flex; align-items:center; margin-top:10px;'><b style='font-size: 20px; color: #2c3e50; margin-right: 10px;'>ประโยคสัญลักษณ์: </b> {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= </span> {box_html}</div>"
-                s1 = generate_fraction_html(f"{num1} {op} {num2}", den)
-                s2 = generate_fraction_html(ans_num, den)
-                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เนื่องจากตัวส่วนเท่ากัน ให้นำตัวเศษมา{op}กันได้เลย</span><br><br><div style='display:flex; align-items:center; margin-bottom: 15px;'>{f1} <span style='margin:0 10px;'>{op}</span> {f2} <span style='margin:0 10px;'>=</span> {s1} <span style='margin:0 10px;'>=</span> {s2}</div>"
-                extra_txt, final_html = get_fraction_solution_steps(ans_num, den)
-                if extra_txt: sol += f"<span style='color: #2c3e50;'><i>*{extra_txt}:</i></span><br><br>{final_html}"
+                if grade == "ป.5":
+                    # --- สำหรับ ป.5: ตัวส่วนไม่เท่ากัน ---
+                    d1 = random.randint(2, 10); d2 = random.randint(2, 10)
+                    while d1 == d2: d2 = random.randint(2, 10) # บังคับให้ส่วนไม่เท่ากัน
+                    n1 = random.randint(1, d1 - 1); n2 = random.randint(1, d2 - 1)
+                    op = random.choice(["+", "-"])
+                    
+                    # ถ้าเป็นการลบ ต้องสลับให้ตัวตั้งมากกว่าตัวลบเสมอ (ป้องกันผลลัพธ์ติดลบ)
+                    if op == "-" and (n1/d1) < (n2/d2):
+                        n1, n2 = n2, n1
+                        d1, d2 = d2, d1
+                        
+                    # หา ค.ร.น. แบบง่ายๆ เพื่อทำตัวส่วนให้เท่ากัน
+                    lcm_d = (d1 * d2) // math.gcd(d1, d2)
+                    m1 = lcm_d // d1; m2 = lcm_d // d2
+                    
+                    ans_num = (n1 * m1) + (n2 * m2) if op == "+" else (n1 * m1) - (n2 * m2)
+                    
+                    f1 = generate_fraction_html(n1, d1)
+                    f2 = generate_fraction_html(n2, d2)
+                    q = f"จงหาผลลัพธ์ <br><div style='display:flex; align-items:center; margin-top:10px;'><b style='font-size: 20px; color: #2c3e50; margin-right: 10px;'>ประโยคสัญลักษณ์: </b> {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= </span> {box_html}</div>"
+                    
+                    # สร้างกราฟิกแสดงการคูณทั้งเศษและส่วน
+                    f1_ex = generate_fraction_html(f"{n1} × {m1}", f"{d1} × {m1}") if m1 > 1 else f1
+                    f2_ex = generate_fraction_html(f"{n2} × {m2}", f"{d2} × {m2}") if m2 > 1 else f2
+                    
+                    f1_new = generate_fraction_html(n1 * m1, lcm_d)
+                    f2_new = generate_fraction_html(n2 * m2, lcm_d)
+                    s_ans = generate_fraction_html(ans_num, lcm_d)
+                    
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ทำตัวส่วนให้เท่ากัน โดยหา ค.ร.น. ของ {d1} และ {d2} ซึ่งก็คือ <b>{lcm_d}</b></span><br><br>"
+                    sol += f"<div style='display:flex; align-items:center; margin-bottom: 10px;'> {f1} <span style='margin:0 10px;'>{op}</span> {f2} <span style='margin:0 10px;'>=</span> {f1_ex} <span style='margin:0 10px;'>{op}</span> {f2_ex} </div>"
+                    sol += f"<div style='display:flex; align-items:center; margin-bottom: 15px;'> <span style='margin:0 10px;'></span> <span style='margin:0 10px;'>=</span> {f1_new} <span style='margin:0 10px;'>{op}</span> {f2_new} <span style='margin:0 10px;'>=</span> {s_ans}</div>"
+                    
+                    # ทอนเป็นเศษส่วนอย่างต่ำ / จำนวนคละ (ถ้ามี)
+                    extra_txt, final_html = get_fraction_solution_steps(ans_num, lcm_d)
+                    if extra_txt: sol += f"<span style='color: #2c3e50;'><i>*{extra_txt}:</i></span><br><br>{final_html}"
+                    
+                else:
+                    # --- สำหรับ ป.3: ตัวส่วนเท่ากัน (ลอจิกเดิม) ---
+                    den = random.randint(5, 15); num1 = random.randint(1, den-1); num2 = random.randint(1, den-1)
+                    op = random.choice(["+", "-"])
+                    if op == "-" and num1 < num2: num1, num2 = num2, num1 
+                    ans_num = num1 + num2 if op == "+" else num1 - num2
+                    f1 = generate_fraction_html(num1, den)
+                    f2 = generate_fraction_html(num2, den)
+                    q = f"จงหาผลลัพธ์ <br><div style='display:flex; align-items:center; margin-top:10px;'><b style='font-size: 20px; color: #2c3e50; margin-right: 10px;'>ประโยคสัญลักษณ์: </b> {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= </span> {box_html}</div>"
+                    s1 = generate_fraction_html(f"{num1} {op} {num2}", den)
+                    s2 = generate_fraction_html(ans_num, den)
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เนื่องจากตัวส่วนเท่ากัน ให้นำตัวเศษมา{op}กันได้เลย</span><br><br><div style='display:flex; align-items:center; margin-bottom: 15px;'>{f1} <span style='margin:0 10px;'>{op}</span> {f2} <span style='margin:0 10px;'>=</span> {s1} <span style='margin:0 10px;'>=</span> {s2}</div>"
+                    extra_txt, final_html = get_fraction_solution_steps(ans_num, den)
+                    if extra_txt: sol += f"<span style='color: #2c3e50;'><i>*{extra_txt}:</i></span><br><br>{final_html}"
 
             elif "คูณและการหารเศษส่วน" in sub_t:
                 n1, d1 = random.randint(1, 5), random.randint(2, 7)
