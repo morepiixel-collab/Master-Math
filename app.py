@@ -110,7 +110,6 @@ curriculum_db = {
             "การหาความยาวรอบรูปสี่เหลี่ยมมุมฉาก",
             "การหาพื้นที่รูปสี่เหลี่ยมมุมฉาก"
         ],
-        # 🔴 เพิ่มสมการให้ ป.4
         "สมการ": [
             "การแก้สมการ (บวก/ลบ)"
         ]
@@ -127,7 +126,6 @@ curriculum_db = {
         "ร้อยละและเปอร์เซ็นต์": [
             "การเขียนเศษส่วนในรูปร้อยละ"
         ],
-        # 🔴 เพิ่มสมการให้ ป.5
         "สมการ": [
             "การแก้สมการ (คูณ/หาร)"
         ]
@@ -140,7 +138,6 @@ curriculum_db = {
         "อัตราส่วนและร้อยละ": [
             "โจทย์ปัญหาร้อยละ"
         ],
-        # 🔴 อัปเกรดสมการให้ ป.6
         "สมการ": [
             "การแก้สมการ (สองขั้นตอน)"
         ]
@@ -894,23 +891,25 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงหา ค.ร.น. ของ <b>{a}</b> และ <b>{b}</b>"
                 sol = generate_short_division_html(a, b, mode="ค.ร.น.")
 
-            # 🔴 ไฮไลท์การแก้: อัปเกรดระบบสมการตามหลักสูตร ป.4, ป.5, ป.6 (ใช้สมบัติการเท่ากัน ไม่ใช้การย้ายข้าง)
+            # 🔴 อัปเกรดระบบสมการ: ใช้สีแยกการกระทำ (แดง=ลบ, น้ำเงิน=บวก, เขียว=คูณ, ม่วง=หาร)
             elif "การแก้สมการ" in sub_t:
                 if grade == "ป.4":
                     op = random.choice(["+", "-"])
                     if op == "+":
                         x = random.randint(5, 50); a = random.randint(1, 20); b = x + a
                         q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x + {a} = {b}</b>"
+                        c_act = "#e74c3c" # แดง (ลบ)
                         sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ใช้สมบัติการเท่ากันของการลบ เพื่อกำจัด +{a}</span><br>"
-                        sol += f"นำ <b style='color: red;'>{a}</b> มาลบออกทั้งสองข้างของสมการ<br>"
-                        sol += f"x + {a} <b style='color: red;'>- {a}</b> = {b} <b style='color: red;'>- {a}</b><br>"
+                        sol += f"นำ <b style='color: {c_act};'>{a}</b> มาลบออกทั้งสองข้างของสมการ<br>"
+                        sol += f"x + {a} <b style='color: {c_act};'>- {a}</b> = {b} <b style='color: {c_act};'>- {a}</b><br>"
                         sol += f"<b>x = {x}</b>"
                     else:
                         x = random.randint(20, 60); a = random.randint(5, x-5); b = x - a
                         q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x - {a} = {b}</b>"
+                        c_act = "#3498db" # น้ำเงิน (บวก)
                         sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ใช้สมบัติการเท่ากันของการบวก เพื่อกำจัด -{a}</span><br>"
-                        sol += f"นำ <b style='color: red;'>{a}</b> มาบวกเข้าทั้งสองข้างของสมการ<br>"
-                        sol += f"x - {a} <b style='color: red;'>+ {a}</b> = {b} <b style='color: red;'>+ {a}</b><br>"
+                        sol += f"นำ <b style='color: {c_act};'>{a}</b> มาบวกเข้าทั้งสองข้างของสมการ<br>"
+                        sol += f"x - {a} <b style='color: {c_act};'>+ {a}</b> = {b} <b style='color: {c_act};'>+ {a}</b><br>"
                         sol += f"<b>x = {x}</b>"
                         
                 elif grade == "ป.5":
@@ -918,38 +917,43 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     if op == "*":
                         a = random.randint(2, 12); x = random.randint(2, 20); b = a * x
                         q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>{a}x = {b}</b>"
+                        c_act = "#8e44ad" # ม่วง (หาร)
                         sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ใช้สมบัติการเท่ากันของการหาร เพื่อกำจัด {a} ที่คูณอยู่กับ x</span><br>"
-                        sol += f"นำ <b style='color: red;'>{a}</b> มาหารทั้งสองข้างของสมการ<br>"
-                        sol += f"<div style='display: flex; align-items: center; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{a}x</span><br><b style='color: red;'>{a}</b></div> = <div style='text-align: center; margin-left: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{b}</span><br><b style='color: red;'>{a}</b></div></div>"
+                        sol += f"นำ <b style='color: {c_act};'>{a}</b> มาหารทั้งสองข้างของสมการ<br>"
+                        sol += f"<div style='display: flex; align-items: center; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{a}x</span><br><b style='color: {c_act};'>{a}</b></div> = <div style='text-align: center; margin-left: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{b}</span><br><b style='color: {c_act};'>{a}</b></div></div>"
                         sol += f"<b>x = {x}</b>"
                     else:
                         a = random.randint(2, 12); b = random.randint(2, 20); x = a * b
                         q = f"จงแก้สมการเพื่อหาค่า x : <br><div style='display: flex; align-items: center; font-size: 24px; font-weight: bold; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>x</span><br>{a}</div> = {b}</div>"
+                        c_act = "#27ae60" # เขียว (คูณ)
                         sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ใช้สมบัติการเท่ากันของการคูณ เพื่อกำจัด {a} ที่เป็นตัวส่วน</span><br>"
-                        sol += f"นำ <b style='color: red;'>{a}</b> มาคูณทั้งสองข้างของสมการ<br>"
-                        sol += f"<div style='display: flex; align-items: center; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>x</span><br>{a}</div> <span style='margin: 0 10px;'> <b style='color: red;'>× {a}</b> </span> = <span style='margin: 0 10px;'>{b} <b style='color: red;'>× {a}</b></span></div>"
+                        sol += f"นำ <b style='color: {c_act};'>{a}</b> มาคูณทั้งสองข้างของสมการ<br>"
+                        sol += f"<div style='display: flex; align-items: center; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>x</span><br>{a}</div> <span style='margin: 0 10px;'> <b style='color: {c_act};'>× {a}</b> </span> = <span style='margin: 0 10px;'>{b} <b style='color: {c_act};'>× {a}</b></span></div>"
                         sol += f"<b>x = {x}</b>"
                         
                 elif grade == "ป.6":
                     op = random.choice(["+", "-"])
                     a = random.randint(2, 9); x = random.randint(2, 15)
+                    c_div = "#8e44ad" # ม่วง (หาร)
                     if op == "+":
                         b = random.randint(1, 20); c = a * x + b
+                        c_sub = "#e74c3c" # แดง (ลบ)
                         q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>{a}x + {b} = {c}</b>"
-                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ (ขั้นที่ 1):</b> กำจัด +{b} โดยนำ <b style='color: red;'>{b}</b> มาลบออกทั้งสองข้าง</span><br>"
-                        sol += f"{a}x + {b} <b style='color: red;'>- {b}</b> = {c} <b style='color: red;'>- {b}</b><br>"
+                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ (ขั้นที่ 1):</b> กำจัด +{b} โดยนำ <b style='color: {c_sub};'>{b}</b> มาลบออกทั้งสองข้าง</span><br>"
+                        sol += f"{a}x + {b} <b style='color: {c_sub};'>- {b}</b> = {c} <b style='color: {c_sub};'>- {b}</b><br>"
                         sol += f"{a}x = {c-b}<br><br>"
-                        sol += f"<span style='color: #2c3e50;'><b>วิธีทำ (ขั้นที่ 2):</b> กำจัด {a} ที่คูณอยู่ โดยนำ <b style='color: blue;'>{a}</b> มาหารทั้งสองข้าง</span><br>"
-                        sol += f"<div style='display: flex; align-items: center; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{a}x</span><br><b style='color: blue;'>{a}</b></div> = <div style='text-align: center; margin-left: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{c-b}</span><br><b style='color: blue;'>{a}</b></div></div>"
+                        sol += f"<span style='color: #2c3e50;'><b>วิธีทำ (ขั้นที่ 2):</b> กำจัด {a} ที่คูณอยู่ โดยนำ <b style='color: {c_div};'>{a}</b> มาหารทั้งสองข้าง</span><br>"
+                        sol += f"<div style='display: flex; align-items: center; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{a}x</span><br><b style='color: {c_div};'>{a}</b></div> = <div style='text-align: center; margin-left: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{c-b}</span><br><b style='color: {c_div};'>{a}</b></div></div>"
                         sol += f"<b>x = {x}</b>"
                     else:
                         b = random.randint(1, 20); c = a * x - b
+                        c_add = "#3498db" # น้ำเงิน (บวก)
                         q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>{a}x - {b} = {c}</b>"
-                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ (ขั้นที่ 1):</b> กำจัด -{b} โดยนำ <b style='color: red;'>{b}</b> มาบวกเข้าทั้งสองข้าง</span><br>"
-                        sol += f"{a}x - {b} <b style='color: red;'>+ {b}</b> = {c} <b style='color: red;'>+ {b}</b><br>"
+                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ (ขั้นที่ 1):</b> กำจัด -{b} โดยนำ <b style='color: {c_add};'>{b}</b> มาบวกเข้าทั้งสองข้าง</span><br>"
+                        sol += f"{a}x - {b} <b style='color: {c_add};'>+ {b}</b> = {c} <b style='color: {c_add};'>+ {b}</b><br>"
                         sol += f"{a}x = {c+b}<br><br>"
-                        sol += f"<span style='color: #2c3e50;'><b>วิธีทำ (ขั้นที่ 2):</b> กำจัด {a} ที่คูณอยู่ โดยนำ <b style='color: blue;'>{a}</b> มาหารทั้งสองข้าง</span><br>"
-                        sol += f"<div style='display: flex; align-items: center; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{a}x</span><br><b style='color: blue;'>{a}</b></div> = <div style='text-align: center; margin-left: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{c+b}</span><br><b style='color: blue;'>{a}</b></div></div>"
+                        sol += f"<span style='color: #2c3e50;'><b>วิธีทำ (ขั้นที่ 2):</b> กำจัด {a} ที่คูณอยู่ โดยนำ <b style='color: {c_div};'>{a}</b> มาหารทั้งสองข้าง</span><br>"
+                        sol += f"<div style='display: flex; align-items: center; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{a}x</span><br><b style='color: {c_div};'>{a}</b></div> = <div style='text-align: center; margin-left: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{c+b}</span><br><b style='color: {c_div};'>{a}</b></div></div>"
                         sol += f"<b>x = {x}</b>"
 
             elif "ชนิดของมุม" in sub_t:
@@ -1033,7 +1037,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 svg = f"""<br><div style="text-align: center;"><svg width="300" height="160"><path d="M 30 140 A 120 120 0 0 1 270 140" fill="#fdfdfd" stroke="#333" stroke-width="2"/><line x1="150" y1="140" x2="270" y2="140" stroke="#3498db" stroke-width="2"/><line x1="150" y1="140" x2="{ax}" y2="{ay}" stroke="#e74c3c" stroke-width="1.5"/>{angle_arc}<line x1="30" y1="140" x2="270" y2="140" stroke="#333" stroke-width="2"/>{ticks_svg}<circle cx="150" cy="140" r="4" fill="#e74c3c"/></svg></div>"""
                 q = f"มุมที่แสดงบนไม้โปรแทรกเตอร์มีขนาดกี่องศา? {svg}"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตเส้นสีแดงชี้ตรงกับตัวเลขสเกลด้านในที่เลข {angle} พอดี<br>ตอบ:</span> <b>{angle} องศา</b>"
-
+                
             else:
                 a, b = random.randint(10, 50), random.randint(10, 50)
                 q = f"จงหาผลลัพธ์ : {a} + {b} = ?"
