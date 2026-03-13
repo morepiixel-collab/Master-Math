@@ -521,10 +521,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"รูปที่หายไปคือรูปใด? {html}"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตจะพบว่ารูปภาพมีการเรียงซ้ำกันเป็นชุด ชุดละ {len(set(pt))} รูป เมื่อนับลำดับต่อมาเรื่อยๆ รูปที่หายไปคือ:</span><br><br><svg width='30' height='30' style='vertical-align: middle;'>{shapes[seq[slen]]}</svg>"
 
-            # 🔴 ไฮไลท์การแก้: วาดนาฬิกาใหม่ ขยายขนาด 50% เพิ่มสเกลย่อย และแยกสีเข็ม/ตัวเลข
+            # 🔴 นาฬิกา: เพิ่มเส้นประต่อจากเข็มชั่วโมงไปถึงขอบหน้าปัด
             elif "นาฬิกา" in sub_t:
                 h = random.randint(1, 12)
-                m = random.randint(0, 59) # สุ่มนาทีละเอียดขึ้น
+                m = random.randint(0, 59)
                 
                 cx, cy = 100, 100
                 svg_elements = []
@@ -534,26 +534,22 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     angle_deg = i * 6 - 90
                     angle_rad = math.radians(angle_deg)
                     if i % 5 == 0:
-                        # ขีดชั่วโมง (ใหญ่)
                         tx1 = cx + 65 * math.cos(angle_rad)
                         ty1 = cy + 65 * math.sin(angle_rad)
                         tx2 = cx + 75 * math.cos(angle_rad)
                         ty2 = cy + 75 * math.sin(angle_rad)
                         svg_elements.append(f'<line x1="{tx1}" y1="{ty1}" x2="{tx2}" y2="{ty2}" stroke="#333" stroke-width="3" />')
                         
-                        # ตัวเลขชั่วโมง (สีแดง ด้านใน)
                         hour = i // 5
                         if hour == 0: hour = 12
                         tx_h = cx + 50 * math.cos(angle_rad)
                         ty_h = cy + 50 * math.sin(angle_rad) + 6
                         svg_elements.append(f'<text x="{tx_h}" y="{ty_h}" font-size="18" font-weight="bold" fill="#e74c3c" text-anchor="middle">{hour}</text>')
                         
-                        # ตัวเลขนาที (สีน้ำเงิน ด้านนอก)
                         tx_m = cx + 88 * math.cos(angle_rad)
                         ty_m = cy + 88 * math.sin(angle_rad) + 4
                         svg_elements.append(f'<text x="{tx_m}" y="{ty_m}" font-size="12" font-weight="bold" fill="#3498db" text-anchor="middle">{i}</text>')
                     else:
-                        # ขีดนาที (เล็ก)
                         tx1 = cx + 70 * math.cos(angle_rad)
                         ty1 = cy + 70 * math.sin(angle_rad)
                         tx2 = cx + 75 * math.cos(angle_rad)
@@ -563,6 +559,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 ah = (h % 12) * 30 + (m / 60) * 30
                 am = m * 6
                 
+                # 🔴 วาดเส้นประสีแดงช่วยเล็ง (ลากจากจุดศูนย์กลางไปจนสุดขอบรัศมี 75)
+                hx_dash = cx + 75 * math.cos(math.radians(ah - 90))
+                hy_dash = cy + 75 * math.sin(math.radians(ah - 90))
+                svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{hx_dash}" y2="{hy_dash}" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.7"/>')
+
                 # เข็มสั้น (สีแดง)
                 hx = cx + 40 * math.cos(math.radians(ah - 90))
                 hy = cy + 40 * math.sin(math.radians(ah - 90))
@@ -576,15 +577,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 svg_elements.append(f'<circle cx="{cx}" cy="{cy}" r="5" fill="#333"/>')
                 
                 svg_content = "".join(svg_elements)
-                # ขนาด viewBox ใหญ่ขึ้นเพื่อให้เห็นตัวเลขด้านนอก และแสดงผลที่ขนาด 180x180 px
-                svg = f'<br><div style="text-align: center; margin-top: 15px; margin-bottom: 15px;"><svg width="180" height="180" viewBox="0 0 200 200">{svg_content}</svg></div>'
+                svg = f'<br><div style="text-align: center; margin: 15px 0;"><svg width="180" height="180" viewBox="0 0 200 200">{svg_content}</svg></div>'
 
                 day = random.choice(["เวลากลางวัน", "เวลากลางคืน"])
                 q = f"หากเป็น <b>{day}</b> จะอ่านเวลาได้กี่นาฬิกา กี่นาที? {svg}"
                 
                 ans_h = h + 12 if day == "เวลากลางวัน" and 1 <= h <= 5 else (h + 12 if day == "เวลากลางคืน" and 6 <= h <= 11 else (0 if day == "เวลากลางคืน" and h == 12 else h))
                 
-                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> <br>1. เข็มสั้น(สีแดง) ชี้ระหว่างเลข {h} กับ {h+1 if h<12 else 1} แสดงถึงชั่วโมงที่ {h} <br>2. เข็มยาว(สีน้ำเงิน) ชี้ที่ขีดนาทีที่ {m} (ดูตัวเลขด้านนอกประกอบ)<br>ถ้าเป็น{day} จึงอ่านเวลาได้</span> <b>{ans_h:02d}.{m:02d} น.</b>"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> <br>1. เข็มสั้น(สีแดง) มีเส้นประชี้บอกว่ายังอยู่ระหว่างเลข {h} กับ {h+1 if h<12 else 1} แสดงถึงชั่วโมงที่ {h} <br>2. เข็มยาว(สีน้ำเงิน) ชี้ที่ขีดนาทีที่ {m} (ดูตัวเลขด้านนอกประกอบ)<br>ถ้าเป็น{day} จึงอ่านเวลาได้</span> <b>{ans_h:02d}.{m:02d} น.</b>"
 
             elif "จำนวนเงิน" in sub_t:
                 b100 = random.randint(0, 3); b50 = random.randint(0, 2); b20 = random.randint(0, 4)
