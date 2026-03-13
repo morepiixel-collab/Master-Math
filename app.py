@@ -109,6 +109,10 @@ curriculum_db = {
             "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)",
             "การหาความยาวรอบรูปสี่เหลี่ยมมุมฉาก",
             "การหาพื้นที่รูปสี่เหลี่ยมมุมฉาก"
+        ],
+        # 🔴 เพิ่มสมการให้ ป.4
+        "สมการ": [
+            "การแก้สมการ (บวก/ลบ)"
         ]
     },
     "ป.5": {
@@ -122,6 +126,10 @@ curriculum_db = {
         ],
         "ร้อยละและเปอร์เซ็นต์": [
             "การเขียนเศษส่วนในรูปร้อยละ"
+        ],
+        # 🔴 เพิ่มสมการให้ ป.5
+        "สมการ": [
+            "การแก้สมการ (คูณ/หาร)"
         ]
     },
     "ป.6": {
@@ -132,8 +140,9 @@ curriculum_db = {
         "อัตราส่วนและร้อยละ": [
             "โจทย์ปัญหาร้อยละ"
         ],
+        # 🔴 อัปเกรดสมการให้ ป.6
         "สมการ": [
-            "การแก้สมการเบื้องต้น"
+            "การแก้สมการ (สองขั้นตอน)"
         ]
     }
 }
@@ -258,7 +267,7 @@ def get_fraction_solution_steps(num, den):
     return extra_steps, final_html
 
 # ==========================================
-# 🟢 ฟังก์ชันช่วย 3: ตารางหารสั้น ห.ร.ม. / ค.ร.น.
+# 🟢 ฟังก์ชันช่วย 3, 4, 5 (หารสั้น, ทศนิยม, หารยาว)
 # ==========================================
 def generate_short_division_html(a, b, mode="ห.ร.ม."):
     factors = []
@@ -288,15 +297,12 @@ def generate_short_division_html(a, b, mode="ห.ร.ม."):
         sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ (หารสั้น):</b></span>{table}<span style='color: #2c3e50;'><b>ค.ร.น.</b> คือนำตัวหารและผลลัพธ์บรรทัดสุดท้ายมาคูณกัน (รูปตัว L):</span><br>= {calc_str}<br>= <b>{ans}</b>"
     return sol
 
-# ==========================================
-# 🟢 ฟังก์ชันช่วย 4: ตั้งบวกลบทศนิยม (อัปเกรดระบบทดและยืมแบบมีจุด)
-# ==========================================
 def generate_decimal_vertical_html(a, b, op, is_key=False):
     str_a, str_b = f"{a:.2f}", f"{b:.2f}"
     ans = a + b if op == '+' else round(a - b, 2)
     str_ans = f"{ans:.2f}"
     
-    max_len = max(len(str_a), len(str_b), len(str_ans)) + 1 # เผื่อที่ให้หลักทดด้านหน้า
+    max_len = max(len(str_a), len(str_b), len(str_ans)) + 1 
     str_a = str_a.rjust(max_len, " ")
     str_b = str_b.rjust(max_len, " ")
     str_ans = str_ans.rjust(max_len, " ")
@@ -365,9 +371,6 @@ def generate_decimal_vertical_html(a, b, op, is_key=False):
     </div>
     """
 
-# ==========================================
-# 🟢 ฟังก์ชันช่วย 5: สร้างโครงสร้างการหารยาวแบบจับมือทำ 
-# ==========================================
 def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     div_str = str(dividend)
     div_len = len(div_str)
@@ -633,8 +636,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 for _ in range(b50): money_svg += '<svg width="60" height="30" style="vertical-align: middle; margin: 2px;"><rect width="60" height="30" rx="3" fill="#74b9ff" stroke="#2980b9" stroke-width="2"/><text x="30" y="20" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">50</text></svg>'
                 for _ in range(b20): money_svg += '<svg width="60" height="30" style="vertical-align: middle; margin: 2px;"><rect width="60" height="30" rx="3" fill="#55efc4" stroke="#27ae60" stroke-width="2"/><text x="30" y="20" font-size="12" font-weight="bold" fill="#333" text-anchor="middle">20</text></svg>'
                 for _ in range(c10): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="13" fill="#bdc3c7" stroke="#7f8c8d" stroke-width="2"/><circle cx="15" cy="15" r="8" fill="#f1c40f"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">10</text></svg>'
-                for _ in range(c5): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="11" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">5</text></svg>'
-                for _ in range(c1): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="9" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1.5"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">1</text></svg>'
+                for _ in range(c5): money_svg += '<svg width=\"30\" height=\"30\" style=\"vertical-align: middle; margin: 2px;\"><circle cx=\"15\" cy=\"15\" r=\"11\" fill=\"#ecf0f1\" stroke=\"#95a5a6\" stroke-width=\"2\"/><text x=\"15\" y=\"19\" font-size=\"10\" font-weight=\"bold\" fill=\"#333\" text-anchor=\"middle\">5</text></svg>'
+                for _ in range(c1): money_svg += '<svg width=\"30\" height=\"30\" style=\"vertical-align: middle; margin: 2px;\"><circle cx=\"15\" cy=\"15\" r=\"9\" fill=\"#ecf0f1\" stroke=\"#bdc3c7\" stroke-width=\"1.5\"/><text x=\"15\" y=\"19\" font-size=\"10\" font-weight=\"bold\" fill=\"#333\" text-anchor=\"middle\">1</text></svg>'
                 money_svg += "</div>"
                 q = f"จากภาพ มีเงินทั้งหมดกี่บาท? {money_svg}"
                 sol = "<br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>"
@@ -650,13 +653,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 kg = random.randint(0, 4)
                 khid = random.randint(0, 9)
                 if kg == 0 and khid == 0: khid = random.randint(1, 9)
-                
                 total_khid = kg * 10 + khid
                 angle_deg = -150 + (total_khid * 6)
-                
-                cx, cy = 100, 120
-                r_dial = 70
-                
+                cx, cy = 100, 120; r_dial = 70
                 svg_elements = []
                 svg_elements.append('<rect x="25" y="40" width="150" height="150" rx="20" fill="#f1f2f6" stroke="#333" stroke-width="4"/>')
                 svg_elements.append('<path d="M 70 40 L 70 20 L 130 20 L 130 40 Z" fill="#bdc3c7" stroke="#333" stroke-width="3"/>')
@@ -684,25 +683,20 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 needle_rad = math.radians(angle_deg - 90)
                 nx_dash = cx + r_dial * math.cos(needle_rad); ny_dash = cy + r_dial * math.sin(needle_rad)
                 svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{nx_dash}" y2="{ny_dash}" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.7"/>')
-                
                 nx = cx + (r_dial - 15) * math.cos(needle_rad); ny = cy + (r_dial - 15) * math.sin(needle_rad)
                 svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{nx}" y2="{ny}" stroke="#e74c3c" stroke-width="4" stroke-linecap="round"/>')
                 svg_elements.append(f'<circle cx="{cx}" cy="{cy}" r="6" fill="#333"/>')
                 
                 svg_content = "".join(svg_elements)
                 scale_svg = f'<br><div style="text-align: center; margin: 15px 0;"><svg width="200" height="220" viewBox="0 0 200 220">{svg_content}</svg></div>'
-                
                 q = f"จากหน้าปัดเครื่องชั่งสปริง สินค้ามีน้ำหนักเท่าใด? {scale_svg}"
-                
                 if kg == 0: explain = f"เข็มชี้ไปที่ขีดเล็กที่ {khid} (ยังไม่ถึงเลข 1)"
                 elif khid == 0: explain = f"เข็มชี้ตรงกับเลข {kg} พอดี"
                 else: explain = f"เข็มชี้เลยเลข {kg} มา {khid} ขีดเล็ก"
-                
                 ans_text = ""
                 if kg > 0 and khid > 0: ans_text = f"{kg} กิโลกรัม {khid} ขีด"
                 elif kg > 0 and khid == 0: ans_text = f"{kg} กิโลกรัม"
                 else: ans_text = f"{khid} ขีด"
-                    
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> {explain} (จำไว้ว่าช่องเล็ก 1 ช่อง = 1 ขีด)<br>ดังนั้น สินค้ามีน้ำหนัก</span> <b>{ans_text}</b>"
 
             elif "แผนภูมิรูปภาพ" in sub_t:
@@ -858,7 +852,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงเขียน <b>{n}</b> เป็นตัวหนังสือภาษาไทย"
                 sol = f"<b>{generate_thai_number_text(str(n))}</b>"
 
-            # 🔴 ไฮไลท์การแก้: เพิ่มตัวทดและยืมในการบวกลบทศนิยม ป.5
             elif "ทศนิยม" in sub_t and ("บวก" in sub_t or "ลบ" in sub_t):
                 a = round(random.uniform(10.0, 99.9), 2); b = round(random.uniform(1.0, 9.9), 2)
                 op = random.choice(["+", "-"])
@@ -866,15 +859,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 sol_html = generate_decimal_vertical_html(a, b, op, is_key=True)
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ตั้งจุดทศนิยมให้ตรงกันแล้วดำเนินการตามปกติ</span><br>{sol_html}"
 
-            # 🔴 ไฮไลท์การแก้: เพิ่มการตั้งคูณแนวตั้ง ในการคูณทศนิยม ป.5
             elif "คูณทศนิยม" in sub_t:
                 a = round(random.uniform(1.0, 12.0), 1); b = random.randint(2, 9)
                 ans = round(a*b, 1)
                 q = f"จงหาผลลัพธ์ : <b>{a:.1f} × {b} = ?</b>"
-                
                 int_a = int(round(a * 10))
                 vert_mul_html = generate_vertical_table_html(int_a, b, '×', result=int_a*b, is_key=True)
-                
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>1) ตั้งคูณโดยนำจุดทศนิยมออกก่อน ({int_a} × {b}):</span><br>{vert_mul_html}<br><span style='color: #2c3e50;'>2) ตัวตั้งมีทศนิยม 1 ตำแหน่ง คำตอบจึงต้องใส่ทศนิยม 1 ตำแหน่ง<br>ตอบ:</span> <b>{ans:.1f}</b>"
 
             elif "ร้อยละ" in sub_t and "เศษส่วน" in sub_t:
@@ -904,10 +894,63 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงหา ค.ร.น. ของ <b>{a}</b> และ <b>{b}</b>"
                 sol = generate_short_division_html(a, b, mode="ค.ร.น.")
 
-            elif "สมการ" in sub_t:
-                x = random.randint(5, 50); a = random.randint(1, 20); b = x + a
-                q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x + {a} = {b}</b>"
-                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ย้ายข้างตัวเลขเพื่อหาค่าตัวแปร (จากบวกย้ายไปลบ)<br>x = {b} - {a}<br>ตอบ:</span> <b>x = {x}</b>"
+            # 🔴 ไฮไลท์การแก้: อัปเกรดระบบสมการตามหลักสูตร ป.4, ป.5, ป.6 (ใช้สมบัติการเท่ากัน ไม่ใช้การย้ายข้าง)
+            elif "การแก้สมการ" in sub_t:
+                if grade == "ป.4":
+                    op = random.choice(["+", "-"])
+                    if op == "+":
+                        x = random.randint(5, 50); a = random.randint(1, 20); b = x + a
+                        q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x + {a} = {b}</b>"
+                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ใช้สมบัติการเท่ากันของการลบ เพื่อกำจัด +{a}</span><br>"
+                        sol += f"นำ <b style='color: red;'>{a}</b> มาลบออกทั้งสองข้างของสมการ<br>"
+                        sol += f"x + {a} <b style='color: red;'>- {a}</b> = {b} <b style='color: red;'>- {a}</b><br>"
+                        sol += f"<b>x = {x}</b>"
+                    else:
+                        x = random.randint(20, 60); a = random.randint(5, x-5); b = x - a
+                        q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x - {a} = {b}</b>"
+                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ใช้สมบัติการเท่ากันของการบวก เพื่อกำจัด -{a}</span><br>"
+                        sol += f"นำ <b style='color: red;'>{a}</b> มาบวกเข้าทั้งสองข้างของสมการ<br>"
+                        sol += f"x - {a} <b style='color: red;'>+ {a}</b> = {b} <b style='color: red;'>+ {a}</b><br>"
+                        sol += f"<b>x = {x}</b>"
+                        
+                elif grade == "ป.5":
+                    op = random.choice(["*", "/"])
+                    if op == "*":
+                        a = random.randint(2, 12); x = random.randint(2, 20); b = a * x
+                        q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>{a}x = {b}</b>"
+                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ใช้สมบัติการเท่ากันของการหาร เพื่อกำจัด {a} ที่คูณอยู่กับ x</span><br>"
+                        sol += f"นำ <b style='color: red;'>{a}</b> มาหารทั้งสองข้างของสมการ<br>"
+                        sol += f"<div style='display: flex; align-items: center; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{a}x</span><br><b style='color: red;'>{a}</b></div> = <div style='text-align: center; margin-left: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{b}</span><br><b style='color: red;'>{a}</b></div></div>"
+                        sol += f"<b>x = {x}</b>"
+                    else:
+                        a = random.randint(2, 12); b = random.randint(2, 20); x = a * b
+                        q = f"จงแก้สมการเพื่อหาค่า x : <br><div style='display: flex; align-items: center; font-size: 24px; font-weight: bold; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>x</span><br>{a}</div> = {b}</div>"
+                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ใช้สมบัติการเท่ากันของการคูณ เพื่อกำจัด {a} ที่เป็นตัวส่วน</span><br>"
+                        sol += f"นำ <b style='color: red;'>{a}</b> มาคูณทั้งสองข้างของสมการ<br>"
+                        sol += f"<div style='display: flex; align-items: center; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>x</span><br>{a}</div> <span style='margin: 0 10px;'> <b style='color: red;'>× {a}</b> </span> = <span style='margin: 0 10px;'>{b} <b style='color: red;'>× {a}</b></span></div>"
+                        sol += f"<b>x = {x}</b>"
+                        
+                elif grade == "ป.6":
+                    op = random.choice(["+", "-"])
+                    a = random.randint(2, 9); x = random.randint(2, 15)
+                    if op == "+":
+                        b = random.randint(1, 20); c = a * x + b
+                        q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>{a}x + {b} = {c}</b>"
+                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ (ขั้นที่ 1):</b> กำจัด +{b} โดยนำ <b style='color: red;'>{b}</b> มาลบออกทั้งสองข้าง</span><br>"
+                        sol += f"{a}x + {b} <b style='color: red;'>- {b}</b> = {c} <b style='color: red;'>- {b}</b><br>"
+                        sol += f"{a}x = {c-b}<br><br>"
+                        sol += f"<span style='color: #2c3e50;'><b>วิธีทำ (ขั้นที่ 2):</b> กำจัด {a} ที่คูณอยู่ โดยนำ <b style='color: blue;'>{a}</b> มาหารทั้งสองข้าง</span><br>"
+                        sol += f"<div style='display: flex; align-items: center; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{a}x</span><br><b style='color: blue;'>{a}</b></div> = <div style='text-align: center; margin-left: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{c-b}</span><br><b style='color: blue;'>{a}</b></div></div>"
+                        sol += f"<b>x = {x}</b>"
+                    else:
+                        b = random.randint(1, 20); c = a * x - b
+                        q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>{a}x - {b} = {c}</b>"
+                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ (ขั้นที่ 1):</b> กำจัด -{b} โดยนำ <b style='color: red;'>{b}</b> มาบวกเข้าทั้งสองข้าง</span><br>"
+                        sol += f"{a}x - {b} <b style='color: red;'>+ {b}</b> = {c} <b style='color: red;'>+ {b}</b><br>"
+                        sol += f"{a}x = {c+b}<br><br>"
+                        sol += f"<span style='color: #2c3e50;'><b>วิธีทำ (ขั้นที่ 2):</b> กำจัด {a} ที่คูณอยู่ โดยนำ <b style='color: blue;'>{a}</b> มาหารทั้งสองข้าง</span><br>"
+                        sol += f"<div style='display: flex; align-items: center; margin: 10px 0;'><div style='text-align: center; margin-right: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{a}x</span><br><b style='color: blue;'>{a}</b></div> = <div style='text-align: center; margin-left: 10px;'><span style='border-bottom: 2px solid #000; padding: 0 5px;'>{c+b}</span><br><b style='color: blue;'>{a}</b></div></div>"
+                        sol += f"<b>x = {x}</b>"
 
             elif "ชนิดของมุม" in sub_t:
                 angle = random.choice([30, 45, 60, 90, 120, 135, 150, 180, 210, 270, 300])
@@ -990,7 +1033,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 svg = f"""<br><div style="text-align: center;"><svg width="300" height="160"><path d="M 30 140 A 120 120 0 0 1 270 140" fill="#fdfdfd" stroke="#333" stroke-width="2"/><line x1="150" y1="140" x2="270" y2="140" stroke="#3498db" stroke-width="2"/><line x1="150" y1="140" x2="{ax}" y2="{ay}" stroke="#e74c3c" stroke-width="1.5"/>{angle_arc}<line x1="30" y1="140" x2="270" y2="140" stroke="#333" stroke-width="2"/>{ticks_svg}<circle cx="150" cy="140" r="4" fill="#e74c3c"/></svg></div>"""
                 q = f"มุมที่แสดงบนไม้โปรแทรกเตอร์มีขนาดกี่องศา? {svg}"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตเส้นสีแดงชี้ตรงกับตัวเลขสเกลด้านในที่เลข {angle} พอดี<br>ตอบ:</span> <b>{angle} องศา</b>"
-                
+
             else:
                 a, b = random.randint(10, 50), random.randint(10, 50)
                 q = f"จงหาผลลัพธ์ : {a} + {b} = ?"
@@ -1028,7 +1071,7 @@ def create_page(grade, sub_t, questions, is_key=False):
     {student_info}"""
     
     for i, item in enumerate(questions, 1):
-        if "(แบบตั้งหลัก)" in sub_t or "หารยาว" in sub_t:
+        if ("(แบบตั้งหลัก)" in sub_t and "สมการ" not in sub_t) or "หารยาว" in sub_t:
             html += f'<div class="q-box"><b>ข้อที่ {i}.</b><br>{item["solution"] if is_key else item["question"]}</div>'
         else:
             html += f'<div class="q-box"><b>ข้อที่ {i}.</b> {item["question"]}'
