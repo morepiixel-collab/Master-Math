@@ -227,61 +227,136 @@ def generate_thai_number_text(num_str):
     return int_text + dec_text
 
 # ==========================================
-# 🟢 ฟังก์ชันช่วย 4: สร้างโครงสร้างการหารยาว
+# 🟢 ฟังก์ชันช่วย 4: สร้างโครงสร้างการหารยาวแบบจับมือทำ (Step-by-Step)
 # ==========================================
-def generate_long_division_html(divisor, dividend, result=None, is_key=False):
+def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     div_str = str(dividend)
-    ans_str = str(result) if result else ""
     div_len = len(div_str)
     
-    # จัดตำแหน่งผลหารให้อยู่ตรงหลักพอดี (ชิดขวา)
-    if result is not None:
-        ans_padded = ans_str.rjust(div_len, " ")
-    else:
-        ans_padded = " " * div_len
+    equation_html = f"<div style='font-size: 24px; font-weight: bold; margin-bottom: 15px;'>{dividend:,} ÷ {divisor} = ?</div>"
+    
+    if not is_key:
+        # --- สำหรับหน้าโจทย์ (เว้นว่างไว้) ---
+        div_tds_list = []
+        for i, c in enumerate(div_str):
+            left_border = "border-left: 3px solid #000;" if i == 0 else ""
+            div_tds_list.append(f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px;">{c}</td>')
+            
+        html = f"""
+        {equation_html}
+        <div style="display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2; margin: 10px 20px;">
+            <table style="border-collapse: collapse;">
+                <tr>
+                    <td style="border: none; text-align: right; padding-right: 12px; vertical-align: bottom; font-size: 38px;">{divisor}</td>
+                    {''.join(div_tds_list)}
+                </tr>
+            </table>
+        </div><br>{"<br>" * 12}
+        """
+        return html
+
+    # --- สำหรับหน้าเฉลย (แสดงวิธีทำทีละขั้นตอน) ---
+    steps = []
+    current_val_str = ""
+    ans_str = ""
+    
+    for i, digit in enumerate(div_str):
+        current_val_str += digit
+        current_val = int(current_val_str)
         
-    ans_tds_list = []
-    for c in ans_padded:
-        ans_tds_list.append(f'<td style="width: 35px; text-align: center; color: red; font-weight: bold; font-size: 38px;">{c.strip()}</td>')
+        q = current_val // divisor
+        ans_str += str(q)
         
+        mul_res = q * divisor
+        rem = current_val - mul_res
+        
+        # เก็บขั้นตอนเพื่อนำไปแสดงผล
+        if i == 0 and current_val_str == "0":
+             current_val_str = str(rem) if rem != 0 else ""
+             continue # ข้ามกรณีหารไม่ได้ในหลักแรก
+             
+        steps.append({
+            'current_val': current_val,
+            'mul_res': mul_res,
+            'rem': rem,
+            'col_index': i # หลักที่กำลังพิจารณา
+        })
+        current_val_str = str(rem) if rem != 0 else ""
+        
+    ans_padded = ans_str.rjust(div_len, " ")
+
+    # สร้างส่วนหัว (บรรทัดคำตอบ และ ตัวตั้ง)
+    ans_tds_list = [f'<td style="width: 35px; text-align: center; color: red; font-weight: bold; font-size: 38px;">{c.strip()}</td>' for c in ans_padded]
+    
     div_tds_list = []
     for i, c in enumerate(div_str):
-        # สร้างเส้นขีดซ้ายเฉพาะหลักแรกสุด และขีดบนสำหรับทุกหลัก
         left_border = "border-left: 3px solid #000;" if i == 0 else ""
         div_tds_list.append(f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px;">{c}</td>')
-
-    # --- เพิ่มโจทย์ประโยคสัญลักษณ์ด้านบน ---
-    equation_html = f"<div style='font-size: 24px; font-weight: bold; margin-bottom: 15px;'>{dividend:,} ÷ {divisor} = ?</div>"
 
     html = f"""
     {equation_html}
     <div style="display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2; margin: 10px 20px;">
         <table style="border-collapse: collapse;">
-    """
-    
-    # บรรทัดเฉลย (อยู่ด้านบนสุด)
-    if is_key and result is not None:
-        html += f"""
             <tr>
                 <td style="border: none;"></td>
                 {''.join(ans_tds_list)}
             </tr>
-        """
-        
-    # บรรทัดโจทย์ (ตัวหาร และ ตัวตั้ง)
-    html += f"""
             <tr>
                 <td style="border: none; text-align: right; padding-right: 12px; vertical-align: bottom; font-size: 38px;">{divisor}</td>
                 {''.join(div_tds_list)}
             </tr>
+    """
+
+    # สร้างบรรทัดวิธีทำ
+    for idx, step in enumerate(steps):
+        # บรรทัดที่นำผลคูณมาลบ (mul_res)
+        mul_res_str = str(step['mul_res'])
+        pad_len = step['col_index'] + 1 - len(mul_res_str)
+        
+        mul_tds = ""
+        for i in range(div_len):
+            if i < pad_len or i > step['col_index']:
+                mul_tds += '<td style="width: 35px;"></td>'
+            else:
+                digit_idx = i - pad_len
+                # ขีดเส้นใต้บรรทัดที่ลบ
+                border_b = "border-bottom: 2px solid #000;" if i <= step['col_index'] else ""
+                mul_tds += f'<td style="width: 35px; text-align: center; font-size: 38px; {border_b}">{mul_res_str[digit_idx]}</td>'
+                
+        html += f"<tr><td style='border: none;'></td>{mul_tds}</tr>"
+
+        # บรรทัดผลลบ (rem) และดึงหลักถัดไปลงมา (ถ้ามี)
+        rem_str = str(step['rem'])
+        
+        # ถ้าเป็นขั้นตอนสุดท้าย ไม่ต้องดึงหลักถัดไป และขีดเส้นใต้ 2 เส้น
+        is_last_step = (idx == len(steps) - 1)
+        next_digit = div_str[step['col_index'] + 1] if not is_last_step else ""
+        
+        display_str = rem_str if rem_str != "0" or is_last_step else ""
+        if not is_last_step and display_str == "": # ถ้าลบแล้วเหลือ 0 และไม่ใช่ตัวสุดท้าย ให้เว้นว่างไว้ดึงตัวถัดไป
+            pass
+        else:
+           display_str += next_digit
+           
+        if display_str == "": display_str = next_digit
+
+        pad_len_rem = step['col_index'] + 1 - len(display_str) + (1 if not is_last_step else 0)
+
+        rem_tds = ""
+        for i in range(div_len):
+            if i < pad_len_rem or i > step['col_index'] + (1 if not is_last_step else 0):
+                rem_tds += '<td style="width: 35px;"></td>'
+            else:
+                digit_idx = i - pad_len_rem
+                border_b2 = "border-bottom: 6px double #000;" if is_last_step else ""
+                rem_tds += f'<td style="width: 35px; text-align: center; font-size: 38px; {border_b2}">{display_str[digit_idx]}</td>'
+                
+        html += f"<tr><td style='border: none;'></td>{rem_tds}</tr>"
+
+    html += """
         </table>
     </div>
     """
-    
-    # เว้นพื้นที่ 12 บรรทัด สำหรับหน้าโจทย์ (ให้เด็กแสดงวิธีทำ)
-    if not is_key:
-        html += "<br>" * 12 
-        
     return html
 
 # ==========================================
@@ -461,9 +536,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงหาค่าประมาณเป็นจำนวน<b>{ptype}</b> ของ {n:,}"; sol = f"{ans:,}"
 
             elif "หารยาว" in sub_t:
+                # แก้ไขการหารยาวให้สุ่มลงตัวพอดี เพื่อความง่ายในระดับประถม
                 divisor = random.randint(2, 12); quotient = random.randint(100, 999); dividend = divisor * quotient
-                q = generate_long_division_html(divisor, dividend, is_key=False)
-                sol = generate_long_division_html(divisor, dividend, result=quotient, is_key=True)
+                q = generate_long_division_step_by_step_html(divisor, dividend, is_key=False)
+                sol = generate_long_division_step_by_step_html(divisor, dividend, is_key=True)
 
             elif "เศษเกินเป็นจำนวนคละ" in sub_t:
                 den = random.randint(3, 12)
