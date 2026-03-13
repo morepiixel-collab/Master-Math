@@ -926,6 +926,7 @@ num_input = st.sidebar.number_input("จำนวนข้อ:", min_value=1, ma
 
 st.sidebar.info("💡 **เคล็ดลับ:** หากต้องการสุ่มโจทย์ชุดใหม่ ให้กดปุ่ม '🚀 สร้างใบงาน' อีกครั้งก่อนโหลด")
 
+
 if st.sidebar.button("🚀 สร้างใบงาน", type="primary", use_container_width=True):
     with st.spinner("กำลังประมวลผลลอจิกคณิตศาสตร์และสร้างโจทย์..."):
         qs = generate_questions_logic(selected_grade, selected_main, selected_sub, num_input)
