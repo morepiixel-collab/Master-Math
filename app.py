@@ -521,7 +521,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"รูปที่หายไปคือรูปใด? {html}"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตจะพบว่ารูปภาพมีการเรียงซ้ำกันเป็นชุด ชุดละ {len(set(pt))} รูป เมื่อนับลำดับต่อมาเรื่อยๆ รูปที่หายไปคือ:</span><br><br><svg width='30' height='30' style='vertical-align: middle;'>{shapes[seq[slen]]}</svg>"
 
-            # 🔴 นาฬิกา: เพิ่มเส้นประต่อจากเข็มชั่วโมงไปถึงขอบหน้าปัด
             elif "นาฬิกา" in sub_t:
                 h = random.randint(1, 12)
                 m = random.randint(0, 59)
@@ -559,17 +558,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 ah = (h % 12) * 30 + (m / 60) * 30
                 am = m * 6
                 
-                # 🔴 วาดเส้นประสีแดงช่วยเล็ง (ลากจากจุดศูนย์กลางไปจนสุดขอบรัศมี 75)
                 hx_dash = cx + 75 * math.cos(math.radians(ah - 90))
                 hy_dash = cy + 75 * math.sin(math.radians(ah - 90))
                 svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{hx_dash}" y2="{hy_dash}" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.7"/>')
 
-                # เข็มสั้น (สีแดง)
                 hx = cx + 40 * math.cos(math.radians(ah - 90))
                 hy = cy + 40 * math.sin(math.radians(ah - 90))
                 svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{hx}" y2="{hy}" stroke="#e74c3c" stroke-width="5" stroke-linecap="round" />')
                 
-                # เข็มยาว (สีน้ำเงิน)
                 mx = cx + 65 * math.cos(math.radians(am - 90))
                 my = cy + 65 * math.sin(math.radians(am - 90))
                 svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{mx}" y2="{my}" stroke="#3498db" stroke-width="3" stroke-linecap="round" />')
@@ -586,6 +582,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> <br>1. เข็มสั้น(สีแดง) มีเส้นประชี้บอกว่ายังอยู่ระหว่างเลข {h} กับ {h+1 if h<12 else 1} แสดงถึงชั่วโมงที่ {h} <br>2. เข็มยาว(สีน้ำเงิน) ชี้ที่ขีดนาทีที่ {m} (ดูตัวเลขด้านนอกประกอบ)<br>ถ้าเป็น{day} จึงอ่านเวลาได้</span> <b>{ans_h:02d}.{m:02d} น.</b>"
 
+            # 🔴 แก้ไขบั๊กเหรียญ 5 และ 1 บาท พร้อมเพิ่มรูปภาพ
             elif "จำนวนเงิน" in sub_t:
                 b100 = random.randint(0, 3); b50 = random.randint(0, 2); b20 = random.randint(0, 4)
                 c10 = random.randint(0, 5); c5 = random.randint(0, 3); c1 = random.randint(0, 5)
@@ -596,6 +593,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 for _ in range(b50): money_svg += '<svg width="60" height="30" style="vertical-align: middle; margin: 2px;"><rect width="60" height="30" rx="3" fill="#74b9ff" stroke="#2980b9" stroke-width="2"/><text x="30" y="20" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">50</text></svg>'
                 for _ in range(b20): money_svg += '<svg width="60" height="30" style="vertical-align: middle; margin: 2px;"><rect width="60" height="30" rx="3" fill="#55efc4" stroke="#27ae60" stroke-width="2"/><text x="30" y="20" font-size="12" font-weight="bold" fill="#333" text-anchor="middle">20</text></svg>'
                 for _ in range(c10): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="13" fill="#bdc3c7" stroke="#7f8c8d" stroke-width="2"/><circle cx="15" cy="15" r="8" fill="#f1c40f"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">10</text></svg>'
+                
+                # เพิ่มรูปเหรียญ 5 และ 1
+                for _ in range(c5): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="11" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">5</text></svg>'
+                for _ in range(c1): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="9" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1.5"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">1</text></svg>'
+                
                 money_svg += "</div>"
                 q = f"จากภาพ มีเงินทั้งหมดกี่บาท? {money_svg}"
                 sol = "<br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>"
@@ -603,6 +605,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 if b50 > 0: sol += f"แบงก์ 50 บาท {b50} ใบ = {b50*50} บาท<br>"
                 if b20 > 0: sol += f"แบงก์ 20 บาท {b20} ใบ = {b20*20} บาท<br>"
                 if c10 > 0: sol += f"เหรียญ 10 บาท {c10} เหรียญ = {c10*10} บาท<br>"
+                if c5 > 0: sol += f"เหรียญ 5 บาท {c5} เหรียญ = {c5*5} บาท<br>"
+                if c1 > 0: sol += f"เหรียญ 1 บาท {c1} เหรียญ = {c1*1} บาท<br>"
                 sol += f"นำมาบวกกันทั้งหมดจะได้เงินรวม</span> <b>{total:,} บาท</b>"
 
             elif "เครื่องชั่งสปริง" in sub_t:
