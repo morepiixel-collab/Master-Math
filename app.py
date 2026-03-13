@@ -104,7 +104,10 @@ curriculum_db = {
             "การอ่านและการเขียนทศนิยม"
         ],
         "เรขาคณิตและการวัด": [
-            "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)"
+            "การบอกชนิดของมุม",
+            "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)",
+            "การหาความยาวรอบรูปสี่เหลี่ยมมุมฉาก",
+            "การหาพื้นที่รูปสี่เหลี่ยมมุมฉาก"
         ]
     },
     "ป.5": {
@@ -576,7 +579,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงเติมตัวเลขที่หายไปในแบบรูป : {', '.join([f'{s:,}' if i != idx else '_____' for i, s in enumerate(seq)])}"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตความต่างของตัวเลข พบว่าแบบรูปมีการ{'นับเพิ่มขึ้น' if inc else 'นับลดลง'}ทีละ {step}<br>ดังนั้น ตัวเลขที่หายไปคือ</span> <b>{ans_str}</b>"
 
-            # 🔴 แก้ไขจุดที่ผิดพลาด: แยก "เปรียบเทียบ" ออกจาก "เรียงลำดับ" ให้ชัดเจน
             elif "เรียงลำดับ" in sub_t:
                 nums = random.sample(range(10, limit), 4)
                 is_asc = "น้อยไปมาก" in sub_t if "น้อยไปมาก" in sub_t else random.choice([True, False])
@@ -744,6 +746,57 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 x = random.randint(5, 50); a = random.randint(1, 20); b = x + a
                 q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x + {a} = {b}</b>"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ย้ายข้างตัวเลขเพื่อหาค่าตัวแปร (จากบวกย้ายไปลบ)<br>x = {b} - {a}<br>ตอบ:</span> <b>x = {x}</b>"
+
+            # 🔴 เพิ่มหัวข้อย่อยใหม่: ชนิดของมุม
+            elif "ชนิดของมุม" in sub_t:
+                angle = random.choice([30, 45, 60, 90, 120, 135, 150, 180, 210, 270, 300])
+                q = f"มุมที่มีขนาด <b>{angle} องศา</b> เรียกว่ามุมชนิดใด?"
+                if angle < 90:
+                    ans_type = "มุมแหลม"
+                    explain = f"เพราะมีขนาดมากกว่า 0 องศา แต่น้อยกว่า 90 องศา"
+                elif angle == 90:
+                    ans_type = "มุมฉาก"
+                    explain = f"เพราะมีขนาดเท่ากับ 90 องศาพอดี"
+                elif angle < 180:
+                    ans_type = "มุมป้าน"
+                    explain = f"เพราะมีขนาดมากกว่า 90 องศา แต่น้อยกว่า 180 องศา"
+                elif angle == 180:
+                    ans_type = "มุมตรง"
+                    explain = f"เพราะมีขนาดเท่ากับ 180 องศาพอดี"
+                else:
+                    ans_type = "มุมกลับ"
+                    explain = f"เพราะมีขนาดมากกว่า 180 องศา แต่น้อยกว่า 360 องศา"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> {explain}<br>ตอบ:</span> <b>{ans_type}</b>"
+
+            # 🔴 เพิ่มหัวข้อย่อยใหม่: ความยาวรอบรูปสี่เหลี่ยม
+            elif "ความยาวรอบรูป" in sub_t:
+                is_square = random.choice([True, False])
+                if is_square:
+                    s = random.randint(5, 30)
+                    q = f"จงหาความยาวรอบรูปของ<b>รูปสี่เหลี่ยมจัตุรัส</b> ที่มีความยาวด้านละ <b>{s} เซนติเมตร</b>"
+                    ans = 4 * s
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ความยาวรอบรูปสี่เหลี่ยมจัตุรัส = 4 × ความยาวด้าน<br>= 4 × {s}<br>ตอบ:</span> <b>{ans} เซนติเมตร</b>"
+                else:
+                    w = random.randint(5, 20)
+                    l = random.randint(w + 2, 30)
+                    q = f"จงหาความยาวรอบรูปของ<b>รูปสี่เหลี่ยมผืนผ้า</b> ที่มีความกว้าง <b>{w} ซม.</b> และความยาว <b>{l} ซม.</b>"
+                    ans = 2 * (w + l)
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ความยาวรอบรูปสี่เหลี่ยมผืนผ้า = 2 × (กว้าง + ยาว)<br>= 2 × ({w} + {l})<br>= 2 × {w+l}<br>ตอบ:</span> <b>{ans} เซนติเมตร</b>"
+
+            # 🔴 เพิ่มหัวข้อย่อยใหม่: พื้นที่สี่เหลี่ยม
+            elif "พื้นที่" in sub_t and "สี่เหลี่ยม" in sub_t:
+                is_square = random.choice([True, False])
+                if is_square:
+                    s = random.randint(5, 25)
+                    q = f"จงหาพื้นที่ของ<b>รูปสี่เหลี่ยมจัตุรัส</b> ที่มีความยาวด้านละ <b>{s} เซนติเมตร</b>"
+                    ans = s * s
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> พื้นที่สี่เหลี่ยมจัตุรัส = ด้าน × ด้าน<br>= {s} × {s}<br>ตอบ:</span> <b>{ans:,} ตารางเซนติเมตร</b>"
+                else:
+                    w = random.randint(5, 20)
+                    l = random.randint(w + 2, 30)
+                    q = f"จงหาพื้นที่ของ<b>รูปสี่เหลี่ยมผืนผ้า</b> ที่มีความกว้าง <b>{w} ซม.</b> และความยาว <b>{l} ซม.</b>"
+                    ans = w * l
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> พื้นที่สี่เหลี่ยมผืนผ้า = กว้าง × ยาว<br>= {w} × {l}<br>ตอบ:</span> <b>{ans:,} ตารางเซนติเมตร</b>"
 
             elif "ไม้โปรแทรกเตอร์" in sub_t:
                 angle = random.randint(15, 165)
