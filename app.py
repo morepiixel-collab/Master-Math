@@ -486,10 +486,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 sol = generate_vertical_table_html(a, b, '×', result=res, is_key=True)
 
             # --- หมวดกราฟิก ป.1-ป.3 ---
+            # 🔴 ส่วนย่อย-ส่วนรวม (ลงสีให้ดูน่าสนใจขึ้น)
             elif "ส่วนย่อย-ส่วนรวม" in sub_t:
                 total = random.randint(5, 20); p1 = random.randint(1, total - 1); p2 = total - p1
                 miss = random.choice(['t', 'p1', 'p2'])
-                svg_t = f"""<br><div style="text-align: center;"><svg width="200" height="160"><line x1="100" y1="40" x2="50" y2="120" stroke="#333" stroke-width="2"/><line x1="100" y1="40" x2="150" y2="120" stroke="#333" stroke-width="2"/><circle cx="100" cy="40" r="28" fill="#ffffff" stroke="#333" stroke-width="2"/><circle cx="50" cy="120" r="28" fill="#ffffff" stroke="#333" stroke-width="2"/><circle cx="150" cy="120" r="28" fill="#ffffff" stroke="#333" stroke-width="2"/><text x="100" y="47" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='t' else "#333"}">{{t}}</text><text x="50" y="127" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='p1' else "#333"}">{{p1}}</text><text x="150" y="127" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='p2' else "#333"}">{{p2}}</text></svg></div>"""
+                svg_t = f"""<br><div style="text-align: center;"><svg width="200" height="160"><line x1="100" y1="40" x2="50" y2="120" stroke="#333" stroke-width="3"/><line x1="100" y1="40" x2="150" y2="120" stroke="#333" stroke-width="3"/><circle cx="100" cy="40" r="30" fill="#e8f8f5" stroke="#16a085" stroke-width="3"/><circle cx="50" cy="120" r="30" fill="#fdf2e9" stroke="#d35400" stroke-width="3"/><circle cx="150" cy="120" r="30" fill="#fdf2e9" stroke="#d35400" stroke-width="3"/><text x="100" y="47" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='t' else "#16a085"}">{{t}}</text><text x="50" y="127" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='p1' else "#d35400"}">{{p1}}</text><text x="150" y="127" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='p2' else "#d35400"}">{{p2}}</text></svg></div>"""
                 q = f"จงหาตัวเลขที่หายไป (?) : " + svg_t.format(t="?" if miss=='t' else total, p1="?" if miss=='p1' else p1, p2="?" if miss=='p2' else p2)
                 miss_map = {'t': 'ส่วนรวม (วงกลมบน)', 'p1': 'ส่วนย่อย (วงกลมซ้าย)', 'p2': 'ส่วนย่อย (วงกลมขวา)'}
                 if miss == 't': calc_str = f"นำส่วนย่อยมาบวกกัน: {p1} + {p2} = <b>{total}</b>"
@@ -524,65 +525,41 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             elif "นาฬิกา" in sub_t:
                 h = random.randint(1, 12)
                 m = random.randint(0, 59)
-                
                 cx, cy = 100, 100
                 svg_elements = []
                 svg_elements.append(f'<circle cx="{cx}" cy="{cy}" r="75" fill="#fdfdfd" stroke="#333" stroke-width="3"/>')
-                
                 for i in range(60):
                     angle_deg = i * 6 - 90
                     angle_rad = math.radians(angle_deg)
                     if i % 5 == 0:
-                        tx1 = cx + 65 * math.cos(angle_rad)
-                        ty1 = cy + 65 * math.sin(angle_rad)
-                        tx2 = cx + 75 * math.cos(angle_rad)
-                        ty2 = cy + 75 * math.sin(angle_rad)
+                        tx1 = cx + 65 * math.cos(angle_rad); ty1 = cy + 65 * math.sin(angle_rad)
+                        tx2 = cx + 75 * math.cos(angle_rad); ty2 = cy + 75 * math.sin(angle_rad)
                         svg_elements.append(f'<line x1="{tx1}" y1="{ty1}" x2="{tx2}" y2="{ty2}" stroke="#333" stroke-width="3" />')
-                        
-                        hour = i // 5
-                        if hour == 0: hour = 12
-                        tx_h = cx + 50 * math.cos(angle_rad)
-                        ty_h = cy + 50 * math.sin(angle_rad) + 6
+                        hour = i // 5 if i // 5 != 0 else 12
+                        tx_h = cx + 50 * math.cos(angle_rad); ty_h = cy + 50 * math.sin(angle_rad) + 6
                         svg_elements.append(f'<text x="{tx_h}" y="{ty_h}" font-size="18" font-weight="bold" fill="#e74c3c" text-anchor="middle">{hour}</text>')
-                        
-                        tx_m = cx + 88 * math.cos(angle_rad)
-                        ty_m = cy + 88 * math.sin(angle_rad) + 4
+                        tx_m = cx + 88 * math.cos(angle_rad); ty_m = cy + 88 * math.sin(angle_rad) + 4
                         svg_elements.append(f'<text x="{tx_m}" y="{ty_m}" font-size="12" font-weight="bold" fill="#3498db" text-anchor="middle">{i}</text>')
                     else:
-                        tx1 = cx + 70 * math.cos(angle_rad)
-                        ty1 = cy + 70 * math.sin(angle_rad)
-                        tx2 = cx + 75 * math.cos(angle_rad)
-                        ty2 = cy + 75 * math.sin(angle_rad)
+                        tx1 = cx + 70 * math.cos(angle_rad); ty1 = cy + 70 * math.sin(angle_rad)
+                        tx2 = cx + 75 * math.cos(angle_rad); ty2 = cy + 75 * math.sin(angle_rad)
                         svg_elements.append(f'<line x1="{tx1}" y1="{ty1}" x2="{tx2}" y2="{ty2}" stroke="#777" stroke-width="1.5" />')
 
-                ah = (h % 12) * 30 + (m / 60) * 30
-                am = m * 6
-                
-                hx_dash = cx + 75 * math.cos(math.radians(ah - 90))
-                hy_dash = cy + 75 * math.sin(math.radians(ah - 90))
+                ah = (h % 12) * 30 + (m / 60) * 30; am = m * 6
+                hx_dash = cx + 75 * math.cos(math.radians(ah - 90)); hy_dash = cy + 75 * math.sin(math.radians(ah - 90))
                 svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{hx_dash}" y2="{hy_dash}" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.7"/>')
-
-                hx = cx + 40 * math.cos(math.radians(ah - 90))
-                hy = cy + 40 * math.sin(math.radians(ah - 90))
+                hx = cx + 40 * math.cos(math.radians(ah - 90)); hy = cy + 40 * math.sin(math.radians(ah - 90))
                 svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{hx}" y2="{hy}" stroke="#e74c3c" stroke-width="5" stroke-linecap="round" />')
-                
-                mx = cx + 65 * math.cos(math.radians(am - 90))
-                my = cy + 65 * math.sin(math.radians(am - 90))
+                mx = cx + 65 * math.cos(math.radians(am - 90)); my = cy + 65 * math.sin(math.radians(am - 90))
                 svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{mx}" y2="{my}" stroke="#3498db" stroke-width="3" stroke-linecap="round" />')
-                
                 svg_elements.append(f'<circle cx="{cx}" cy="{cy}" r="5" fill="#333"/>')
                 
-                svg_content = "".join(svg_elements)
-                svg = f'<br><div style="text-align: center; margin: 15px 0;"><svg width="180" height="180" viewBox="0 0 200 200">{svg_content}</svg></div>'
-
+                svg = f'<br><div style="text-align: center; margin: 15px 0;"><svg width="180" height="180" viewBox="0 0 200 200">{"".join(svg_elements)}</svg></div>'
                 day = random.choice(["เวลากลางวัน", "เวลากลางคืน"])
                 q = f"หากเป็น <b>{day}</b> จะอ่านเวลาได้กี่นาฬิกา กี่นาที? {svg}"
-                
                 ans_h = h + 12 if day == "เวลากลางวัน" and 1 <= h <= 5 else (h + 12 if day == "เวลากลางคืน" and 6 <= h <= 11 else (0 if day == "เวลากลางคืน" and h == 12 else h))
-                
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> <br>1. เข็มสั้น(สีแดง) มีเส้นประชี้บอกว่ายังอยู่ระหว่างเลข {h} กับ {h+1 if h<12 else 1} แสดงถึงชั่วโมงที่ {h} <br>2. เข็มยาว(สีน้ำเงิน) ชี้ที่ขีดนาทีที่ {m} (ดูตัวเลขด้านนอกประกอบ)<br>ถ้าเป็น{day} จึงอ่านเวลาได้</span> <b>{ans_h:02d}.{m:02d} น.</b>"
 
-            # 🔴 แก้ไขบั๊กเหรียญ 5 และ 1 บาท พร้อมเพิ่มรูปภาพ
             elif "จำนวนเงิน" in sub_t:
                 b100 = random.randint(0, 3); b50 = random.randint(0, 2); b20 = random.randint(0, 4)
                 c10 = random.randint(0, 5); c5 = random.randint(0, 3); c1 = random.randint(0, 5)
@@ -593,11 +570,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 for _ in range(b50): money_svg += '<svg width="60" height="30" style="vertical-align: middle; margin: 2px;"><rect width="60" height="30" rx="3" fill="#74b9ff" stroke="#2980b9" stroke-width="2"/><text x="30" y="20" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">50</text></svg>'
                 for _ in range(b20): money_svg += '<svg width="60" height="30" style="vertical-align: middle; margin: 2px;"><rect width="60" height="30" rx="3" fill="#55efc4" stroke="#27ae60" stroke-width="2"/><text x="30" y="20" font-size="12" font-weight="bold" fill="#333" text-anchor="middle">20</text></svg>'
                 for _ in range(c10): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="13" fill="#bdc3c7" stroke="#7f8c8d" stroke-width="2"/><circle cx="15" cy="15" r="8" fill="#f1c40f"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">10</text></svg>'
-                
-                # เพิ่มรูปเหรียญ 5 และ 1
                 for _ in range(c5): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="11" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">5</text></svg>'
-                for _ in range(c1): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="9" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1.5"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">1</text></svg>'
-                
+                for _ in range(c1): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r=\"9\" fill=\"#ecf0f1\" stroke=\"#bdc3c7\" stroke-width=\"1.5\"/><text x=\"15\" y=\"19\" font-size=\"10\" font-weight=\"bold\" fill=\"#333\" text-anchor=\"middle\">1</text></svg>'
                 money_svg += "</div>"
                 q = f"จากภาพ มีเงินทั้งหมดกี่บาท? {money_svg}"
                 sol = "<br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>"
@@ -609,11 +583,79 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 if c1 > 0: sol += f"เหรียญ 1 บาท {c1} เหรียญ = {c1*1} บาท<br>"
                 sol += f"นำมาบวกกันทั้งหมดจะได้เงินรวม</span> <b>{total:,} บาท</b>"
 
+            # 🔴 ไฮไลท์การแก้: อัปเกรดเครื่องชั่งสปริง วาดสมจริง มีขีดเล็ก 10 ขีด และสุ่มแบบมีเศษขีด
             elif "เครื่องชั่งสปริง" in sub_t:
-                weight = random.randint(1, 5); angle = -150 + (weight * 60)
-                scale_svg = f"""<br><div style="text-align: center; margin-top: 15px; margin-bottom: 5px;"><svg width="150" height="150"><rect x="25" y="20" width="100" height="110" rx="10" fill="#f1f2f6" stroke="#333" stroke-width="3"/><circle cx="75" cy="75" r="40" fill="#fff" stroke="#333" stroke-width="2"/><text x="75" y="47" font-size="10" font-weight="bold" text-anchor="middle">0</text><text x="105" y="65" font-size="10" font-weight="bold" text-anchor="middle">1</text><text x="100" y="100" font-size="10" font-weight="bold" text-anchor="middle">2</text><text x="75" y="112" font-size="10" font-weight="bold" text-anchor="middle">3</text><text x="50" y="100" font-size="10" font-weight="bold" text-anchor="middle">4</text><text x="45" y="65" font-size="10" font-weight="bold" text-anchor="middle">5</text><line x1="75" y1="75" x2="75" y2="45" stroke="#e74c3c" stroke-width="3" stroke-linecap="round" transform="rotate({angle} 75 75)" /><circle cx="75" cy="75" r="4" fill="#333"/><path d="M 50 20 L 40 5 L 110 5 L 100 20 Z" fill="#bdc3c7" stroke="#333" stroke-width="2"/></svg></div>"""
-                q = f"จากหน้าปัดเครื่องชั่งสปริง สินค้ามีน้ำหนักกี่กิโลกรัม? {scale_svg}"
-                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ดูที่ปลายเข็มสีแดงบนหน้าปัดชี้ตรงกับเลข {weight} พอดี<br>ดังนั้น สินค้ามีน้ำหนัก</span> <b>{weight} กิโลกรัม</b>"
+                kg = random.randint(0, 4)
+                khid = random.randint(0, 9)
+                if kg == 0 and khid == 0: khid = random.randint(1, 9)
+                
+                total_khid = kg * 10 + khid
+                angle_deg = -150 + (total_khid * 6)
+                
+                cx, cy = 100, 120
+                r_dial = 70
+                
+                svg_elements = []
+                # วาดฐานเครื่องชั่งและถาดรอง
+                svg_elements.append('<rect x="25" y="40" width="150" height="150" rx="20" fill="#f1f2f6" stroke="#333" stroke-width="4"/>')
+                svg_elements.append('<path d="M 70 40 L 70 20 L 130 20 L 130 40 Z" fill="#bdc3c7" stroke="#333" stroke-width="3"/>')
+                svg_elements.append('<path d="M 40 20 L 30 5 L 170 5 L 160 20 Z" fill="#ecf0f1" stroke="#333" stroke-width="3"/>')
+                
+                # วาดหน้าปัด
+                svg_elements.append(f'<circle cx="{cx}" cy="{cy}" r="{r_dial}" fill="#fff" stroke="#333" stroke-width="3"/>')
+                
+                # วาดสเกลขีด
+                for k in range(51): # 50 ขีด = 5 กก.
+                    tick_angle = -150 + k * 6
+                    rad = math.radians(tick_angle - 90)
+                    if k % 10 == 0: # ขีดกิโลกรัม
+                        x1 = cx + (r_dial - 15) * math.cos(rad)
+                        y1 = cy + (r_dial - 15) * math.sin(rad)
+                        x2 = cx + r_dial * math.cos(rad)
+                        y2 = cy + r_dial * math.sin(rad)
+                        svg_elements.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#333" stroke-width="3"/>')
+                        tx = cx + (r_dial - 25) * math.cos(rad)
+                        ty = cy + (r_dial - 25) * math.sin(rad) + 6
+                        svg_elements.append(f'<text x="{tx}" y="{ty}" font-size="18" font-weight="bold" fill="#e74c3c" text-anchor="middle">{k//10}</text>')
+                    elif k % 5 == 0: # ขีดครึ่งกิโล (5 ขีด)
+                        x1 = cx + (r_dial - 10) * math.cos(rad)
+                        y1 = cy + (r_dial - 10) * math.sin(rad)
+                        x2 = cx + r_dial * math.cos(rad)
+                        y2 = cy + r_dial * math.sin(rad)
+                        svg_elements.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#333" stroke-width="2"/>')
+                    else: # ขีดเล็ก (1 ขีด = 100 กรัม)
+                        x1 = cx + (r_dial - 5) * math.cos(rad)
+                        y1 = cy + (r_dial - 5) * math.sin(rad)
+                        x2 = cx + r_dial * math.cos(rad)
+                        y2 = cy + r_dial * math.sin(rad)
+                        svg_elements.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#777" stroke-width="1.5"/>')
+                        
+                # วาดเข็มพร้อมเส้นประเล็งเป้า
+                needle_rad = math.radians(angle_deg - 90)
+                nx_dash = cx + r_dial * math.cos(needle_rad)
+                ny_dash = cy + r_dial * math.sin(needle_rad)
+                svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{nx_dash}" y2="{ny_dash}" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.7"/>')
+                
+                nx = cx + (r_dial - 15) * math.cos(needle_rad)
+                ny = cy + (r_dial - 15) * math.sin(needle_rad)
+                svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{nx}" y2="{ny}" stroke="#e74c3c" stroke-width="4" stroke-linecap="round"/>')
+                svg_elements.append(f'<circle cx="{cx}" cy="{cy}" r="6" fill="#333"/>')
+                
+                svg_content = "".join(svg_elements)
+                scale_svg = f'<br><div style="text-align: center; margin: 15px 0;"><svg width="200" height="220" viewBox="0 0 200 220">{svg_content}</svg></div>'
+                
+                q = f"จากหน้าปัดเครื่องชั่งสปริง สินค้ามีน้ำหนักเท่าใด? {scale_svg}"
+                
+                if kg == 0: explain = f"เข็มชี้ไปที่ขีดเล็กที่ {khid} (ยังไม่ถึงเลข 1)"
+                elif khid == 0: explain = f"เข็มชี้ตรงกับเลข {kg} พอดี"
+                else: explain = f"เข็มชี้เลยเลข {kg} มา {khid} ขีดเล็ก"
+                
+                ans_text = ""
+                if kg > 0 and khid > 0: ans_text = f"{kg} กิโลกรัม {khid} ขีด"
+                elif kg > 0 and khid == 0: ans_text = f"{kg} กิโลกรัม"
+                else: ans_text = f"{khid} ขีด"
+                    
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> {explain} (จำไว้ว่าช่องเล็ก 1 ช่อง = 1 ขีด)<br>ดังนั้น สินค้ามีน้ำหนัก</span> <b>{ans_text}</b>"
 
             elif "แผนภูมิรูปภาพ" in sub_t:
                 items = [("🍎 แอปเปิล", "🍎"), ("🍊 ส้ม", "🍊"), ("🍌 กล้วย", "🍌"), ("🍓 องุ่น", "🍓")]
@@ -870,10 +912,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                         ans = w * l
                         sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> พื้นที่สี่เหลี่ยมผืนผ้า = กว้าง × ยาว<br>= {w} × {l}<br>ตอบ:</span> <b>{ans:,} ตารางเซนติเมตร</b>"
 
+            # 🔴 ยืดเส้นขีดมุมองศาของไม้โปรแทรกเตอร์ให้ยาวทะลุตัวเลข
             elif "ไม้โปรแทรกเตอร์" in sub_t:
                 angle = random.randint(15, 165)
                 arm_rad = math.radians(angle)
-                ax = 150 + 120 * math.cos(arm_rad); ay = 140 - 120 * math.sin(arm_rad)
+                
+                # เปลี่ยนจาก 120 เป็น 135 ให้เส้นทะลุตัวเลขชัดเจนขึ้น
+                ax = 150 + 135 * math.cos(arm_rad); ay = 140 - 135 * math.sin(arm_rad)
+                
                 ticks_svg = ""
                 for i in range(0, 181):
                     rad = math.radians(i)
