@@ -130,8 +130,8 @@ def generate_vertical_table_html(a, b, op, result=None, is_key=False):
     else: res_tds = "".join([f'<td style="width: 35px; height: 45px;"></td>' for _ in range(num_len)])
     return f"""<div style="display: block; text-align: center; margin-top: 10px;"><div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 38px; line-height: 1.1; margin: 10px 20px;"><table style="border-collapse: collapse; margin-left: auto; margin-right: auto;"><tr><td style="width: 20px;"></td>{a_tds}<td style="width: 50px; text-align: center; vertical-align: middle;" rowspan="2">{op}</td></tr><tr><td></td>{b_tds}</tr><tr><td></td>{res_tds}<td></td></tr><tr><td></td><td colspan="{num_len}" style="border-bottom: 6px double #000; height: 10px;"></td><td></td></tr></table></div></div>"""
 
-def generate_fraction_html(num, den):
-    return f"""<div style="display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 5px; font-family: 'Sarabun', sans-serif;"><span style="font-size: 20px; font-weight: bold; border-bottom: 2px solid #000; padding: 0 4px; line-height: 1.1;">{num}</span><span style="font-size: 20px; font-weight: bold; padding: 0 4px; line-height: 1.1;">{den}</span></div>"""
+def generate_fraction_html(num, den, color="#000"):
+    return f"""<div style="display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 5px; font-family: 'Sarabun', sans-serif;"><span style="font-size: 20px; font-weight: bold; border-bottom: 2px solid {color}; padding: 0 4px; line-height: 1.1; color: {color};">{num}</span><span style="font-size: 20px; font-weight: bold; padding: 0 4px; line-height: 1.1; color: {color};">{den}</span></div>"""
 
 def generate_mixed_number_html(whole, num, den):
     return f"""<div style="display: inline-flex; align-items: center; vertical-align: middle; margin: 0 5px; font-family: 'Sarabun', sans-serif;"><span style="font-size: 24px; font-weight: bold; margin-right: 4px; color: red;">{whole}</span><div style="display: inline-flex; flex-direction: column; align-items: center;"><span style="font-size: 20px; font-weight: bold; border-bottom: 2px solid red; padding: 0 4px; line-height: 1.1; color: red;">{num}</span><span style="font-size: 20px; font-weight: bold; padding: 0 4px; line-height: 1.1; color: red;">{den}</span></div></div>"""
@@ -658,8 +658,17 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     s1 = generate_fraction_html(f"{n1} × {n2}", f"{d1} × {d2}"); ans_n, ans_d = n1*n2, d1*d2; s2 = generate_fraction_html(ans_n, ans_d)
                     sol = f"<span style='color: #2c3e50;'><b>วิธีทำ:</b> การคูณเศษส่วน ให้นำตัวเศษคูณตัวเศษ และตัวส่วนคูณตัวส่วน</span><br><br><div style='display:flex; align-items:center; margin-bottom: 15px;'>{f1} <span style='margin:0 10px; font-weight: bold;'>×</span> {f2} <span style='margin:0 10px; font-weight: bold;'>=</span> {s1} <span style='margin:0 10px; font-weight: bold;'>=</span> {s2}</div>"
                 else:
-                    f2_flip = generate_fraction_html(d2, n2); s1 = generate_fraction_html(f"{n1} × {d2}", f"{d1} × {n2}"); ans_n, ans_d = n1*d2, d1*n2; s2 = generate_fraction_html(ans_n, ans_d)
-                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำ:</b> เปลี่ยนเครื่องหมายหารเป็นคูณ แล้วกลับเศษเป็นส่วนของตัวหารด้านหลัง</span><br><br><div style='display:flex; align-items:center; margin-bottom: 15px;'>{f1} <span style='margin:0 10px; font-weight: bold;'>÷</span> {f2} <span style='margin:0 10px; font-weight: bold;'>=</span> {f1} <span style='margin:0 10px; font-weight: bold;'>×</span> {f2_flip} <span style='margin:0 10px; font-weight: bold;'>=</span> {s1} <span style='margin:0 10px; font-weight: bold;'>=</span> {s2}</div>"
+                    # สร้างลูกศรสีแดง และทำส่วนกลับให้เป็นสีแดง (สำหรับอธิบายการหารเศษส่วน)
+                    f2_flip_red = generate_fraction_html(d2, n2, color="#e74c3c")
+                    arrow_svg = """<svg width="25" height="40" style="position: absolute; left: -18px; top: 6px; overflow: visible;">
+                        <path d="M 15,35 Q -5,20 15,5" fill="none" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round"/>
+                        <polygon points="16,3 7,3 12,11" fill="#e74c3c" transform="rotate(20 15 5)"/>
+                        <polygon points="16,37 7,37 12,29" fill="#e74c3c" transform="rotate(-20 15 35)"/>
+                    </svg>"""
+                    f2_with_arrow = f"<div style='position: relative; display: inline-flex;'>{arrow_svg}{f2}</div>"
+                    
+                    s1 = generate_fraction_html(f"{n1} × {d2}", f"{d1} × {n2}"); ans_n, ans_d = n1*d2, d1*n2; s2 = generate_fraction_html(ans_n, ans_d)
+                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำ:</b> เปลี่ยนเครื่องหมายหารเป็นคูณ แล้วกลับเศษเป็นส่วนของตัวหารด้านหลัง</span><br><br><div style='display:flex; align-items:center; margin-bottom: 15px; margin-left: 15px;'>{f1} <span style='margin:0 10px; font-weight: bold;'>÷</span> {f2_with_arrow} <span style='margin:0 10px; font-weight: bold;'>=</span> {f1} <span style='margin:0 10px; font-weight: bold;'>×</span> {f2_flip_red} <span style='margin:0 10px; font-weight: bold;'>=</span> {s1} <span style='margin:0 10px; font-weight: bold;'>=</span> {s2}</div>"
                 extra_txt, final_html = get_fraction_solution_steps(ans_n, ans_d)
                 if extra_txt: sol += f"<span style='color: #2c3e50;'><i>*{extra_txt}:</i></span><br><br>{final_html}"
 
