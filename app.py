@@ -717,14 +717,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> นับรูปผลไม้ทั้งหมดรวมกันได้ {sum(counts)} รูปภาพ<br>และกำหนดให้ 1 รูปภาพ แทนผลไม้ {multiplier} ผล<br>นำ {sum(counts)} × {multiplier} =</span> <b>{sum(counts) * multiplier} ผล</b>"
 
             # --- หมวดการนับ เรียงลำดับ เปรียบเทียบ ---
-            # 🔴 แก้ไขให้การนับสำหรับ ป.1 ตัวเลขไม่เกิน 100
             elif "การนับทีละ" in sub_t:
                 is_10 = "10" in sub_t; is_1 = "1" in sub_t; is_2 = "2" in sub_t
                 step = 10 if is_10 else (1 if is_1 else random.choice([2, 5, 10, 100]))
                 inc = random.choice([True, False])
                 
+                # แก้ไข ป.1 ให้สุ่มไม่เกิน 100
                 max_val = limit - (3 * step)
-                if max_val <= 1: max_val = 10 # ป้องกัน Error กรณี limit ต่ำไป
+                if max_val <= 1: max_val = 10
                 st_val = random.randint(1, max_val)
                 
                 seq = [st_val, st_val+step, st_val+2*step, st_val+3*step] if inc else [st_val+3*step, st_val+2*step, st_val+step, st_val]
@@ -752,7 +752,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 comp_text = "มีค่าเท่ากับ" if a==b else ("มากกว่า" if a>b else "น้อยกว่า")
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เปรียบเทียบค่าทีละหลักจากซ้ายไปขวา จะพบว่า {a:,} {comp_text} {b:,}<br>ตอบ: </span> <b>{sign}</b>"
 
-            # 🔴 แก้ไขให้สุ่มรูปกระจายไม่เกิน limit ของ ป.1
             elif "รูปกระจาย" in sub_t:
                 min_val = 10 if limit <= 1000 else 100
                 max_val = limit - 1 if limit > 10 else 99
@@ -767,15 +766,24 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 is_even = (n % 2 == 0)
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ดูที่หลักหน่วยคือเลข {n%10} ซึ่ง{'หารด้วย 2 ลงตัว' if is_even else 'หารด้วย 2 ไม่ลงตัว'}<br>ดังนั้นจึงเป็น</span> <b>{'จำนวนคู่' if is_even else 'จำนวนคี่'}</b>"
 
+            # 🔴 ไฮไลท์: อัปเกรดให้ ป.1 - ป.3 สุ่มทั้งแบบแปลงเป็นตัวเลขไทย และ แปลงเป็นตัวหนังสือ
             elif "เขียนตัวเลข" in sub_t:
                 if grade in ["ป.1", "ป.2", "ป.3"]:
                     n = random.randint(11, limit-1)
-                    q = f"จงเขียนตัวเลขฮินดูอารบิก <b>{n:,}</b> ให้เป็นตัวเลขไทย"
-                    sol = f"<b>{n:,}</b>".translate(str.maketrans('0123456789', '๐๑๒๓๔๕๖๗๘๙'))
+                    if random.choice([True, False]):
+                        q = f"จงเขียนตัวเลขฮินดูอารบิก <b>{n:,}</b> ให้เป็น<b>ตัวเลขไทย</b>"
+                        sol = f"<b>{n:,}</b>".translate(str.maketrans('0123456789', '๐๑๒๓๔๕๖๗๘๙'))
+                    else:
+                        q = f"จงเขียนตัวเลขฮินดูอารบิก <b>{n:,}</b> ให้เป็น<b>ตัวหนังสือ</b>"
+                        sol = f"<b>{generate_thai_number_text(str(n))}</b>"
                 else:
-                    n = random.randint(100000, 9999999)
-                    q = f"จงเขียนตัวเลข <b>{n:,}</b> ให้เป็นตัวหนังสือภาษาไทย"
-                    sol = f"<b>{generate_thai_number_text(str(n))}</b>"
+                    n = random.randint(100000, limit-1) if limit > 100000 else random.randint(100000, 9999999)
+                    if random.choice([True, False]):
+                        q = f"จงเขียนตัวเลขฮินดูอารบิก <b>{n:,}</b> ให้เป็น<b>ตัวเลขไทย</b>"
+                        sol = f"<b>{n:,}</b>".translate(str.maketrans('0123456789', '๐๑๒๓๔๕๖๗๘๙'))
+                    else:
+                        q = f"จงเขียนตัวเลข <b>{n:,}</b> ให้เป็น<b>ตัวหนังสือ</b>"
+                        sol = f"<b>{generate_thai_number_text(str(n))}</b>"
 
             # --- หมวดประถมปลาย (ทศนิยม เศษส่วน สมการ เรขาคณิต) ---
             elif "ค่าประมาณ" in sub_t:
