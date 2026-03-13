@@ -182,6 +182,23 @@ def generate_fraction_html(num, den):
     """
 
 # ==========================================
+# 🟢 ฟังก์ชันช่วย 2.1: ทอนเป็นเศษส่วนอย่างต่ำ / จำนวนคละ (สำหรับเฉลย)
+# ==========================================
+def simplify_fraction(num, den):
+    if num == 0: return "0"
+    if num == den: return "1"
+    g = math.gcd(num, den)
+    s_num = num // g
+    s_den = den // g
+    if s_den == 1:
+        return str(s_num)
+    if s_num > s_den:
+        whole = s_num // s_den
+        rem = s_num % s_den
+        return f"{whole} เศษ {rem} ส่วน {s_den}"
+    return f"เศษ {s_num} ส่วน {s_den}"
+
+# ==========================================
 # 🟢 ฟังก์ชันช่วย 3: แปลงตัวเลขเป็นคำอ่านภาษาไทย
 # ==========================================
 def generate_thai_number_text(num_str):
@@ -302,7 +319,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 for _ in range(b20): money_svg += '<svg width="60" height="30" style="vertical-align: middle; margin: 2px;"><rect width="60" height="30" rx="3" fill="#55efc4" stroke="#27ae60" stroke-width="2"/><text x="30" y="20" font-size="12" font-weight="bold" fill="#333" text-anchor="middle">20</text></svg>'
                 for _ in range(c10): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="13" fill="#bdc3c7" stroke="#7f8c8d" stroke-width="2"/><circle cx="15" cy="15" r="8" fill="#f1c40f"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">10</text></svg>'
                 money_svg += "</div>"
-                q = f"จากภาพ มีเงินทั้งหมดกี่บาท? {money_svg}"; sol = f"{total} บาท"
+                q = f"จากภาพ มีเงินทั้งหมดกี่บาท? {money_svg}"; sol = f"{total:,} บาท"
 
             elif "เครื่องชั่งสปริง" in sub_t:
                 weight = random.randint(1, 5); angle = -150 + (weight * 60)
@@ -323,21 +340,21 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             elif "การนับทีละ 10" in sub_t:
                 inc = random.choice([True, False]); st_val = random.randint(10, 60)
                 seq = [st_val, st_val+10, st_val+20, st_val+30] if inc else [st_val+30, st_val+20, st_val+10, st_val]
-                idx = random.randint(0, 3); sol = str(seq[idx])
-                q = f"จงเติมตัวเลขที่หายไปในแบบรูปที่{'นับเพิ่ม' if inc else 'นับลด'}ทีละ 10 : {', '.join([str(s) if i != idx else '_____' for i, s in enumerate(seq)])}"
+                idx = random.randint(0, 3); sol = f"{seq[idx]:,}"
+                q = f"จงเติมตัวเลขที่หายไปในแบบรูปที่{'นับเพิ่ม' if inc else 'นับลด'}ทีละ 10 : {', '.join([f'{s:,}' if i != idx else '_____' for i, s in enumerate(seq)])}"
 
             elif "การนับทีละ 1" in sub_t:
                 inc = random.choice([True, False]); st_val = random.randint(10, 95)
                 seq = [st_val, st_val+1, st_val+2, st_val+3] if inc else [st_val+3, st_val+2, st_val+1, st_val]
-                idx = random.randint(0, 3); sol = str(seq[idx])
-                q = f"จงเติมตัวเลขที่หายไปในแบบรูป : {', '.join([str(s) if i != idx else '_____' for i, s in enumerate(seq)])}"
+                idx = random.randint(0, 3); sol = f"{seq[idx]:,}"
+                q = f"จงเติมตัวเลขที่หายไปในแบบรูป : {', '.join([f'{s:,}' if i != idx else '_____' for i, s in enumerate(seq)])}"
 
             elif "การนับทีละ 2" in sub_t:
                 step = random.choice([2, 5, 10, 100]); inc = random.choice([True, False])
                 st_val = random.randint(10, 500)
                 seq = [st_val, st_val+step, st_val+2*step, st_val+3*step] if inc else [st_val+3*step, st_val+2*step, st_val+step, st_val]
-                idx = random.randint(0, 3); sol = str(seq[idx])
-                q = f"จงเติมตัวเลขที่หายไปในแบบรูป : {', '.join([str(s) if i != idx else '_____' for i, s in enumerate(seq)])}"
+                idx = random.randint(0, 3); sol = f"{seq[idx]:,}"
+                q = f"จงเติมตัวเลขที่หายไปในแบบรูป : {', '.join([f'{s:,}' if i != idx else '_____' for i, s in enumerate(seq)])}"
 
             elif "เปรียบเทียบจำนวน (> <)" in sub_t:
                 a = random.randint(10, limit); b = random.randint(10, limit)
@@ -357,7 +374,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
 
             elif "รูปกระจาย" in sub_t:
                 n = random.randint(100, limit-1)
-                parts = [str(int(d)*(10**(len(str(n))-1-i))) for i,d in enumerate(str(n)) if d != '0']
+                parts = [f"{int(d)*(10**(len(str(n))-1-i)):,}" for i,d in enumerate(str(n)) if d != '0']
                 q = f"จงเขียน <b>{n:,}</b> ในรูปกระจาย"; sol = " + ".join(parts)
                 
             elif "จำนวนคู่" in sub_t:
@@ -367,8 +384,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             elif "เขียนตัวเลข" in sub_t:
                 if grade in ["ป.1", "ป.2", "ป.3"]:
                     n = random.randint(11, limit-1)
-                    q = f"จงเขียนตัวเลขฮินดูอารบิก <b>{n}</b> ให้เป็นตัวเลขไทย"
-                    sol = str(n).translate(str.maketrans('0123456789', '๐๑๒๓๔๕๖๗๘๙'))
+                    q = f"จงเขียนตัวเลขฮินดูอารบิก <b>{n:,}</b> ให้เป็นตัวเลขไทย"
+                    sol = f"{n:,}".translate(str.maketrans('0123456789', '๐๑๒๓๔๕๖๗๘๙'))
                 else:
                     n = random.randint(100000, 9999999)
                     q = f"จงเขียนตัวเลข <b>{n:,}</b> ให้เป็นตัวหนังสือภาษาไทย"
@@ -377,7 +394,13 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             # --- หมวดประถมปลาย (ทศนิยม เศษส่วน สมการ เรขาคณิต) ---
             elif "ค่าประมาณ" in sub_t:
                 n = random.randint(1111, 99999); ptype = random.choice(["เต็มสิบ", "เต็มร้อย", "เต็มพัน"])
-                ans = round(n, -1) if ptype == "เต็มสิบ" else (round(n, -2) if ptype == "เต็มร้อย" else round(n, -3))
+                # ใช้คณิตศาสตร์ปัดเศษแท้ (บวกครึ่งหนึ่งของหลักแล้วหารปัดเศษทิ้ง แล้วคูณกลับ)
+                if ptype == "เต็มสิบ":
+                    ans = ((n + 5) // 10) * 10
+                elif ptype == "เต็มร้อย":
+                    ans = ((n + 50) // 100) * 100
+                else:
+                    ans = ((n + 500) // 1000) * 1000
                 q = f"จงหาค่าประมาณเป็นจำนวน<b>{ptype}</b> ของ {n:,}"; sol = f"{ans:,}"
 
             elif "หารยาว" in sub_t:
@@ -391,7 +414,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     num = random.randint(den + 1, den * 5)
                 frac_html = generate_fraction_html(num, den)
                 q = f"จงเขียนเศษเกินต่อไปนี้ให้อยู่ในรูปจำนวนคละ : {frac_html}"
-                sol = f"{num // den} เศษ {num % den} ส่วน {den}"
+                sol = simplify_fraction(num, den)
                 
             elif "อ่านและเขียนเศษส่วน" in sub_t:
                 den = random.randint(3, 12); num = random.randint(1, den - 1)
@@ -401,13 +424,13 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
 
             elif "บวกลบเศษส่วน" in sub_t or "บวกและการลบเศษส่วน" in sub_t:
                 den = random.randint(5, 15); num1 = random.randint(1, den-1); num2 = random.randint(1, den-1)
-                op = "+" if num1 + num2 < den * 2 else "-"
-                if op == "-" and num1 < num2: num1, num2 = num2, num1
+                op = random.choice(["+", "-"])
+                if op == "-" and num1 < num2: num1, num2 = num2, num1 # สลับให้ตัวตั้งมากกว่าเสมอ
                 ans_num = num1 + num2 if op == "+" else num1 - num2
                 f1 = generate_fraction_html(num1, den)
                 f2 = generate_fraction_html(num2, den)
                 q = f"จงหาผลลัพธ์ของ : {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= ?</span>"
-                sol = f"เศษ {ans_num} ส่วน {den}"
+                sol = simplify_fraction(ans_num, den) # ทำเป็นเศษส่วนอย่างต่ำ/จำนวนคละ
 
             elif "คูณและการหารเศษส่วน" in sub_t:
                 n1, d1 = random.randint(1, 5), random.randint(2, 7)
@@ -418,7 +441,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงหาผลลัพธ์ของ : {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= ?</span>"
                 ans_n = n1 * n2 if op == "×" else n1 * d2
                 ans_d = d1 * d2 if op == "×" else d1 * n2
-                sol = f"เศษ {ans_n} ส่วน {ans_d}"
+                sol = simplify_fraction(ans_n, ans_d) # ทำเป็นเศษส่วนอย่างต่ำ/จำนวนคละ
 
             elif "ทศนิยม" in sub_t and "อ่าน" in sub_t:
                 n = round(random.uniform(0.1, 99.999), random.randint(1, 3))
@@ -428,11 +451,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             elif "ทศนิยม" in sub_t and ("บวก" in sub_t or "ลบ" in sub_t):
                 a = round(random.uniform(10.0, 99.9), 2); b = round(random.uniform(1.0, 9.9), 2)
                 op = random.choice(["+", "-"]); q = f"จงหาผลลัพธ์ : <b>{a} {op} {b} = ?</b>"
-                sol = f"{round(a+b, 2) if op=='+' else round(a-b, 2)}"
+                sol = f"{round(a+b, 2) if op=='+' else round(a-b, 2):,}"
 
             elif "คูณทศนิยม" in sub_t:
                 a = round(random.uniform(1.0, 12.0), 1); b = random.randint(2, 9)
-                q = f"จงหาผลลัพธ์ : <b>{a} × {b} = ?</b>"; sol = f"{round(a*b, 1)}"
+                q = f"จงหาผลลัพธ์ : <b>{a} × {b} = ?</b>"; sol = f"{round(a*b, 1):,}"
 
             elif "ร้อยละ" in sub_t and "เศษส่วน" in sub_t:
                 den = random.choice([2, 4, 5, 10, 20, 25, 50]); num = random.randint(1, den-1)
@@ -445,21 +468,22 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 price = random.choice([100, 200, 500, 1000, 1500])
                 percent = random.choice([10, 15, 20, 25, 50])
                 discount = int(price * (percent / 100))
-                q = f"เสื้อราคา {price} บาท ร้านค้าลดราคาให้ {percent}% ร้านค้าลดราคาให้กี่บาท?"; sol = f"{discount} บาท"
+                q = f"เสื้อราคา {price:,} บาท ร้านค้าลดราคาให้ {percent}% ร้านค้าลดราคาให้กี่บาท?"; sol = f"{discount:,} บาท"
 
             elif "ห.ร.ม." in sub_t:
                 a = random.randint(12, 48); b = random.randint(12, 48)
+                while a == b: b = random.randint(12, 48) # ดักไม่ให้สุ่มเลขซ้ำ
                 q = f"จงหา ห.ร.ม. ของ <b>{a}</b> และ <b>{b}</b>"; sol = str(math.gcd(a, b))
 
             elif "ค.ร.น." in sub_t:
                 a = random.randint(4, 24); b = random.randint(4, 24)
+                while a == b: b = random.randint(4, 24) # ดักไม่ให้สุ่มเลขซ้ำ
                 q = f"จงหา ค.ร.น. ของ <b>{a}</b> และ <b>{b}</b>"; sol = str((a * b) // math.gcd(a, b))
 
             elif "สมการ" in sub_t:
                 x = random.randint(5, 50); a = random.randint(1, 20); b = x + a
                 q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x + {a} = {b}</b>"; sol = f"x = {x}"
 
-            # 🟢 อัปเกรด: วาดไม้โปรแทรกเตอร์ จัดเรียง Layer ใหม่ ให้เส้นสีแดงอยู่ใต้สเกล
             elif "ไม้โปรแทรกเตอร์" in sub_t:
                 angle = random.randint(15, 165)
                 arm_rad = math.radians(angle)
@@ -494,7 +518,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 arc_y = 140 - arc_r * math.sin(arm_rad)
                 angle_arc = f'<path d="M 180 140 A 30 30 0 0 0 {arc_x} {arc_y}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
 
-                # วาดพื้นหลังสีขาว -> วาดเส้นมุมสีแดงแบบบาง -> วาดส่วนโค้งมุม -> วาดสเกลสีดำทับด้านบนสุด
                 svg = f"""<br><div style="text-align: center;"><svg width="300" height="160"><path d="M 30 140 A 120 120 0 0 1 270 140" fill="#fdfdfd" stroke="#333" stroke-width="2"/><line x1="150" y1="140" x2="270" y2="140" stroke="#3498db" stroke-width="2"/><line x1="150" y1="140" x2="{ax}" y2="{ay}" stroke="#e74c3c" stroke-width="1.5"/>{angle_arc}<line x1="30" y1="140" x2="270" y2="140" stroke="#333" stroke-width="2"/>{ticks_svg}<circle cx="150" cy="140" r="4" fill="#e74c3c"/></svg></div>"""
                 
                 q = f"มุมที่แสดงบนไม้โปรแทรกเตอร์มีขนาดกี่องศา? {svg}"
