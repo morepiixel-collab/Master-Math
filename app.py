@@ -747,28 +747,59 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x + {a} = {b}</b>"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ย้ายข้างตัวเลขเพื่อหาค่าตัวแปร (จากบวกย้ายไปลบ)<br>x = {b} - {a}<br>ตอบ:</span> <b>x = {x}</b>"
 
-            # 🔴 เพิ่มหัวข้อย่อยใหม่: ชนิดของมุม
+            # 🔴 หัวข้อย่อย: ชนิดของมุม (พร้อมกราฟิก SVG อัตโนมัติ)
             elif "ชนิดของมุม" in sub_t:
                 angle = random.choice([30, 45, 60, 90, 120, 135, 150, 180, 210, 270, 300])
-                q = f"มุมที่มีขนาด <b>{angle} องศา</b> เรียกว่ามุมชนิดใด?"
+                
+                # สร้างรูปภาพ SVG
+                rad = math.radians(angle)
+                cx, cy = 100, 100
+                r_line, r_arc = 70, 25
+                line1 = f'<line x1="{cx}" y1="{cy}" x2="{cx+r_line}" y2="{cy}" stroke="#333" stroke-width="3" stroke-linecap="round"/>'
+                
+                end_x = cx + r_line * math.cos(rad)
+                end_y = cy - r_line * math.sin(rad)
+                line2 = f'<line x1="{cx}" y1="{cy}" x2="{end_x}" y2="{end_y}" stroke="#3498db" stroke-width="3" stroke-linecap="round"/>'
+                
+                if angle == 90:
+                    arc_svg = f'<polyline points="{cx+15},{cy} {cx+15},{cy-15} {cx},{cy-15}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
+                elif angle == 180:
+                    arc_svg = f'<path d="M {cx+r_arc} {cy} A {r_arc} {r_arc} 0 0 0 {cx-r_arc} {cy}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
+                else:
+                    large_arc = 1 if angle > 180 else 0
+                    arc_end_x = cx + r_arc * math.cos(rad)
+                    arc_end_y = cy - r_arc * math.sin(rad)
+                    arc_svg = f'<path d="M {cx+r_arc} {cy} A {r_arc} {r_arc} 0 {large_arc} 0 {arc_end_x} {arc_end_y}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
+                
+                text_r = r_arc + 15
+                text_rad = math.radians(angle / 2)
+                text_x = cx + text_r * math.cos(text_rad)
+                text_y = cy - text_r * math.sin(text_rad)
+                angle_text = f'<text x="{text_x}" y="{text_y+5}" font-size="14" font-weight="bold" fill="#e74c3c" text-anchor="middle">{angle}°</text>'
+                
+                dot = f'<circle cx="{cx}" cy="{cy}" r="4" fill="#333"/>'
+                svg = f'<div style="text-align: center; margin: 15px 0;"><svg width="150" height="150" viewBox="20 20 160 160">{line1}{line2}{arc_svg}{angle_text}{dot}</svg></div>'
+
+                q = f"จากรูปภาพ มุมที่มีขนาด <b>{angle} องศา</b> เรียกว่ามุมชนิดใด? {svg}"
+                
                 if angle < 90:
                     ans_type = "มุมแหลม"
-                    explain = f"เพราะมีขนาดมากกว่า 0 องศา แต่น้อยกว่า 90 องศา"
+                    explain = "เพราะมีขนาดมากกว่า 0 องศา แต่น้อยกว่า 90 องศา (แคบกว่ามุมฉาก)"
                 elif angle == 90:
                     ans_type = "มุมฉาก"
-                    explain = f"เพราะมีขนาดเท่ากับ 90 องศาพอดี"
+                    explain = "เพราะมีขนาดเท่ากับ 90 องศาพอดี (ตั้งฉาก)"
                 elif angle < 180:
                     ans_type = "มุมป้าน"
-                    explain = f"เพราะมีขนาดมากกว่า 90 องศา แต่น้อยกว่า 180 องศา"
+                    explain = "เพราะมีขนาดมากกว่า 90 องศา แต่น้อยกว่า 180 องศา (กว้างกว่ามุมฉาก แต่ไม่ถึงเส้นตรง)"
                 elif angle == 180:
                     ans_type = "มุมตรง"
-                    explain = f"เพราะมีขนาดเท่ากับ 180 องศาพอดี"
+                    explain = "เพราะมีขนาดเท่ากับ 180 องศาพอดี (เป็นเส้นตรง)"
                 else:
                     ans_type = "มุมกลับ"
-                    explain = f"เพราะมีขนาดมากกว่า 180 องศา แต่น้อยกว่า 360 องศา"
+                    explain = "เพราะมีขนาดมากกว่า 180 องศา แต่น้อยกว่า 360 องศา (มุมโค้งกลับด้านหลัง)"
+                    
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> {explain}<br>ตอบ:</span> <b>{ans_type}</b>"
 
-            # 🔴 เพิ่มหัวข้อย่อยใหม่: ความยาวรอบรูปสี่เหลี่ยม
             elif "ความยาวรอบรูป" in sub_t:
                 is_square = random.choice([True, False])
                 if is_square:
@@ -783,7 +814,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     ans = 2 * (w + l)
                     sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ความยาวรอบรูปสี่เหลี่ยมผืนผ้า = 2 × (กว้าง + ยาว)<br>= 2 × ({w} + {l})<br>= 2 × {w+l}<br>ตอบ:</span> <b>{ans} เซนติเมตร</b>"
 
-            # 🔴 เพิ่มหัวข้อย่อยใหม่: พื้นที่สี่เหลี่ยม
             elif "พื้นที่" in sub_t and "สี่เหลี่ยม" in sub_t:
                 is_square = random.choice([True, False])
                 if is_square:
