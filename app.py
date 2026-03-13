@@ -138,13 +138,14 @@ def generate_mixed_number_html(whole, num, den):
 
 def get_fraction_solution_steps(num, den):
     g = math.gcd(num, den)
-    if num == 0: return "", "<span style='font-size: 24px; font-weight: bold; color: red;'>0</span>"
-    if num == den: return "", "<span style='font-size: 24px; font-weight: bold; color: red;'>1</span>"
+    if num == 0: return "เศษส่วนที่มีตัวเศษเป็น 0 จะมีค่าเท่ากับ 0 เสมอ", "<span style='font-size: 24px; font-weight: bold; color: red;'>0</span>"
+    if num == den: return "เศษส่วนที่มีตัวเศษและตัวส่วนเท่ากัน (หารกันลงตัวพอดี) จะมีค่าเท่ากับ 1 เสมอ", "<span style='font-size: 24px; font-weight: bold; color: red;'>1</span>"
+    
     sim_num, sim_den = num // g, den // g
     extra_steps, final_html = "", ""
     if sim_den == 1:
         final_html = f"<span style='font-size: 24px; font-weight: bold; color: red;'>{sim_num}</span>"
-        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำโดยใช้แม่ {g} หารเศษและส่วน จะได้เป็นจำนวนเต็ม"
+        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำ (ใช้แม่ {g} หารทั้งเศษและส่วน) จะได้ผลลัพธ์เป็นจำนวนเต็ม"
     elif sim_num > sim_den:
         w, r = sim_num // sim_den, sim_num % sim_den
         final_html = generate_mixed_number_html(w, r, sim_den)
@@ -658,7 +659,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     s1 = generate_fraction_html(f"{n1} × {n2}", f"{d1} × {d2}"); ans_n, ans_d = n1*n2, d1*d2; s2 = generate_fraction_html(ans_n, ans_d)
                     sol = f"<span style='color: #2c3e50;'><b>วิธีทำ:</b> การคูณเศษส่วน ให้นำตัวเศษคูณตัวเศษ และตัวส่วนคูณตัวส่วน</span><br><br><div style='display:flex; align-items:center; margin-bottom: 15px;'>{f1} <span style='margin:0 10px; font-weight: bold;'>×</span> {f2} <span style='margin:0 10px; font-weight: bold;'>=</span> {s1} <span style='margin:0 10px; font-weight: bold;'>=</span> {s2}</div>"
                 else:
-                    # สร้างลูกศรสีแดง และทำส่วนกลับให้เป็นสีเขียว (สำหรับอธิบายการหารเศษส่วน)
                     f2_flip_green = generate_fraction_html(d2, n2, color="#27ae60")
                     arrow_svg = """<svg width="20" height="40" style="margin-right: 4px; overflow: visible;">
                         <path d="M 16,34 Q 2,20 16,6" fill="none" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round"/>
