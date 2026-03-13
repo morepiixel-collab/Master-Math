@@ -558,6 +558,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = sentence + generate_vertical_table_html(a, b, '-', is_key=False)
                 sol = sentence + generate_vertical_table_html(a, b, '-', result=res, is_key=True)
 
+            # 🔴 ไฮไลท์แก้ไขบั๊ก: เพิ่มเงื่อนไข "การหารพื้นฐาน" ให้ถูกต้อง
+            elif "การหารพื้นฐาน" in sub_t:
+                a = random.randint(2, 9)
+                b = random.randint(2, 12)
+                dividend = a * b
+                q = f"<div style='font-size: 20px; font-weight: bold; margin-bottom: 10px; color: #2c3e50;'>ประโยคสัญลักษณ์: {dividend} ÷ {a} = {box_html}</div>จงหาผลลัพธ์ของ <b>{dividend} ÷ {a}</b>"
+                sol = f"<div style='font-size: 20px; font-weight: bold; margin-bottom: 10px; color: #2c3e50;'>ประโยคสัญลักษณ์: {dividend} ÷ {a} = {box_html}</div><br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ท่องสูตรคูณแม่ {a} จะพบว่า {a} × {b} = {dividend}<br>ดังนั้น {dividend} ÷ {a} = </span> <b>{b}</b>"
+
             # --- หมวดกราฟิก ป.1-ป.3 ---
             elif "ส่วนย่อย-ส่วนรวม" in sub_t:
                 total = random.randint(5, 20); p1 = random.randint(1, total - 1); p2 = total - p1
@@ -721,12 +729,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 is_10 = "10" in sub_t; is_1 = "1" in sub_t; is_2 = "2" in sub_t
                 step = 10 if is_10 else (1 if is_1 else random.choice([2, 5, 10, 100]))
                 inc = random.choice([True, False])
-                
-                # แก้ไข ป.1 ให้สุ่มไม่เกิน 100
                 max_val = limit - (3 * step)
                 if max_val <= 1: max_val = 10
                 st_val = random.randint(1, max_val)
-                
                 seq = [st_val, st_val+step, st_val+2*step, st_val+3*step] if inc else [st_val+3*step, st_val+2*step, st_val+step, st_val]
                 idx = random.randint(0, 3)
                 ans_str = f"{seq[idx]:,}"
@@ -766,7 +771,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 is_even = (n % 2 == 0)
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ดูที่หลักหน่วยคือเลข {n%10} ซึ่ง{'หารด้วย 2 ลงตัว' if is_even else 'หารด้วย 2 ไม่ลงตัว'}<br>ดังนั้นจึงเป็น</span> <b>{'จำนวนคู่' if is_even else 'จำนวนคี่'}</b>"
 
-            # 🔴 ไฮไลท์: อัปเกรดให้ ป.1 - ป.3 สุ่มทั้งแบบแปลงเป็นตัวเลขไทย และ แปลงเป็นตัวหนังสือ
             elif "เขียนตัวเลข" in sub_t:
                 if grade in ["ป.1", "ป.2", "ป.3"]:
                     n = random.randint(11, limit-1)
@@ -1061,7 +1065,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 svg = f"""<br><div style="text-align: center;"><svg width="300" height="160"><path d="M 30 140 A 120 120 0 0 1 270 140" fill="#fdfdfd" stroke="#333" stroke-width="2"/><line x1="150" y1="140" x2="270" y2="140" stroke="#3498db" stroke-width="2"/><line x1="150" y1="140" x2="{ax}" y2="{ay}" stroke="#e74c3c" stroke-width="1.5"/>{angle_arc}<line x1="30" y1="140" x2="270" y2="140" stroke="#333" stroke-width="2"/>{ticks_svg}<circle cx="150" cy="140" r="4" fill="#e74c3c"/></svg></div>"""
                 q = f"มุมที่แสดงบนไม้โปรแทรกเตอร์มีขนาดกี่องศา? {svg}"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตเส้นสีแดงชี้ตรงกับตัวเลขสเกลด้านในที่เลข {angle} พอดี<br>ตอบ:</span> <b>{angle} องศา</b>"
-                
+
             else:
                 a, b = random.randint(10, 50), random.randint(10, 50)
                 q = f"จงหาผลลัพธ์ <br><div style='font-size: 20px; font-weight: bold; margin-top: 5px; color: #2c3e50;'>ประโยคสัญลักษณ์: {a} + {b} = {box_html}</div>"
