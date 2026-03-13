@@ -136,6 +136,8 @@ curriculum_db = {
             "การหา ค.ร.น."
         ],
         "อัตราส่วนและร้อยละ": [
+            "การหาอัตราส่วนที่เท่ากัน",   # 🟢 เพิ่มใหม่
+            "โจทย์ปัญหาอัตราส่วน",         # 🟢 เพิ่มใหม่
             "โจทย์ปัญหาร้อยละ"
         ],
         "สมการ": [
@@ -788,7 +790,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                         q = f"จงเขียนตัวเลข <b>{n:,}</b> ให้เป็น<b>ตัวหนังสือ</b>"
                         sol = f"<b>{generate_thai_number_text(str(n))}</b>"
 
-            # --- หมวดประถมปลาย (ทศนิยม เศษส่วน สมการ เรขาคณิต) ---
+            # --- หมวดประถมปลาย (ทศนิยม เศษส่วน สมการ เรขาคณิต อัตราส่วน) ---
             elif "ค่าประมาณ" in sub_t:
                 n = random.randint(1111, 99999); ptype = random.choice(["เต็มสิบ", "เต็มร้อย", "เต็มพัน"])
                 if ptype == "เต็มสิบ":
@@ -834,57 +836,45 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงอ่านและเขียนเศษส่วนที่ระบายสีจากรูปภาพต่อไปนี้ : {svg_bar}"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> แบ่งรูปออกเป็น <b>{den}</b> ส่วนเท่าๆ กัน และระบายสีไป <b>{num}</b> ส่วน</span><br><div style='display: flex; align-items: center; margin-top: 10px;'><b>เขียนเป็นเศษส่วนได้: </b> {frac_html} <span style='margin-left: 20px;'><b>อ่านว่า: </b> เศษ {num} ส่วน {den}</span></div>"
 
-            # 🔴 ไฮไลต์แก้ไขลอจิก: แยกระหว่าง ป.3 (ส่วนเท่ากัน) และ ป.5 (ส่วนไม่เท่ากัน)
             elif "บวกลบเศษส่วน" in sub_t or "บวกและการลบเศษส่วน" in sub_t:
                 if grade == "ป.5":
                     # --- สำหรับ ป.5: ตัวส่วนไม่เท่ากัน ---
                     d1 = random.randint(2, 10); d2 = random.randint(2, 10)
-                    while d1 == d2: d2 = random.randint(2, 10) # บังคับให้ส่วนไม่เท่ากัน
+                    while d1 == d2: d2 = random.randint(2, 10) 
                     n1 = random.randint(1, d1 - 1); n2 = random.randint(1, d2 - 1)
                     op = random.choice(["+", "-"])
                     
-                    # ถ้าเป็นการลบ ต้องสลับให้ตัวตั้งมากกว่าตัวลบเสมอ (ป้องกันผลลัพธ์ติดลบ)
                     if op == "-" and (n1/d1) < (n2/d2):
                         n1, n2 = n2, n1
                         d1, d2 = d2, d1
                         
-                    # หา ค.ร.น. แบบง่ายๆ เพื่อทำตัวส่วนให้เท่ากัน
                     lcm_d = (d1 * d2) // math.gcd(d1, d2)
                     m1 = lcm_d // d1; m2 = lcm_d // d2
-                    
                     ans_num = (n1 * m1) + (n2 * m2) if op == "+" else (n1 * m1) - (n2 * m2)
                     
-                    f1 = generate_fraction_html(n1, d1)
-                    f2 = generate_fraction_html(n2, d2)
+                    f1 = generate_fraction_html(n1, d1); f2 = generate_fraction_html(n2, d2)
                     q = f"จงหาผลลัพธ์ <br><div style='display:flex; align-items:center; margin-top:10px;'><b style='font-size: 20px; color: #2c3e50; margin-right: 10px;'>ประโยคสัญลักษณ์: </b> {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= </span> {box_html}</div>"
                     
-                    # สร้างกราฟิกแสดงการคูณทั้งเศษและส่วน
                     f1_ex = generate_fraction_html(f"{n1} × {m1}", f"{d1} × {m1}") if m1 > 1 else f1
                     f2_ex = generate_fraction_html(f"{n2} × {m2}", f"{d2} × {m2}") if m2 > 1 else f2
-                    
-                    f1_new = generate_fraction_html(n1 * m1, lcm_d)
-                    f2_new = generate_fraction_html(n2 * m2, lcm_d)
+                    f1_new = generate_fraction_html(n1 * m1, lcm_d); f2_new = generate_fraction_html(n2 * m2, lcm_d)
                     s_ans = generate_fraction_html(ans_num, lcm_d)
                     
                     sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ทำตัวส่วนให้เท่ากัน โดยหา ค.ร.น. ของ {d1} และ {d2} ซึ่งก็คือ <b>{lcm_d}</b></span><br><br>"
                     sol += f"<div style='display:flex; align-items:center; margin-bottom: 10px;'> {f1} <span style='margin:0 10px;'>{op}</span> {f2} <span style='margin:0 10px;'>=</span> {f1_ex} <span style='margin:0 10px;'>{op}</span> {f2_ex} </div>"
                     sol += f"<div style='display:flex; align-items:center; margin-bottom: 15px;'> <span style='margin:0 10px;'></span> <span style='margin:0 10px;'>=</span> {f1_new} <span style='margin:0 10px;'>{op}</span> {f2_new} <span style='margin:0 10px;'>=</span> {s_ans}</div>"
                     
-                    # ทอนเป็นเศษส่วนอย่างต่ำ / จำนวนคละ (ถ้ามี)
                     extra_txt, final_html = get_fraction_solution_steps(ans_num, lcm_d)
                     if extra_txt: sol += f"<span style='color: #2c3e50;'><i>*{extra_txt}:</i></span><br><br>{final_html}"
-                    
                 else:
-                    # --- สำหรับ ป.3: ตัวส่วนเท่ากัน (ลอจิกเดิม) ---
+                    # --- สำหรับ ป.3: ตัวส่วนเท่ากัน ---
                     den = random.randint(5, 15); num1 = random.randint(1, den-1); num2 = random.randint(1, den-1)
                     op = random.choice(["+", "-"])
                     if op == "-" and num1 < num2: num1, num2 = num2, num1 
                     ans_num = num1 + num2 if op == "+" else num1 - num2
-                    f1 = generate_fraction_html(num1, den)
-                    f2 = generate_fraction_html(num2, den)
+                    f1 = generate_fraction_html(num1, den); f2 = generate_fraction_html(num2, den)
                     q = f"จงหาผลลัพธ์ <br><div style='display:flex; align-items:center; margin-top:10px;'><b style='font-size: 20px; color: #2c3e50; margin-right: 10px;'>ประโยคสัญลักษณ์: </b> {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= </span> {box_html}</div>"
-                    s1 = generate_fraction_html(f"{num1} {op} {num2}", den)
-                    s2 = generate_fraction_html(ans_num, den)
+                    s1 = generate_fraction_html(f"{num1} {op} {num2}", den); s2 = generate_fraction_html(ans_num, den)
                     sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เนื่องจากตัวส่วนเท่ากัน ให้นำตัวเศษมา{op}กันได้เลย</span><br><br><div style='display:flex; align-items:center; margin-bottom: 15px;'>{f1} <span style='margin:0 10px;'>{op}</span> {f2} <span style='margin:0 10px;'>=</span> {s1} <span style='margin:0 10px;'>=</span> {s2}</div>"
                     extra_txt, final_html = get_fraction_solution_steps(ans_num, den)
                     if extra_txt: sol += f"<span style='color: #2c3e50;'><i>*{extra_txt}:</i></span><br><br>{final_html}"
@@ -893,8 +883,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 n1, d1 = random.randint(1, 5), random.randint(2, 7)
                 n2, d2 = random.randint(1, 5), random.randint(2, 7)
                 op = random.choice(["×", "÷"])
-                f1 = generate_fraction_html(n1, d1)
-                f2 = generate_fraction_html(n2, d2)
+                f1 = generate_fraction_html(n1, d1); f2 = generate_fraction_html(n2, d2)
                 q = f"จงหาผลลัพธ์ <br><div style='display:flex; align-items:center; margin-top:10px;'><b style='font-size: 20px; color: #2c3e50; margin-right: 10px;'>ประโยคสัญลักษณ์: </b> {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= </span> {box_html}</div>"
                 
                 if op == "×":
@@ -939,6 +928,47 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงเขียนเศษส่วนต่อไปนี้ให้อยู่ในรูปร้อยละ : <br>{frac_html}"
                 mul = 100 // den
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ทำตัวส่วนให้เป็น 100 โดยการคูณด้วย {mul} ทั้งเศษและส่วน</span><br><br><div style='display:flex; align-items:center;'>{frac_html} <span style='margin:0 10px;'>=</span> {generate_fraction_html(f'{num} × {mul}', f'{den} × {mul}')} <span style='margin:0 10px;'>=</span> {generate_fraction_html(num*mul, 100)}</div><br>ตอบ: <b>ร้อยละ {ans} หรือ {ans}%</b>"
+
+            # 🟢 หัวข้อใหม่ ป.6: อัตราส่วนที่เท่ากัน
+            elif "อัตราส่วนที่เท่ากัน" in sub_t:
+                a = random.randint(2, 9)
+                b = random.randint(2, 9)
+                while a == b: b = random.randint(2, 9)
+                m = random.randint(2, 9)
+                c = a * m
+                d = b * m
+                if random.choice([True, False]):
+                    q = f"จงหาจำนวนที่แทนใน {box_html} แล้วทำให้ประโยคเป็นจริง : <br><b style='font-size: 24px; color: #3498db;'>{a} : {b} = {c} : {box_html}</b>"
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> พิจารณาตัวหน้าจาก {a} ไปเป็น {c} พบว่าเกิดจากการคูณด้วย <b>{m}</b> (เพราะ {a} × {m} = {c})<br>ดังนั้น ตัวหลังที่หายไปต้องนำ {b} ไปคูณด้วย {m} ด้วยเช่นกัน<br>จะได้ {b} × {m} = </span><b>{d}</b>"
+                else:
+                    q = f"จงหาจำนวนที่แทนใน {box_html} แล้วทำให้ประโยคเป็นจริง : <br><b style='font-size: 24px; color: #3498db;'>{a} : {b} = {box_html} : {d}</b>"
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> พิจารณาตัวหลังจาก {b} ไปเป็น {d} พบว่าเกิดจากการคูณด้วย <b>{m}</b> (เพราะ {b} × {m} = {d})<br>ดังนั้น ตัวหน้าที่หายไปต้องนำ {a} ไปคูณด้วย {m} ด้วยเช่นกัน<br>จะได้ {a} × {m} = </span><b>{c}</b>"
+
+            # 🟢 หัวข้อใหม่ ป.6: โจทย์ปัญหาอัตราส่วน
+            elif "โจทย์ปัญหาอัตราส่วน" in sub_t:
+                scenarios = [
+                    ("นักเรียนชาย", "นักเรียนหญิง", "คน", "คน"),
+                    ("น้ำหวาน", "น้ำเปล่า", "มิลลิลิตร", "มิลลิลิตร"),
+                    ("ปากกา", "ดินสอ", "ด้าม", "แท่ง"),
+                    ("สมุด", "หนังสือ", "เล่ม", "เล่ม"),
+                    ("ไก่", "เป็ด", "ตัว", "ตัว")
+                ]
+                item1, item2, u1, u2 = random.choice(scenarios)
+                a = random.randint(2, 7)
+                b = random.randint(2, 7)
+                while a == b: b = random.randint(2, 7)
+                m = random.randint(5, 20)
+                val1 = a * m
+                val2 = b * m
+                
+                q_type = random.choice([1, 2])
+                if q_type == 1:
+                    q = f"อัตราส่วนของจำนวน{item1} ต่อจำนวน{item2} เป็น <b>{a} : {b}</b><br>ถ้ามี{item1} <b>{val1} {u1}</b> จะมี{item2}จำนวนเท่าใด?"
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> อัตราส่วน {item1} : {item2} = {a} : {b}<br>เนื่องจากมี{item1} {val1} {u1} ซึ่งเกิดจากการนำ {a} ไปคูณด้วย <b>{m}</b> ({a} × {m} = {val1})<br>ดังนั้น ต้องนำอัตราส่วนของ{item2}ไปคูณด้วย {m} ด้วยเช่นกัน<br>จะได้ {b} × {m} = </span><b>{val2} {u2}</b>"
+                else:
+                    total = val1 + val2
+                    q = f"อัตราส่วนของจำนวน{item1} ต่อจำนวน{item2} เป็น <b>{a} : {b}</b><br>ถ้ามีจำนวนของทั้งสองอย่างรวมกัน <b>{total} {u1}</b> จะมี{item1}จำนวนเท่าใด?"
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> อัตราส่วน {item1} : {item2} = {a} : {b}<br>นำอัตราส่วนมาบวกกันจะได้จำนวนส่วนทั้งหมด = {a} + {b} = <b>{a+b} ส่วน</b><br>ของทั้งหมด {total} {u1} แบ่งเป็น {a+b} ส่วน จะได้ส่วนละ {total} ÷ {a+b} = <b>{m} {u1}</b><br>ดังนั้น จำนวน{item1}มี {a} ส่วน จึงเท่ากับ {a} × {m} = </span><b>{val1} {u1}</b>"
 
             elif "โจทย์ปัญหาร้อยละ" in sub_t:
                 price = random.choice([100, 200, 500, 1000, 1500])
