@@ -97,6 +97,7 @@ curriculum_db = {
         "การบวก ลบ คูณ หาร": [
             "การบวก (แบบตั้งหลัก)", 
             "การลบ (แบบตั้งหลัก)", 
+            "การคูณ (แบบตั้งหลัก)", # 🔴 เพิ่มการคูณกลับเข้ามาให้ ป.4 แล้วครับ!
             "การหารยาว"
         ],
         "เศษส่วนและทศนิยม": [
@@ -455,7 +456,17 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
         while attempts < 300:
             
             # --- หมวดตั้งหลัก ---
-            if sub_t == "การบวก (แบบตั้งหลัก)":
+            # 🔴 ไฮไลท์: อัปเกรดความยากของการคูณตามชั้นเรียน
+            if sub_t == "การคูณ (แบบตั้งหลัก)":
+                if grade in ["ป.1", "ป.2"]: a = random.randint(10, 99) # ป.2: 2 หลัก x 1 หลัก
+                elif grade == "ป.3": a = random.randint(100, 999) # ป.3: 3 หลัก x 1 หลัก
+                else: a = random.randint(1000, 9999) # ป.4 ขึ้นไป: 4 หลัก x 1 หลัก
+                b = random.randint(2, 9)
+                res = a * b
+                q = generate_vertical_table_html(a, b, '×', is_key=False)
+                sol = generate_vertical_table_html(a, b, '×', result=res, is_key=True)
+
+            elif sub_t == "การบวก (แบบตั้งหลัก)":
                 if grade == "ป.1":
                     tens_a = random.randint(1, 9); units_a = random.randint(0, 8)
                     b = random.randint(1, 9 - units_a); a = (tens_a * 10) + units_a
@@ -479,14 +490,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = generate_vertical_table_html(a, b, '-', is_key=False)
                 sol = generate_vertical_table_html(a, b, '-', result=res, is_key=True)
 
-            elif sub_t == "การคูณ (แบบตั้งหลัก)":
-                a = random.randint(100, 999); b = random.randint(2, 9)
-                res = a * b
-                q = generate_vertical_table_html(a, b, '×', is_key=False)
-                sol = generate_vertical_table_html(a, b, '×', result=res, is_key=True)
-
             # --- หมวดกราฟิก ป.1-ป.3 ---
-            # 🔴 ส่วนย่อย-ส่วนรวม (ลงสีให้ดูน่าสนใจขึ้น)
             elif "ส่วนย่อย-ส่วนรวม" in sub_t:
                 total = random.randint(5, 20); p1 = random.randint(1, total - 1); p2 = total - p1
                 miss = random.choice(['t', 'p1', 'p2'])
@@ -570,8 +574,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 for _ in range(b50): money_svg += '<svg width="60" height="30" style="vertical-align: middle; margin: 2px;"><rect width="60" height="30" rx="3" fill="#74b9ff" stroke="#2980b9" stroke-width="2"/><text x="30" y="20" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">50</text></svg>'
                 for _ in range(b20): money_svg += '<svg width="60" height="30" style="vertical-align: middle; margin: 2px;"><rect width="60" height="30" rx="3" fill="#55efc4" stroke="#27ae60" stroke-width="2"/><text x="30" y="20" font-size="12" font-weight="bold" fill="#333" text-anchor="middle">20</text></svg>'
                 for _ in range(c10): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="13" fill="#bdc3c7" stroke="#7f8c8d" stroke-width="2"/><circle cx="15" cy="15" r="8" fill="#f1c40f"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">10</text></svg>'
-                for _ in range(c5): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="11" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">5</text></svg>'
-                for _ in range(c1): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r=\"9\" fill=\"#ecf0f1\" stroke=\"#bdc3c7\" stroke-width=\"1.5\"/><text x=\"15\" y=\"19\" font-size=\"10\" font-weight=\"bold\" fill=\"#333\" text-anchor=\"middle\">1</text></svg>'
+                for _ in range(c5): money_svg += '<svg width=\"30\" height=\"30\" style=\"vertical-align: middle; margin: 2px;\"><circle cx=\"15\" cy=\"15\" r=\"11\" fill=\"#ecf0f1\" stroke=\"#95a5a6\" stroke-width=\"2\"/><text x=\"15\" y=\"19\" font-size=\"10\" font-weight=\"bold\" fill=\"#333\" text-anchor=\"middle\">5</text></svg>'
+                for _ in range(c1): money_svg += '<svg width=\"30\" height=\"30\" style=\"vertical-align: middle; margin: 2px;\"><circle cx=\"15\" cy=\"15\" r=\"9\" fill=\"#ecf0f1\" stroke=\"#bdc3c7\" stroke-width=\"1.5\"/><text x=\"15\" y=\"19\" font-size=\"10\" font-weight=\"bold\" fill=\"#333\" text-anchor=\"middle\">1</text></svg>'
                 money_svg += "</div>"
                 q = f"จากภาพ มีเงินทั้งหมดกี่บาท? {money_svg}"
                 sol = "<br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>"
@@ -583,7 +587,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 if c1 > 0: sol += f"เหรียญ 1 บาท {c1} เหรียญ = {c1*1} บาท<br>"
                 sol += f"นำมาบวกกันทั้งหมดจะได้เงินรวม</span> <b>{total:,} บาท</b>"
 
-            # 🔴 ไฮไลท์การแก้: อัปเกรดเครื่องชั่งสปริง วาดสมจริง มีขีดเล็ก 10 ขีด และสุ่มแบบมีเศษขีด
             elif "เครื่องชั่งสปริง" in sub_t:
                 kg = random.randint(0, 4)
                 khid = random.randint(0, 9)
@@ -596,48 +599,34 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 r_dial = 70
                 
                 svg_elements = []
-                # วาดฐานเครื่องชั่งและถาดรอง
                 svg_elements.append('<rect x="25" y="40" width="150" height="150" rx="20" fill="#f1f2f6" stroke="#333" stroke-width="4"/>')
                 svg_elements.append('<path d="M 70 40 L 70 20 L 130 20 L 130 40 Z" fill="#bdc3c7" stroke="#333" stroke-width="3"/>')
                 svg_elements.append('<path d="M 40 20 L 30 5 L 170 5 L 160 20 Z" fill="#ecf0f1" stroke="#333" stroke-width="3"/>')
-                
-                # วาดหน้าปัด
                 svg_elements.append(f'<circle cx="{cx}" cy="{cy}" r="{r_dial}" fill="#fff" stroke="#333" stroke-width="3"/>')
                 
-                # วาดสเกลขีด
-                for k in range(51): # 50 ขีด = 5 กก.
+                for k in range(51):
                     tick_angle = -150 + k * 6
                     rad = math.radians(tick_angle - 90)
-                    if k % 10 == 0: # ขีดกิโลกรัม
-                        x1 = cx + (r_dial - 15) * math.cos(rad)
-                        y1 = cy + (r_dial - 15) * math.sin(rad)
-                        x2 = cx + r_dial * math.cos(rad)
-                        y2 = cy + r_dial * math.sin(rad)
+                    if k % 10 == 0: 
+                        x1 = cx + (r_dial - 15) * math.cos(rad); y1 = cy + (r_dial - 15) * math.sin(rad)
+                        x2 = cx + r_dial * math.cos(rad); y2 = cy + r_dial * math.sin(rad)
                         svg_elements.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#333" stroke-width="3"/>')
-                        tx = cx + (r_dial - 25) * math.cos(rad)
-                        ty = cy + (r_dial - 25) * math.sin(rad) + 6
+                        tx = cx + (r_dial - 25) * math.cos(rad); ty = cy + (r_dial - 25) * math.sin(rad) + 6
                         svg_elements.append(f'<text x="{tx}" y="{ty}" font-size="18" font-weight="bold" fill="#e74c3c" text-anchor="middle">{k//10}</text>')
-                    elif k % 5 == 0: # ขีดครึ่งกิโล (5 ขีด)
-                        x1 = cx + (r_dial - 10) * math.cos(rad)
-                        y1 = cy + (r_dial - 10) * math.sin(rad)
-                        x2 = cx + r_dial * math.cos(rad)
-                        y2 = cy + r_dial * math.sin(rad)
+                    elif k % 5 == 0: 
+                        x1 = cx + (r_dial - 10) * math.cos(rad); y1 = cy + (r_dial - 10) * math.sin(rad)
+                        x2 = cx + r_dial * math.cos(rad); y2 = cy + r_dial * math.sin(rad)
                         svg_elements.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#333" stroke-width="2"/>')
-                    else: # ขีดเล็ก (1 ขีด = 100 กรัม)
-                        x1 = cx + (r_dial - 5) * math.cos(rad)
-                        y1 = cy + (r_dial - 5) * math.sin(rad)
-                        x2 = cx + r_dial * math.cos(rad)
-                        y2 = cy + r_dial * math.sin(rad)
+                    else: 
+                        x1 = cx + (r_dial - 5) * math.cos(rad); y1 = cy + (r_dial - 5) * math.sin(rad)
+                        x2 = cx + r_dial * math.cos(rad); y2 = cy + r_dial * math.sin(rad)
                         svg_elements.append(f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#777" stroke-width="1.5"/>')
                         
-                # วาดเข็มพร้อมเส้นประเล็งเป้า
                 needle_rad = math.radians(angle_deg - 90)
-                nx_dash = cx + r_dial * math.cos(needle_rad)
-                ny_dash = cy + r_dial * math.sin(needle_rad)
+                nx_dash = cx + r_dial * math.cos(needle_rad); ny_dash = cy + r_dial * math.sin(needle_rad)
                 svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{nx_dash}" y2="{ny_dash}" stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.7"/>')
                 
-                nx = cx + (r_dial - 15) * math.cos(needle_rad)
-                ny = cy + (r_dial - 15) * math.sin(needle_rad)
+                nx = cx + (r_dial - 15) * math.cos(needle_rad); ny = cy + (r_dial - 15) * math.sin(needle_rad)
                 svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{nx}" y2="{ny}" stroke="#e74c3c" stroke-width="4" stroke-linecap="round"/>')
                 svg_elements.append(f'<circle cx="{cx}" cy="{cy}" r="6" fill="#333"/>')
                 
@@ -912,14 +901,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                         ans = w * l
                         sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> พื้นที่สี่เหลี่ยมผืนผ้า = กว้าง × ยาว<br>= {w} × {l}<br>ตอบ:</span> <b>{ans:,} ตารางเซนติเมตร</b>"
 
-            # 🔴 ยืดเส้นขีดมุมองศาของไม้โปรแทรกเตอร์ให้ยาวทะลุตัวเลข
             elif "ไม้โปรแทรกเตอร์" in sub_t:
                 angle = random.randint(15, 165)
                 arm_rad = math.radians(angle)
-                
-                # เปลี่ยนจาก 120 เป็น 135 ให้เส้นทะลุตัวเลขชัดเจนขึ้น
                 ax = 150 + 135 * math.cos(arm_rad); ay = 140 - 135 * math.sin(arm_rad)
-                
                 ticks_svg = ""
                 for i in range(0, 181):
                     rad = math.radians(i)
@@ -941,14 +926,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"มุมที่แสดงบนไม้โปรแทรกเตอร์มีขนาดกี่องศา? {svg}"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตเส้นสีแดงชี้ตรงกับตัวเลขสเกลด้านในที่เลข {angle} พอดี<br>ตอบ:</span> <b>{angle} องศา</b>"
                 
-            elif "คูณ" in sub_t or "หาร" in sub_t:
-                a, b = random.randint(2, 12), random.randint(2, 12)
-                if "คูณ" in sub_t:
-                    q = f"จงหาผลลัพธ์ของ {a} × {b} = ?"
-                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ท่องสูตรคูณแม่ {a} จะได้ว่า {a} × {b} =</span> <b>{a * b}</b>"
-                else:
-                    q = f"จงหาผลลัพธ์ของ {a * b} ÷ {a} = ?"
-                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เนื่องจาก {a} × {b} = {a * b}<br>ดังนั้น {a * b} ÷ {a} =</span> <b>{b}</b>"
             else:
                 a, b = random.randint(10, 50), random.randint(10, 50)
                 q = f"จงหาผลลัพธ์ : {a} + {b} = ?"
