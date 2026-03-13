@@ -227,6 +227,60 @@ def generate_thai_number_text(num_str):
     return int_text + dec_text
 
 # ==========================================
+# 🟢 ฟังก์ชันช่วย 4: สร้างโครงสร้างการหารยาว
+# ==========================================
+def generate_long_division_html(divisor, dividend, result=None, is_key=False):
+    div_str = str(dividend)
+    ans_str = str(result) if result else ""
+    div_len = len(div_str)
+    
+    # จัดตำแหน่งผลหารให้อยู่ตรงหลักพอดี (ชิดขวา)
+    if result is not None:
+        ans_padded = ans_str.rjust(div_len, " ")
+    else:
+        ans_padded = " " * div_len
+        
+    ans_tds_list = []
+    for c in ans_padded:
+        ans_tds_list.append(f'<td style="width: 35px; text-align: center; color: red; font-weight: bold; font-size: 38px;">{c.strip()}</td>')
+        
+    div_tds_list = []
+    for i, c in enumerate(div_str):
+        # สร้างเส้นขีดซ้ายเฉพาะหลักแรกสุด และขีดบนสำหรับทุกหลัก
+        left_border = "border-left: 3px solid #000;" if i == 0 else ""
+        div_tds_list.append(f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px;">{c}</td>')
+
+    html = f"""
+    <div style="display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2; margin: 10px 20px;">
+        <table style="border-collapse: collapse;">
+    """
+    
+    # บรรทัดเฉลย (อยู่ด้านบนสุด)
+    if is_key and result is not None:
+        html += f"""
+            <tr>
+                <td style="border: none;"></td>
+                {''.join(ans_tds_list)}
+            </tr>
+        """
+        
+    # บรรทัดโจทย์ (ตัวหาร และ ตัวตั้ง)
+    html += f"""
+            <tr>
+                <td style="border: none; text-align: right; padding-right: 12px; vertical-align: bottom; font-size: 38px;">{divisor}</td>
+                {''.join(div_tds_list)}
+            </tr>
+        </table>
+    </div>
+    """
+    
+    # เว้นพื้นที่ 8 บรรทัด สำหรับหน้าโจทย์ (ให้เด็กแสดงวิธีทำ)
+    if not is_key:
+        html += "<br>" * 8 
+        
+    return html
+
+# ==========================================
 # 2. ฟังก์ชันสมองกลสร้างโจทย์และกราฟิก 
 # ==========================================
 def generate_questions_logic(grade, main_t, sub_t, num_q):
@@ -394,7 +448,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             # --- หมวดประถมปลาย (ทศนิยม เศษส่วน สมการ เรขาคณิต) ---
             elif "ค่าประมาณ" in sub_t:
                 n = random.randint(1111, 99999); ptype = random.choice(["เต็มสิบ", "เต็มร้อย", "เต็มพัน"])
-                # ใช้คณิตศาสตร์ปัดเศษแท้ (บวกครึ่งหนึ่งของหลักแล้วหารปัดเศษทิ้ง แล้วคูณกลับ)
                 if ptype == "เต็มสิบ":
                     ans = ((n + 5) // 10) * 10
                 elif ptype == "เต็มร้อย":
@@ -405,7 +458,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
 
             elif "หารยาว" in sub_t:
                 divisor = random.randint(2, 12); quotient = random.randint(100, 999); dividend = divisor * quotient
-                q = f"จงหาผลลัพธ์ของการหาร: <b>{dividend:,} ÷ {divisor} = ?</b>"; sol = f"{quotient:,}"
+                q = generate_long_division_html(divisor, dividend, is_key=False)
+                sol = generate_long_division_html(divisor, dividend, result=quotient, is_key=True)
 
             elif "เศษเกินเป็นจำนวนคละ" in sub_t:
                 den = random.randint(3, 12)
@@ -425,12 +479,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             elif "บวกลบเศษส่วน" in sub_t or "บวกและการลบเศษส่วน" in sub_t:
                 den = random.randint(5, 15); num1 = random.randint(1, den-1); num2 = random.randint(1, den-1)
                 op = random.choice(["+", "-"])
-                if op == "-" and num1 < num2: num1, num2 = num2, num1 # สลับให้ตัวตั้งมากกว่าเสมอ
+                if op == "-" and num1 < num2: num1, num2 = num2, num1 
                 ans_num = num1 + num2 if op == "+" else num1 - num2
                 f1 = generate_fraction_html(num1, den)
                 f2 = generate_fraction_html(num2, den)
                 q = f"จงหาผลลัพธ์ของ : {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= ?</span>"
-                sol = simplify_fraction(ans_num, den) # ทำเป็นเศษส่วนอย่างต่ำ/จำนวนคละ
+                sol = simplify_fraction(ans_num, den) 
 
             elif "คูณและการหารเศษส่วน" in sub_t:
                 n1, d1 = random.randint(1, 5), random.randint(2, 7)
@@ -441,7 +495,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงหาผลลัพธ์ของ : {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= ?</span>"
                 ans_n = n1 * n2 if op == "×" else n1 * d2
                 ans_d = d1 * d2 if op == "×" else d1 * n2
-                sol = simplify_fraction(ans_n, ans_d) # ทำเป็นเศษส่วนอย่างต่ำ/จำนวนคละ
+                sol = simplify_fraction(ans_n, ans_d) 
 
             elif "ทศนิยม" in sub_t and "อ่าน" in sub_t:
                 n = round(random.uniform(0.1, 99.999), random.randint(1, 3))
@@ -472,12 +526,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
 
             elif "ห.ร.ม." in sub_t:
                 a = random.randint(12, 48); b = random.randint(12, 48)
-                while a == b: b = random.randint(12, 48) # ดักไม่ให้สุ่มเลขซ้ำ
+                while a == b: b = random.randint(12, 48) 
                 q = f"จงหา ห.ร.ม. ของ <b>{a}</b> และ <b>{b}</b>"; sol = str(math.gcd(a, b))
 
             elif "ค.ร.น." in sub_t:
                 a = random.randint(4, 24); b = random.randint(4, 24)
-                while a == b: b = random.randint(4, 24) # ดักไม่ให้สุ่มเลขซ้ำ
+                while a == b: b = random.randint(4, 24) 
                 q = f"จงหา ค.ร.น. ของ <b>{a}</b> และ <b>{b}</b>"; sol = str((a * b) // math.gcd(a, b))
 
             elif "สมการ" in sub_t:
@@ -555,7 +609,7 @@ def create_page(grade, sub_t, questions, is_key=False):
     <div class="header"><h2>{title} - {grade}</h2><p><b>เรื่อง:</b> {sub_t}</p></div>"""
     
     for i, item in enumerate(questions, 1):
-        if "(แบบตั้งหลัก)" in sub_t:
+        if "(แบบตั้งหลัก)" in sub_t or "หารยาว" in sub_t:
             html += f'<div class="q-box"><b>ข้อที่ {i}.</b><br>{item["solution"] if is_key else item["question"]}</div>'
         else:
             html += f'<div class="q-box"><b>ข้อที่ {i}.</b> {item["question"]}'
