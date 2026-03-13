@@ -145,6 +145,11 @@ curriculum_db = {
 }
 
 # ==========================================
+# 🟢 รูปแบบกล่องสี่เหลี่ยม (ประโยคสัญลักษณ์)
+# ==========================================
+box_html = "<span style='display: inline-block; width: 22px; height: 22px; border: 2px solid #333; border-radius: 3px; vertical-align: middle; margin-left: 5px; position: relative; top: -2px;'></span>"
+
+# ==========================================
 # 🟢 ฟังก์ชันช่วย 1: สร้างตารางตั้งหลักเลข
 # ==========================================
 def generate_vertical_table_html(a, b, op, result=None, is_key=False):
@@ -209,7 +214,7 @@ def generate_vertical_table_html(a, b, op, result=None, is_key=False):
         res_tds = "".join([f'<td style="width: 35px; height: 45px;"></td>' for _ in range(num_len)])
 
     return f"""
-    <div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 38px; line-height: 1.1; margin: 20px;">
+    <div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 38px; line-height: 1.1; margin: 10px 20px;">
         <table style="border-collapse: collapse; margin-left: auto; margin-right: auto;">
             <tr><td style="width: 20px;"></td>{a_tds}<td style="width: 50px; text-align: center; vertical-align: middle;" rowspan="2">{op}</td></tr>
             <tr><td></td>{b_tds}</tr>
@@ -371,7 +376,9 @@ def generate_decimal_vertical_html(a, b, op, is_key=False):
 def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     div_str = str(dividend)
     div_len = len(div_str)
-    equation_html = f"<div style='font-size: 24px; font-weight: bold; margin-bottom: 15px;'>{dividend:,} ÷ {divisor} = ?</div>"
+    
+    # 🔴 ไฮไลท์: เพิ่มประโยคสัญลักษณ์ให้หารยาว
+    equation_html = f"<div style='font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #2c3e50;'>ประโยคสัญลักษณ์: {dividend:,} ÷ {divisor} = {box_html}</div>"
     
     if not is_key:
         div_tds_list = []
@@ -515,15 +522,16 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
         attempts = 0
         while attempts < 300:
             
-            # --- หมวดตั้งหลัก ---
+            # --- หมวดตั้งหลัก (เพิ่มประโยคสัญลักษณ์) ---
             if sub_t == "การคูณ (แบบตั้งหลัก)":
                 if grade in ["ป.1", "ป.2"]: a = random.randint(10, 99) 
                 elif grade == "ป.3": a = random.randint(100, 999) 
                 else: a = random.randint(1000, 9999) 
                 b = random.randint(2, 9)
                 res = a * b
-                q = generate_vertical_table_html(a, b, '×', is_key=False)
-                sol = generate_vertical_table_html(a, b, '×', result=res, is_key=True)
+                sentence = f"<div style='font-size: 20px; font-weight: bold; margin-bottom: 10px; color: #2c3e50;'>ประโยคสัญลักษณ์: {a:,} × {b:,} = {box_html}</div>"
+                q = sentence + generate_vertical_table_html(a, b, '×', is_key=False)
+                sol = sentence + generate_vertical_table_html(a, b, '×', result=res, is_key=True)
 
             elif sub_t == "การบวก (แบบตั้งหลัก)":
                 if grade == "ป.1":
@@ -534,8 +542,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 else:
                     a = random.randint(10, limit - 20); b = random.randint(1, limit - a - 1)
                 res = a + b
-                q = generate_vertical_table_html(a, b, '+', is_key=False)
-                sol = generate_vertical_table_html(a, b, '+', result=res, is_key=True)
+                sentence = f"<div style='font-size: 20px; font-weight: bold; margin-bottom: 10px; color: #2c3e50;'>ประโยคสัญลักษณ์: {a:,} + {b:,} = {box_html}</div>"
+                q = sentence + generate_vertical_table_html(a, b, '+', is_key=False)
+                sol = sentence + generate_vertical_table_html(a, b, '+', result=res, is_key=True)
 
             elif sub_t == "การลบ (แบบตั้งหลัก)":
                 if grade == "ป.1":
@@ -546,8 +555,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 else:
                     a = random.randint(10, limit - 1); b = random.randint(1, a - 1)
                 res = a - b
-                q = generate_vertical_table_html(a, b, '-', is_key=False)
-                sol = generate_vertical_table_html(a, b, '-', result=res, is_key=True)
+                sentence = f"<div style='font-size: 20px; font-weight: bold; margin-bottom: 10px; color: #2c3e50;'>ประโยคสัญลักษณ์: {a:,} - {b:,} = {box_html}</div>"
+                q = sentence + generate_vertical_table_html(a, b, '-', is_key=False)
+                sol = sentence + generate_vertical_table_html(a, b, '-', result=res, is_key=True)
 
             # --- หมวดกราฟิก ป.1-ป.3 ---
             elif "ส่วนย่อย-ส่วนรวม" in sub_t:
@@ -761,7 +771,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     q = f"จงเขียนตัวเลข <b>{n:,}</b> ให้เป็นตัวหนังสือภาษาไทย"
                     sol = f"<b>{generate_thai_number_text(str(n))}</b>"
 
-            # --- หมวดประถมปลาย (ทศนิยม เศษส่วน สมการ เรขาคณิต) ---
+            # --- หมวดประถมปลาย (ทศนิยม เศษส่วน สมการ เรขาคณิต) (เพิ่มประโยคสัญลักษณ์) ---
             elif "ค่าประมาณ" in sub_t:
                 n = random.randint(1111, 99999); ptype = random.choice(["เต็มสิบ", "เต็มร้อย", "เต็มพัน"])
                 if ptype == "เต็มสิบ":
@@ -814,7 +824,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 ans_num = num1 + num2 if op == "+" else num1 - num2
                 f1 = generate_fraction_html(num1, den)
                 f2 = generate_fraction_html(num2, den)
-                q = f"จงหาผลลัพธ์ของ : <div style='display:flex; align-items:center; margin-top:10px;'>{f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= ?</span></div>"
+                q = f"จงหาผลลัพธ์ <br><div style='display:flex; align-items:center; margin-top:10px;'><b style='font-size: 20px; color: #2c3e50; margin-right: 10px;'>ประโยคสัญลักษณ์: </b> {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= </span> {box_html}</div>"
                 s1 = generate_fraction_html(f"{num1} {op} {num2}", den)
                 s2 = generate_fraction_html(ans_num, den)
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เนื่องจากตัวส่วนเท่ากัน ให้นำตัวเศษมา{op}กันได้เลย</span><br><br><div style='display:flex; align-items:center; margin-bottom: 15px;'>{f1} <span style='margin:0 10px;'>{op}</span> {f2} <span style='margin:0 10px;'>=</span> {s1} <span style='margin:0 10px;'>=</span> {s2}</div>"
@@ -827,7 +837,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 op = random.choice(["×", "÷"])
                 f1 = generate_fraction_html(n1, d1)
                 f2 = generate_fraction_html(n2, d2)
-                q = f"จงหาผลลัพธ์ของ : <div style='display:flex; align-items:center; margin-top:10px;'>{f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= ?</span></div>"
+                q = f"จงหาผลลัพธ์ <br><div style='display:flex; align-items:center; margin-top:10px;'><b style='font-size: 20px; color: #2c3e50; margin-right: 10px;'>ประโยคสัญลักษณ์: </b> {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= </span> {box_html}</div>"
                 
                 if op == "×":
                     s1 = generate_fraction_html(f"{n1} × {n2}", f"{d1} × {d2}")
@@ -852,14 +862,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             elif "ทศนิยม" in sub_t and ("บวก" in sub_t or "ลบ" in sub_t):
                 a = round(random.uniform(10.0, 99.9), 2); b = round(random.uniform(1.0, 9.9), 2)
                 op = random.choice(["+", "-"])
-                q = f"จงหาผลลัพธ์ : <b>{a:.2f} {op} {b:.2f} = ?</b>"
+                q = f"จงหาผลลัพธ์ <br><div style='font-size: 20px; font-weight: bold; margin-top: 5px; color: #2c3e50;'>ประโยคสัญลักษณ์: {a:.2f} {op} {b:.2f} = {box_html}</div>"
                 sol_html = generate_decimal_vertical_html(a, b, op, is_key=True)
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ตั้งจุดทศนิยมให้ตรงกันแล้วดำเนินการตามปกติ</span><br>{sol_html}"
 
             elif "คูณทศนิยม" in sub_t:
                 a = round(random.uniform(1.0, 12.0), 1); b = random.randint(2, 9)
                 ans = round(a*b, 1)
-                q = f"จงหาผลลัพธ์ : <b>{a:.1f} × {b} = ?</b>"
+                q = f"จงหาผลลัพธ์ <br><div style='font-size: 20px; font-weight: bold; margin-top: 5px; color: #2c3e50;'>ประโยคสัญลักษณ์: {a:.1f} × {b} = {box_html}</div>"
                 int_a = int(round(a * 10))
                 vert_mul_html = generate_vertical_table_html(int_a, b, '×', result=int_a*b, is_key=True)
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>1) ตั้งคูณโดยนำจุดทศนิยมออกก่อน ({int_a} × {b}):</span><br>{vert_mul_html}<br><span style='color: #2c3e50;'>2) ตัวตั้งมีทศนิยม 1 ตำแหน่ง คำตอบจึงต้องใส่ทศนิยม 1 ตำแหน่ง<br>ตอบ:</span> <b>{ans:.1f}</b>"
@@ -876,8 +886,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 price = random.choice([100, 200, 500, 1000, 1500])
                 percent = random.choice([10, 15, 20, 25, 50])
                 discount = int(price * (percent / 100))
-                q = f"เสื้อราคา {price:,} บาท ร้านค้าลดราคาให้ {percent}% ร้านค้าลดราคาให้กี่บาท?"
-                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>คำว่า ลดราคา {percent}% หมายถึง ({percent} ÷ 100) × ราคาป้าย<br>= ({percent} ÷ 100) × {price:,}<br>ตอบ:</span> <b>{discount:,} บาท</b>"
+                q = f"เสื้อราคา {price:,} บาท ร้านค้าลดราคาให้ {percent}% ร้านค้าลดราคาให้กี่บาท?<br><div style='margin-top: 15px; font-size: 18px; color: #2c3e50;'><b>ประโยคสัญลักษณ์:</b> ...........................................................</div>"
+                sol = f"<br><span style='color: #2c3e50;'><b>ประโยคสัญลักษณ์:</b> ({percent} ÷ 100) × {price:,} = {box_html}</span><br><br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>คำว่า ลดราคา {percent}% หมายถึง ({percent} ÷ 100) × ราคาป้าย<br>= ({percent} ÷ 100) × {price:,}<br>ตอบ:</span> <b>{discount:,} บาท</b>"
 
             elif "ห.ร.ม." in sub_t:
                 a = random.randint(12, 48); b = random.randint(12, 48)
@@ -891,7 +901,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงหา ค.ร.น. ของ <b>{a}</b> และ <b>{b}</b>"
                 sol = generate_short_division_html(a, b, mode="ค.ร.น.")
 
-            # 🔴 ไฮไลท์การแก้: เพิ่มสีเขียวสำหรับตัวที่เติมเข้ามา และเพิ่มบรรทัดขีดฆ่าด้วยเส้นสีแดง
             elif "การแก้สมการ" in sub_t:
                 if grade == "ป.4":
                     op = random.choice(["+", "-"])
@@ -1041,7 +1050,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 
             else:
                 a, b = random.randint(10, 50), random.randint(10, 50)
-                q = f"จงหาผลลัพธ์ : {a} + {b} = ?"
+                q = f"จงหาผลลัพธ์ <br><div style='font-size: 20px; font-weight: bold; margin-top: 5px; color: #2c3e50;'>ประโยคสัญลักษณ์: {a} + {b} = {box_html}</div>"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ตั้งบวกหลักหน่วยและหลักสิบให้ตรงกัน</span><br><b>ตอบ: {a + b}</b>"
 
             if q not in seen:
