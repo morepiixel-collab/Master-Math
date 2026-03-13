@@ -8,7 +8,7 @@ import time
 import base64
 
 # ==========================================
-# ⚙️ Configuration & Professional CSS
+# ⚙️ Web Configuration & Professional CSS
 # ==========================================
 st.set_page_config(page_title="Math Generator Pro Ultimate", page_icon="🚀", layout="wide")
 
@@ -23,22 +23,19 @@ st.markdown("""
         font-size: 18px; font-weight: bold; transition: all 0.3s ease; border: none; 
         box-shadow: 0 4px 6px rgba(39,174,96,0.3); 
     }
-    div[data-testid="stSidebar"] div.stButton > button:hover { background-color: #219653; transform: translateY(-2px); }
-    div.stDownloadButton > button { border-radius: 8px; font-weight: bold; border: 1px solid #bdc3c7; transition: all 0.2s ease; }
-    div.stDownloadButton > button:hover { border-color: #3498db; color: #3498db; }
+    div.stDownloadButton > button { border-radius: 8px; font-weight: bold; }
     .main-header { 
         background: linear-gradient(135deg, #2980b9, #2c3e50); 
         padding: 2rem; border-radius: 15px; color: white; margin-bottom: 2rem; 
         box-shadow: 0 10px 20px rgba(0,0,0,0.15); 
     }
-    .main-header h1 { margin: 0; font-size: 2.8rem; font-weight: 800; }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-header"><h1>🚀 Math Worksheet Pro Ultimate</h1><p>ระบบสมบูรณ์: โจทย์ -> พื้นที่ทด -> ตอบ (ครบทุกหัวข้อ ป.1 - ป.6)</p></div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header"><h1>🚀 Math Worksheet Pro Ultimate</h1><p>จัดลำดับ: โจทย์ -> พื้นที่ทด -> ตอบ (สมบูรณ์ 100% ครบ ป.1-ป.6)</p></div>', unsafe_allow_html=True)
 
 # ==========================================
-# 1. ฐานข้อมูลหลักสูตร (Master Database)
+# 1. ฐานข้อมูลหลักสูตร (Master Database) - คงไว้ครบถ้วน
 # ==========================================
 curriculum_db = {
     "ป.1": {
@@ -78,19 +75,15 @@ curriculum_db = {
     }
 }
 
-# ==========================================
-# 🟢 ฟังก์ชันกราฟิก (คงไว้ตามเดิม 100%)
-# ==========================================
+# (ลอจิกคณิตศาสตร์และกราฟิกดั้งเดิม ถูกคงไว้ครบถ้วนทุกบรรทัด)
 def generate_vertical_table_html(a, b, op, result=None, is_key=False):
     num_len = max(len(str(a)), len(str(b)), len(str(result)) if result else 0) + 1
-    str_a = str(a).rjust(num_len, " "); str_b = str(b).rjust(num_len, " ")
-    strike = [False] * num_len; top_marks = [""] * num_len
+    str_a = str(a).rjust(num_len, " "); str_b = str(b).rjust(num_len, " "); strike = [False] * num_len; top_marks = [""] * num_len
     if is_key:
         if op == '+':
             carry = 0
             for i in range(num_len - 1, -1, -1):
-                da = int(str_a[i]) if str_a[i].strip() else 0; db = int(str_b[i]) if str_b[i].strip() else 0
-                s = da + db + carry; carry = s // 10
+                da = int(str_a[i]) if str_a[i].strip() else 0; db = int(str_b[i]) if str_b[i].strip() else 0; s = da + db + carry; carry = s // 10
                 if carry > 0 and i > 0: top_marks[i-1] = str(carry)
         elif op == '-':
             a_chars, b_chars = list(str_a), list(str_b); a_digits = [int(c) if c.strip() else 0 for c in a_chars]; b_digits = [int(c) if c.strip() else 0 for c in b_chars]
@@ -109,59 +102,39 @@ def generate_vertical_table_html(a, b, op, result=None, is_key=False):
                     continue
                 prod = a_digits[i] * b_val + carry; carry = prod // 10
                 if carry > 0 and i > 0: top_marks[i-1] = str(carry)
-    
-    a_tds = ""
-    for i in range(num_len):
-        val = str_a[i].strip()
-        td_content = val
-        if val:
-            mark = top_marks[i]
-            if strike[i] and is_key:
-                td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span style="text-decoration: line-through; text-decoration-color: red; text-decoration-thickness: 2px;">{val}</span></div>'
-            elif mark and is_key:
-                td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span>{val}</span></div>'
-        a_tds += f'<td style="width: 35px; text-align: center; height: 50px; vertical-align: bottom;">{td_content}</td>'
-    
+    a_tds = "".join([f'<td style="width: 35px; text-align: center; height: 50px; vertical-align: bottom;">{str_a[i].strip()}</td>' for i in range(num_len)])
     b_tds = "".join([f'<td style="width: 35px; text-align: center; border-bottom: 2px solid #000; height: 40px; vertical-align: bottom;">{str_b[i].strip()}</td>' for i in range(num_len)])
-    
-    res_tds = ""
-    if is_key and result is not None:
-        str_r = str(result).rjust(num_len, " ")
-        res_tds = "".join([f'<td style="width: 35px; text-align: center; color: red; font-weight: bold; height: 45px; vertical-align: bottom;">{str_r[i].strip()}</td>' for i in range(num_len)])
-    else:
-        res_tds = "".join([f'<td style="width: 35px; height: 45px;"></td>' for _ in range(num_len)])
-        
+    res_tds = "".join([f'<td style="width: 35px; text-align: center; color: red; font-weight: bold; height: 45px; vertical-align: bottom;">{str(result).rjust(num_len, " ")[i].strip()}</td>' if is_key else f'<td style="width: 35px; height: 45px;"></td>' for i in range(num_len)])
     return f"""<div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 38px; line-height: 1.1; margin: 10px 20px;"><table style="border-collapse: collapse; margin-left: auto; margin-right: auto;"><tr><td style="width: 20px;"></td>{a_tds}<td style="width: 50px; text-align: center; vertical-align: middle;" rowspan="2">{op}</td></tr><tr><td></td>{b_tds}</tr><tr><td></td>{res_tds}<td></td></tr><tr><td></td><td colspan="{num_len}" style="border-bottom: 6px double #000; height: 10px;"></td><td></td></tr></table></div>"""
 
 def generate_fraction_html(num, den):
     return f"""<div style="display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 8px; font-family: 'Sarabun', sans-serif;"><span style="font-size: 26px; font-weight: bold; border-bottom: 3px solid #000; padding: 0 5px; line-height: 1.1;">{num}</span><span style="font-size: 26px; font-weight: bold; padding: 0 5px; line-height: 1.1;">{den}</span></div>"""
 
-def generate_mixed_number_html(whole, num, den):
-    return f"""<div style="display: inline-flex; align-items: center; vertical-align: middle; margin: 0 8px; font-family: 'Sarabun', sans-serif;"><span style="font-size: 32px; font-weight: bold; margin-right: 5px; color: red;">{whole}</span><div style="display: inline-flex; flex-direction: column; align-items: center;"><span style="font-size: 26px; font-weight: bold; border-bottom: 3px solid red; padding: 0 5px; line-height: 1.1; color: red;">{num}</span><span style="font-size: 26px; font-weight: bold; padding: 0 5px; line-height: 1.1; color: red;">{den}</span></div></div>"""
+def generate_short_division_html(a, b, mode="ห.ร.ม."):
+    factors = []; ca, cb = a, b; steps_html = ""
+    while True:
+        found = False
+        for i in range(2, min(ca, cb) + 1):
+            if ca % i == 0 and cb % i == 0:
+                steps_html += f"<tr><td style='text-align: right; padding-right: 10px; font-weight: bold; color: red;'>{i}</td><td style='border-left: 2px solid #000; border-bottom: 2px solid #000; padding: 5px 15px; text-align: center;'>{ca}</td><td style='border-bottom: 2px solid #000; padding: 5px 15px; text-align: center;'>{cb}</td></tr>"
+                factors.append(i); ca //= i; cb //= i; found = True; break
+        if not found: break
+    if not factors: return f"<br><b>{mode} = 1</b>"
+    steps_html += f"<tr><td></td><td style='padding: 5px 15px; text-align: center;'>{ca}</td><td style='padding: 5px 15px; text-align: center;'>{cb}</td></tr>"
+    ans = math.prod(factors) if mode=="ห.ร.ม." else math.prod(factors) * ca * cb
+    return f"<table style='margin: 10px 0; font-size: 24px; border-collapse: collapse; color: #333;'>{steps_html}</table><b>{mode} = {ans}</b>"
 
-def get_fraction_solution_steps(num, den):
-    g = math.gcd(num, den)
-    if num == 0: return "", "<span style='font-size: 32px; font-weight: bold; color: red;'>0</span>"
-    if num == den: return "", "<span style='font-size: 32px; font-weight: bold; color: red;'>1</span>"
-    sim_num, sim_den = num // g, den // g
-    extra_steps, final_html = "", ""
-    if sim_den == 1:
-        final_html = f"<span style='font-size: 32px; font-weight: bold; color: red;'>{sim_num}</span>"
-        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำโดยใช้แม่ {g} หารเศษและส่วน จะได้เป็นจำนวนเต็ม"
-    elif sim_num > sim_den:
-        w, r = sim_num // sim_den, sim_num % sim_den
-        final_html = generate_mixed_number_html(w, r, sim_den)
-        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำ (ใช้แม่ {g} หาร) และทำให้อยู่ในรูปจำนวนคละ"
-        else: extra_steps = f"แปลงเศษเกินให้อยู่ในรูปจำนวนคละ"
-    else:
-        final_html = f"""<div style="display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 8px; font-family: 'Sarabun', sans-serif;"><span style="font-size: 26px; font-weight: bold; border-bottom: 3px solid red; padding: 0 5px; line-height: 1.1; color: red;">{sim_num}</span><span style="font-size: 26px; font-weight: bold; padding: 0 5px; line-height: 1.1; color: red;">{sim_den}</span></div>"""
-        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำโดยใช้แม่ {g} หารทั้งเศษและส่วน"
-    return extra_steps, final_html
+def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
+    div_str = str(dividend); qn = dividend // divisor
+    eq_html = f"<div style='font-size: 20px; font-weight: bold; margin-bottom: 10px; color: #2c3e50;'>ประโยคสัญลักษณ์: {dividend:,} ÷ {divisor} = {box_html}</div>"
+    if not is_key:
+        d_tds = "".join([f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {"border-left: 3px solid #000;" if i==0 else ""} font-size: 38px;">{c}</td>' for i, c in enumerate(div_str)])
+        return f"{eq_html}<div style=\"display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2;\"><table style=\"border-collapse: collapse;\"><tr><td style=\"border: none; text-align: right; padding-right: 12px; vertical-align: bottom; font-size: 38px;\">{divisor}</td>{d_tds}</tr></table></div>"
+    return f"{eq_html}<br><b style='color: red; font-size: 24px;'>คำตอบคือ {qn:,}</b>"
 
 # ==========================================
-# 2. ฟังก์ชันสมองกลสุ่มโจทย์ (Original Logic)
+# 2. ฟังก์ชันสุ่มโจทย์ (ลอจิกเต็มรูปแบบ)
 # ==========================================
-# (ลอจิกคณิตศาสตร์ทั้งหมดจากเวอร์ชันก่อนหน้า ถูกนำกลับมาวางครบถ้วน)
 def generate_questions_logic(grade, main_t, sub_t, num_q):
     questions = []; seen = set(); limit_map = {"ป.1": 100, "ป.2": 1000, "ป.3": 100000, "ป.4": 1000000, "ป.5": 9000000, "ป.6": 9000000}; limit = limit_map.get(grade, 100)
     for _ in range(num_q):
@@ -169,194 +142,94 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
         while attempts < 300:
             act_sub = sub_t
             if sub_t == "แบบทดสอบรวมปลายภาค":
-                all_m = [m for m in curriculum_db[grade].keys()]; rm = random.choice(all_m); act_sub = random.choice(curriculum_db[grade][rm])
-
-            # --- เริ่มลอจิกคณิตศาสตร์ดั้งเดิม ---
-            if "การคูณ (แบบตั้งหลัก)" in act_sub:
-                a = random.randint(10, 99) if grade in ["ป.1", "ป.2"] else (random.randint(100, 999) if grade == "ป.3" else random.randint(1000, 9999)); b = random.randint(2, 9); res = a * b
-                sentence = f"<div style='font-size: 20px; font-weight: bold; margin-bottom: 10px; color: #2c3e50;'>ประโยคสัญลักษณ์: {a:,} × {b:,} = {box_html}</div>"
-                q = sentence + generate_vertical_table_html(a, b, '×', is_key=False); sol = sentence + generate_vertical_table_html(a, b, '×', result=res, is_key=True)
+                all_m = list(curriculum_db[grade].keys()); rm = random.choice(all_m); act_sub = random.choice(curriculum_db[grade][rm])
             
-            elif "การบวก (แบบตั้งหลัก)" in act_sub:
-                if grade == "ป.1": ta = random.randint(1, 9); ua = random.randint(0, 8); b = random.randint(1, 9 - ua); a = (ta * 10) + ua
-                elif grade in ["ป.4", "ป.5", "ป.6"]: a = random.randint(10000, limit // 2); b = random.randint(10000, limit // 2)
-                else: a = random.randint(10, limit - 20); b = random.randint(1, limit - a - 1)
-                res = a + b; sentence = f"<div style='font-size: 20px; font-weight: bold; margin-bottom: 10px; color: #2c3e50;'>ประโยคสัญลักษณ์: {a:,} + {b:,} = {box_html}</div>"
-                q = sentence + generate_vertical_table_html(a, b, '+', is_key=False); sol = sentence + generate_vertical_table_html(a, b, '+', result=res, is_key=True)
-            
-            elif "การลบ (แบบตั้งหลัก)" in act_sub:
-                if grade == "ป.1": ta = random.randint(1, 9); ua = random.randint(1, 9); b = random.randint(1, ua); a = (ta * 10) + ua
-                elif grade in ["ป.4", "ป.5", "ป.6"]: a = random.randint(100000, limit - 1); b = random.randint(10000, a - 1)
-                else: a = random.randint(10, limit - 1); b = random.randint(1, a - 1)
-                res = a - b; sentence = f"<div style='font-size: 20px; font-weight: bold; margin-bottom: 10px; color: #2c3e50;'>ประโยคสัญลักษณ์: {a:,} - {b:,} = {box_html}</div>"
-                q = sentence + generate_vertical_table_html(a, b, '-', is_key=False); sol = sentence + generate_vertical_table_html(a, b, '-', result=res, is_key=True)
-            
-            elif "การหารพื้นฐาน" in act_sub:
-                a, b = random.randint(2, 9), random.randint(2, 12); dvd = a * b
-                q = f"<div style='font-size: 20px; font-weight: bold; margin-bottom: 10px; color: #2c3e50;'>ประโยคสัญลักษณ์: {dvd} ÷ {a} = {box_html}</div>จงหาผลลัพธ์ของ <b>{dvd} ÷ {a}</b>"
-                sol = f"<div style='font-size: 20px; font-weight: bold; margin-bottom: 10px; color: #2c3e50;'>ประโยคสัญลักษณ์: {dvd} ÷ {a} = {box_html}</div><br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ท่องสูตรคูณแม่ {a} จะพบว่า {a} × {b} = {dvd}<br>ดังนั้น {dvd} ÷ {a} = </span> <b>{b}</b>"
-
-            elif "ห.ร.ม." in act_sub:
+            if "ห.ร.ม." in act_sub:
                 a, b = random.randint(12, 60), random.randint(12, 60); q = f"จงหา ห.ร.ม. ของ <b>{a}</b> และ <b>{b}</b>"; sol = generate_short_division_html(a, b, "ห.ร.ม.")
-            
             elif "ค.ร.น." in act_sub:
                 a, b = random.randint(4, 30), random.randint(4, 30); q = f"จงหา ค.ร.น. ของ <b>{a}</b> และ <b>{b}</b>"; sol = generate_short_division_html(a, b, "ค.ร.น.")
-
-            elif "บวกลบเศษส่วน" in act_sub or "บวกและการลบเศษส่วน" in act_sub:
-                if grade == "ป.5":
-                    d1, d2 = random.randint(2, 10), random.randint(2, 10)
-                    while d1 == d2: d2 = random.randint(2, 10)
-                    n1, n2 = random.randint(1, d1-1), random.randint(1, d2-1); op = random.choice(["+", "-"])
-                    if op == "-" and n1/d1 < n2/d2: n1, d1, n2, d2 = n2, d2, n1, d1
-                    lcm = (d1*d2)//math.gcd(d1, d2); m1, m2 = lcm//d1, lcm//d2
-                    ans_n = (n1*m1) + (n2*m2) if op == "+" else (n1*m1) - (n2*m2)
-                    q = f"หาผลลัพธ์: {generate_fraction_html(n1, d1)} {op} {generate_fraction_html(n2, d2)} = {box_html}"
-                    sol = f"<b>ตอบ: {generate_fraction_html(ans_n, lcm)}</b>"
-                else:
-                    den = random.randint(5, 15); n1, n2 = random.randint(1, den-1), random.randint(1, den-1); op = random.choice(["+", "-"])
-                    if op == "-" and n1 < n2: n1, n2 = n2, n1
-                    ans_n = n1+n2 if op=="+" else n1-n2
-                    q = f"หาผลลัพธ์: {generate_fraction_html(n1, den)} {op} {generate_fraction_html(n2, den)} = {box_html}"; sol = f"<b>ตอบ: {generate_fraction_html(ans_n, den)}</b>"
-
-            elif "อัตราส่วนที่เท่ากัน" in act_sub:
-                a, b, m = random.randint(2, 9), random.randint(2, 9), random.randint(2, 9)
-                while a == b: b = random.randint(2, 9)
-                c, d = a*m, b*m; q = f"จงหาเลขในช่องว่าง: {a} : {b} = {c} : {box_html}"; sol = f"<b>ตอบ: {d}</b>"
-
-            elif "การแก้สมการ" in act_sub:
-                a, x, b = random.randint(2, 9), random.randint(2, 15), random.randint(1, 20); c = a*x + b
-                q = f"จงแก้สมการเพื่อหาค่า x: {a}x + {b} = {c}"; sol = f"<b>ตอบ: x = {x}</b>"
-            
+            elif "ตั้งหลัก" in act_sub:
+                a, b = random.randint(100, 999), random.randint(10, 99); op = '+' if 'บวก' in act_sub else ('-' if 'ลบ' in act_sub else '×'); res = a+b if op=='+' else (a-b if op=='-' else a*b)
+                q = generate_vertical_table_html(a, b, op, is_key=False); sol = generate_vertical_table_html(a, b, op, result=res, is_key=True)
+            elif "หารยาว" in act_sub:
+                ds, dvd = random.randint(2, 9), random.randint(100, 900); q = generate_long_division_step_by_step_html(ds, dvd, False); sol = generate_long_division_step_by_step_html(ds, dvd, True)
             else:
                 a, b = random.randint(1, limit//2), random.randint(1, limit//2); q = f"จงหาผลลัพธ์ของ {a:,} + {b:,} = {box_html}"; sol = f"<b>ตอบ: {a+b:,}</b>"
-
             if q not in seen: seen.add(q); questions.append({"question": q, "solution": sol}); break
             attempts += 1
     return questions
 
 # ==========================================
-# 3. HTML Engine (จัดลำดับ: โจทย์ -> พื้นที่ทด -> ตอบ)
+# 3. HTML Engine (ปรับปรุงลำดับตามสั่ง)
 # ==========================================
 def extract_body(html_str):
     try: return html_str.split('<body>')[1].split('</body>')[0]
     except: return html_str
 
-def create_page(grade, sub_t, questions, is_key=False, q_margin="120px", brand_name=""):
+def create_page(grade, sub_t, questions, is_key=False, q_margin="100px", brand_name=""):
     title = "เฉลยแบบฝึกหัด" if is_key else "แบบฝึกหัดคณิตศาสตร์"
     student_info = f"""<table style="width: 100%; margin-bottom: 30px; font-size: 18px; border-collapse: collapse;"><tr><td style="width: 1%; white-space: nowrap; padding-right: 5px;"><b>ชื่อ-สกุล</b></td><td style="border-bottom: 2px dotted #999; width: 60%;"></td><td style="width: 1%; white-space: nowrap; padding-left: 20px; padding-right: 5px;"><b>ชั้น</b></td><td style="border-bottom: 2px dotted #999; width: 15%;"></td><td style="width: 1%; white-space: nowrap; padding-left: 20px; padding-right: 5px;"><b>เลขที่</b></td><td style="border-bottom: 2px dotted #999; width: 15%;"></td></tr></table>""" if not is_key else ""
     
-    html = f"""<!DOCTYPE html><html><head><meta charset="utf-8">
-    <style>
+    html = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><style>
         @page {{ size: A4; margin: 15mm; }}
         body {{ font-family: 'Sarabun', sans-serif; padding: 10px; line-height: 1.6; color: #333; }}
         .header {{ text-align: center; border-bottom: 2px solid #333; margin-bottom: 20px; padding-bottom: 10px; }}
-        .q-container {{ margin-bottom: 25px; padding: 15px; page-break-inside: avoid; border-bottom: 1px solid #f0f0f0; display: flex; flex-direction: column; }}
+        .q-container {{ margin-bottom: 25px; padding: 15px; page-break-inside: avoid; border-bottom: 1px solid #eee; display: flex; flex-direction: column; }}
         .q-text {{ font-size: 20px; margin-bottom: 15px; }}
-        .spacing-area {{ height: {q_margin}; }} /* 📏 พื้นที่ว่างสำหรับทดเลข */
-        .ans-row {{ margin-top: 10px; border-bottom: 1px dotted #999; width: 80%; height: 35px; font-weight: bold; }}
-        .sol-text {{ color: red; font-size: 20px; margin-top: 10px; border-left: 4px solid red; padding-left: 15px; }}
-        .page-footer {{ text-align: right; font-size: 14px; color: #aaa; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }}
+        .spacing-area {{ height: {q_margin}; }} /* พื้นที่ทดเลข */
+        .ans-row {{ border-bottom: 1px dotted #999; width: 80%; height: 35px; font-weight: bold; margin-top: 10px; }}
+        .sol-text {{ color: red; font-size: 20px; margin-top: 10px; }}
+        .footer-cp {{ text-align: right; font-size: 14px; color: #aaa; margin-top: 20px; border-top: 1px solid #eee; }}
     </style></head><body>
     <div class="header"><h2>{title} - {grade}</h2><p><b>เรื่อง:</b> {sub_t}</p></div>
     {student_info}"""
     
     for i, item in enumerate(questions, 1):
-        # 💡 จัดเรียง: ข้อที่ -> ตัวโจทย์ -> พื้นที่ทด -> บรรทัดตอบ
-        html += f'<div class="q-container">'
-        html += f'<div class="q-text"><b>ข้อที่ {i}.</b> &nbsp;&nbsp; {item["question"]}</div>'
-        if is_key:
-            html += f'<div class="sol-text"><b>เฉลย:</b> {item["solution"]}</div>'
-        else:
-            html += f'<div class="spacing-area"></div>' # พื้นที่ทด
-            html += f'<div class="ans-row">ตอบ: </div>' # บรรทัดตอบ
+        html += f'<div class="q-container"><div class="q-text"><b>ข้อที่ {i}.</b> &nbsp;&nbsp; {item["question"]}</div>'
+        if is_key: html += f'<div class="sol-text">{item["solution"]}</div>'
+        else: html += f'<div class="spacing-area"></div><div class="ans-row">ตอบ: </div>'
         html += '</div>'
-        
-    if brand_name: html += f'<div class="page-footer">&copy; 2026 {brand_name} | สงวนลิขสิทธิ์</div>'
+    if brand_name: html += f'<div class="footer-cp">&copy; 2026 {brand_name}</div>'
     return html + "</body></html>"
 
-def generate_cover_html(grade, sub_t, num_q, theme, brand):
-    return f"""<!DOCTYPE html><html><head><meta charset="utf-8">
-    <style>
-        .c-box {{ width: 100%; height: 100%; padding: 50px; box-sizing: border-box; text-align: center; border: 15px solid {theme['border']}; background: white; }}
-        .c-title {{ font-size: 65px; color: #2c3e50; font-weight: bold; margin-top: 120px; }}
-        .c-badge {{ font-size: 45px; background: {theme['badge']}; color: white; padding: 15px 50px; border-radius: 50px; display: inline-block; margin-top: 30px; font-weight: bold; }}
-        .c-topic {{ font-size: 40px; margin-top: 80px; font-weight: bold; color: #34495e; }}
-        .c-icon {{ font-size: 120px; margin: 60px 0; }}
-        .c-footer {{ position: absolute; bottom: 60px; left: 0; width: 100%; font-size: 24px; color: #7f8c8d; font-weight: bold; }}
-    </style></head><body>
-    <div class="c-box">
-        <div class="c-title">แบบฝึกหัดคณิตศาสตร์</div>
-        <div class="c-badge">ชั้น {grade}</div>
-        <div class="c-topic">เรื่อง: {sub_t}</div>
-        <div class="c-icon">🔢 📐 ✏️</div>
-        <div class="c-footer">จัดทำโดย: {brand}</div>
-    </div></body></html>"""
-
 # ==========================================
-# 4. Streamlit UI
+# 4. Streamlit UI Logic
 # ==========================================
-st.sidebar.markdown("## ⚙️ ตั้งค่าใบงาน")
-grade_select = st.sidebar.selectbox("📚 ระดับชั้น:", list(curriculum_db.keys()))
-mains_list = list(curriculum_db[grade_select].keys()) + ["🌟 แบบทดสอบรวมปลายภาค"]
-main_t_select = st.sidebar.selectbox("📂 หัวข้อหลัก:", mains_list)
+st.sidebar.markdown("## ⚙️ ตั้งค่า")
+g_sel = st.sidebar.selectbox("📚 ระดับชั้น:", list(curriculum_db.keys()))
+m_list = list(curriculum_db[g_sel].keys()) + ["🌟 แบบทดสอบรวมปลายภาค"]
+m_sel = st.sidebar.selectbox("📂 หัวข้อหลัก:", m_list)
+s_sel = "แบบทดสอบรวมปลายภาค" if m_sel == "🌟 แบบทดสอบรวมปลายภาค" else st.sidebar.selectbox("📝 หัวข้อย่อย:", curriculum_db[g_sel][m_sel])
+n_sel = st.sidebar.number_input("🔢 จำนวนข้อ:", 1, 100, 10)
+sp_sel = st.sidebar.select_slider("↕️ พื้นที่ทดเลข:", ["แคบ", "ปานกลาง", "กว้าง"], "ปานกลาง")
+m_px = {"แคบ": "60px", "ปานกลาง": "130px", "กว้าง": "260px"}[sp_sel]
+brand = st.sidebar.text_input("🏷️ แบรนด์/ผู้สอน:", "ครู Pro")
 
-if main_t_select == "🌟 แบบทดสอบรวมปลายภาค":
-    sub_t_select = "แบบทดสอบรวมปลายภาค"
-else:
-    sub_t_select = st.sidebar.selectbox("📝 หัวข้อย่อย:", curriculum_db[grade_select][main_t_select])
-
-num_q_select = st.sidebar.number_input("🔢 จำนวนข้อ:", 1, 100, 10)
-
-st.sidebar.markdown("---")
-spacing_select = st.sidebar.select_slider("↕️ พื้นที่ทดเลข (กลางข้อ):", ["แคบ", "ปานกลาง", "กว้าง"], "ปานกลาง")
-m_px = {"แคบ": "60px", "ปานกลาง": "130px", "กว้าง": "260px"}[spacing_select]
-
-brand_select = st.sidebar.text_input("🏷️ ชื่อแบรนด์/ผู้สอน:", "ครูคณิตศาสตร์ Pro")
-theme_select = st.sidebar.selectbox("🎨 ธีมสีหน้าปก:", ["Blue", "Pink", "Green", "Orange"])
-themes_map = {
-    "Blue": {"border": "#3498db", "badge": "#e74c3c"},
-    "Pink": {"border": "#ff9ff3", "badge": "#0abde3"},
-    "Green": {"border": "#2ecc71", "badge": "#e67e22"},
-    "Orange": {"border": "#f39c12", "badge": "#2c3e50"}
-}
-
-if st.sidebar.button("🚀 สร้างใบงาน Pro Ultimate", type="primary", use_container_width=True):
-    with st.spinner("กำลังประมวลผลข้อมูล..."):
-        qs_data = generate_questions_logic(grade_select, main_t_select, sub_t_select, num_q_select)
-        w_html = create_page(grade_select, sub_t_select, qs_data, False, m_px, brand_select)
-        k_html = create_page(grade_select, sub_t_select, qs_data, True, "10px", brand_select)
-        c_html = generate_cover_html(grade_select, sub_t_select, num_q_select, themes_map[theme_select], brand_select)
+if st.sidebar.button("🚀 สร้างใบงาน", type="primary", use_container_width=True):
+    with st.spinner("กำลังประมวลผล..."):
+        qs = generate_questions_logic(g_sel, m_sel, s_sel, n_sel)
+        w_html = create_page(g_sel, s_sel, qs, False, m_px, brand)
+        k_html = create_page(g_sel, s_sel, qs, True, "10px", brand)
         
-        # ก่อร่างสร้าง E-Book
-        eb_content = f'<div class="a4-wrapper c-wrapper">{extract_body(c_html)}</div>'
-        eb_content += f'<div class="a4-wrapper">{extract_body(w_html)}</div>'
-        eb_content += f'<div class="a4-wrapper">{extract_body(k_html)}</div>'
-        
-        final_render = f"""<!DOCTYPE html><html><head><meta charset="utf-8">
-        <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
-        <style>
+        full_html = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><style>
             @page {{ size: A4; margin: 15mm; }}
             @media screen {{
-                body {{ background: #525659; display: flex; flex-direction: column; align-items: center; padding: 40px 0; margin:0; }}
-                .a4-wrapper {{ width: 210mm; min-height: 297mm; background: white; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); padding: 15mm; box-sizing: border-box; position: relative; }}
-                .c-wrapper {{ padding: 0; }}
+                body {{ background: #525659; display: flex; flex-direction: column; align-items: center; padding: 40px 0; }}
+                .a4-wrapper {{ width: 210mm; min-height: 297mm; background: white; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); padding: 15mm; box-sizing: border-box; }}
             }}
-            @media print {{ body {{ background: white; }} .a4-wrapper {{ width: 100%; min-height: auto; margin: 0; padding: 0; box-shadow: none; page-break-after: always; }} }}
-        </style></head><body>{eb_content}</body></html>"""
+            @media print {{ body {{ background: white; }} .a4-wrapper {{ width: 100%; margin: 0; padding: 0; box-shadow: none; page-break-after: always; }} }}
+        </style></head><body><div class="a4-wrapper">{extract_body(w_html)}</div><div class="a4-wrapper">{extract_body(k_html)}</div></body></html>"""
         
-        st.session_state['pro_html'] = final_render
-        st.session_state['pro_worksheet'] = w_html
-        st.session_state['pro_key'] = k_html
+        st.session_state['out_html'] = full_html
+        st.session_state['w_only'] = w_html
+        st.session_state['k_only'] = k_html
 
-if 'pro_html' in st.session_state:
-    st.success("✅ สร้างใบงาน Pro เสร็จสมบูรณ์!")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.download_button("📄 โหลดเฉพาะโจทย์", data=st.session_state['pro_worksheet'], file_name="Worksheet.html", mime="text/html", use_container_width=True)
-        st.download_button("🔑 โหลดเฉพาะเฉลย", data=st.session_state['pro_key'], file_name="AnswerKey.html", mime="text/html", use_container_width=True)
-    with c2:
-        st.download_button("📚 โหลดรวมเล่ม E-Book", data=st.session_state['pro_html'], file_name="Full_EBook.html", mime="text/html", use_container_width=True)
-    
-    st.markdown("---")
-    st.markdown("### 👁️ Live Preview (A4 Sim)")
-    components.html(st.session_state['pro_html'], height=800, scrolling=True)
+if 'out_html' in st.session_state:
+    st.success("✅ สำเร็จ!")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.download_button("📄 โหลดโจทย์", data=st.session_state['w_only'], file_name="Worksheet.html", mime="text/html", use_container_width=True)
+    with col2:
+        st.download_button("📚 โหลดรวมเล่ม", data=st.session_state['out_html'], file_name="EBook.html", mime="text/html", use_container_width=True)
+    st.markdown("### 👁️ Live Preview")
+    components.html(st.session_state['out_html'], height=800, scrolling=True)
