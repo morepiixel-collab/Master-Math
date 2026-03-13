@@ -135,36 +135,107 @@ curriculum_db = {
 }
 
 # ==========================================
-# 🟢 ฟังก์ชันช่วย 1: สร้างตารางตั้งหลักเลข 
+# 🟢 ฟังก์ชันช่วย 1: สร้างตารางตั้งหลักเลข (อัปเกรดระบบแสดงตัวทด/ตัวยืม)
 # ==========================================
 def generate_vertical_table_html(a, b, op, result=None, is_key=False):
-    max_val = max(a, b, (result if result else 0))
-    num_len = max(len(str(max_val)), 2) 
-    str_a = f"{a:>{num_len}}"
-    str_b = f"{b:>{num_len}}"
-    def safe_char(c): return c if c.strip() else "" 
+    num_len = max(len(str(a)), len(str(b)), len(str(result)) if result else 0) + 1
     
-    show_idx = list(range(num_len))
+    str_a = str(a).rjust(num_len, " ")
+    str_b = str(b).rjust(num_len, " ")
+    
+    strike = [False] * num_len
+    top_marks = [""] * num_len
+    
+    if is_key:
+        if op == '+':
+            carry = 0
+            for i in range(num_len - 1, -1, -1):
+                da = int(str_a[i]) if str_a[i].strip() else 0
+                db = int(str_b[i]) if str_b[i].strip() else 0
+                s = da + db + carry
+                carry = s // 10
+                if carry > 0 and i > 0:
+                    top_marks[i-1] = str(carry)
+                    
+        elif op == '-':
+            a_chars = list(str_a)
+            b_chars = list(str_b)
+            a_digits = [int(c) if c.strip() else 0 for c in a_chars]
+            b_digits = [int(c) if c.strip() else 0 for c in b_chars]
+            
+            for i in range(num_len - 1, -1, -1):
+                if a_digits[i] < b_digits[i]:
+                    for j in range(i-1, -1, -1):
+                        if a_digits[j] > 0 and str_a[j].strip() != "":
+                            strike[j] = True
+                            a_digits[j] -= 1
+                            top_marks[j] = str(a_digits[j])
+                            for k in range(j+1, i):
+                                strike[k] = True
+                                a_digits[k] = 9
+                                top_marks[k] = "9"
+                            strike[i] = True
+                            a_digits[i] += 10
+                            top_marks[i] = str(a_digits[i])
+                            break
+
+        elif op == '×':
+            b_val = b
+            carry = 0
+            a_digits = [int(c) if c.strip() else 0 for c in str_a]
+            for i in range(num_len - 1, -1, -1):
+                if str_a[i].strip() == "": 
+                    if carry > 0:
+                        top_marks[i] = str(carry)
+                        carry = 0
+                    continue
+                prod = a_digits[i] * b_val + carry
+                carry = prod // 10
+                if carry > 0 and i > 0:
+                    top_marks[i-1] = str(carry)
+
+    a_tds = ""
+    for i in range(num_len):
+        val = str_a[i].strip()
+        td_content = val
+        if val:
+            mark = top_marks[i]
+            if strike[i] and is_key:
+                td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span style="text-decoration: line-through; text-decoration-color: red; text-decoration-thickness: 2px;">{val}</span></div>'
+            elif mark and is_key:
+                td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span>{val}</span></div>'
+        
+        a_tds += f'<td style="width: 35px; text-align: center; height: 50px; vertical-align: bottom;">{td_content}</td>'
+        
+    b_tds = ""
+    for i in range(num_len):
+        val = str_b[i].strip()
+        b_tds += f'<td style="width: 35px; text-align: center; border-bottom: 2px solid #000; height: 40px; vertical-align: bottom;">{val}</td>'
+
+    res_tds = ""
     if is_key and result is not None:
-        str_r = f"{result:>{num_len}}"
-        res_tds = "".join([f'<td style="width: 35px; text-align: center; color: red; font-weight: bold;">{safe_char(str_r[i])}</td>' for i in show_idx])
+        str_r = str(result).rjust(num_len, " ")
+        for i in range(num_len):
+            val = str_r[i].strip()
+            res_tds += f'<td style="width: 35px; text-align: center; color: red; font-weight: bold; height: 45px; vertical-align: bottom;">{val}</td>'
     else:
-        res_tds = "".join([f'<td style="width: 35px; height: 45px;"></td>' for _ in show_idx])
+        for _ in range(num_len):
+            res_tds += f'<td style="width: 35px; height: 45px;"></td>'
 
     html = f"""
-    <div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 38px; line-height: 1.2; margin: 20px;">
+    <div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 38px; line-height: 1.1; margin: 20px;">
         <table style="border-collapse: collapse; margin-left: auto; margin-right: auto;">
             <tr>
                 <td style="width: 20px;"></td>
-                {''.join([f'<td style="width: 35px; text-align: center;">{safe_char(str_a[i])}</td>' for i in show_idx])}
+                {a_tds}
                 <td style="width: 50px; text-align: center; vertical-align: middle;" rowspan="2">{op}</td>
             </tr>
             <tr>
                 <td></td>
-                {''.join([f'<td style="width: 35px; text-align: center; border-bottom: 2px solid #000;">{safe_char(str_b[i])}</td>' for i in show_idx])}
+                {b_tds}
             </tr>
             <tr><td></td>{res_tds}<td></td></tr>
-            <tr><td></td><td colspan="{len(show_idx)}" style="border-bottom: 6px double #000; height: 10px;"></td><td></td></tr>
+            <tr><td></td><td colspan="{num_len}" style="border-bottom: 6px double #000; height: 10px;"></td><td></td></tr>
         </table>
     </div>
     """
@@ -227,7 +298,7 @@ def generate_thai_number_text(num_str):
     return int_text + dec_text
 
 # ==========================================
-# 🟢 ฟังก์ชันช่วย 4: สร้างโครงสร้างการหารยาวแบบจับมือทำ (เครื่องหมายลบอยู่ขวามือ)
+# 🟢 ฟังก์ชันช่วย 4: สร้างโครงสร้างการหารยาวแบบจับมือทำ (อัปเกรดระบบยืม)
 # ==========================================
 def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     div_str = str(dividend)
@@ -236,13 +307,10 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     equation_html = f"<div style='font-size: 24px; font-weight: bold; margin-bottom: 15px;'>{dividend:,} ÷ {divisor} = ?</div>"
     
     if not is_key:
-        # --- สำหรับหน้าโจทย์ (เว้นว่างไว้) ---
         div_tds_list = []
         for i, c in enumerate(div_str):
             left_border = "border-left: 3px solid #000;" if i == 0 else ""
             div_tds_list.append(f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px;">{c}</td>')
-        
-        # คอลัมน์ว่างด้านขวาสุดสำหรับพื้นที่เครื่องหมายลบ
         div_tds_list.append('<td style="width: 35px;"></td>')
             
         html = f"""
@@ -258,12 +326,12 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
         """
         return html
 
-    # --- สำหรับหน้าเฉลย (แสดงวิธีทำทีละขั้นตอน) ---
     steps = []
     current_val_str = ""
     ans_str = ""
     has_started = False
     
+    # คำนวณลอจิกทุกสเต็ป พร้อมเช็กว่ามีการขีดฆ่า(ยืม)ตรงไหนบ้าง
     for i, digit in enumerate(div_str):
         current_val_str += digit
         current_val = int(current_val_str)
@@ -272,7 +340,6 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
         mul_res = q * divisor
         rem = current_val - mul_res
         
-        # ข้ามขั้นตอนแรกๆ ที่หารไม่ได้ (ซ่อนเลข 0 บนคำตอบ) ให้เหมือนที่มนุษย์ทดเลข
         if not has_started and q == 0 and i < len(div_str) - 1:
              current_val_str = str(rem) if rem != 0 else ""
              continue
@@ -280,24 +347,63 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
         has_started = True
         ans_str += str(q)
         
+        # คำนวณลอจิกการยืมสำหรับสเต็ปนี้
+        cur_chars = list(str(current_val))
+        m_chars = list(str(mul_res).zfill(len(cur_chars)))
+        c_dig = [int(c) for c in cur_chars]
+        m_dig = [int(c) for c in m_chars]
+        top_m = [""] * len(c_dig)
+        strik = [False] * len(c_dig)
+        
+        for idx_b in range(len(c_dig) - 1, -1, -1):
+            if c_dig[idx_b] < m_dig[idx_b]:
+                for j in range(idx_b-1, -1, -1):
+                    if c_dig[j] > 0:
+                        strik[j] = True
+                        c_dig[j] -= 1
+                        top_m[j] = str(c_dig[j])
+                        for k in range(j+1, idx_b):
+                            strik[k] = True
+                            c_dig[k] = 9
+                            top_m[k] = "9"
+                        strik[idx_b] = True
+                        c_dig[idx_b] += 10
+                        top_m[idx_b] = str(c_dig[idx_b])
+                        break
+                        
         steps.append({
-            'current_val': current_val,
+            'current_val_str': str(current_val),
             'mul_res': mul_res,
             'rem': rem,
-            'col_index': i
+            'col_index': i,
+            'top_m': top_m,
+            'strik': strik
         })
         current_val_str = str(rem) if rem != 0 else ""
         
     ans_padded = ans_str.rjust(div_len, " ")
-
     ans_tds_list = [f'<td style="width: 35px; text-align: center; color: red; font-weight: bold; font-size: 38px;">{c.strip()}</td>' for c in ans_padded]
-    ans_tds_list.append('<td style="width: 35px;"></td>') # คอลัมน์ว่างให้ตรงกับเครื่องหมาย
+    ans_tds_list.append('<td style="width: 35px;"></td>') 
     
+    # ส่วนหัวตัวตั้ง
     div_tds_list = []
+    s0 = steps[0] if len(steps) > 0 else None
+    s0_start = s0['col_index'] + 1 - len(s0['top_m']) if s0 else 0
+    
     for i, c in enumerate(div_str):
         left_border = "border-left: 3px solid #000;" if i == 0 else ""
-        div_tds_list.append(f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px;">{c}</td>')
-    div_tds_list.append('<td style="width: 35px;"></td>') # คอลัมน์ว่างให้ตรงกับเครื่องหมาย
+        td_content = c
+        if is_key and s0 and s0_start <= i <= s0['col_index']:
+            t_idx = i - s0_start
+            mark = s0['top_m'][t_idx]
+            is_strik = s0['strik'][t_idx]
+            if is_strik:
+                td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span style="text-decoration: line-through; text-decoration-color: red; text-decoration-thickness: 2px;">{c}</span></div>'
+            elif mark:
+                td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span>{c}</span></div>'
+                
+        div_tds_list.append(f'<td style="width: 35px; height: 50px; vertical-align: bottom; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px;">{td_content}</td>')
+    div_tds_list.append('<td style="width: 35px;"></td>') 
 
     html = f"""
     {equation_html}
@@ -318,22 +424,26 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
         pad_len = step['col_index'] + 1 - len(mul_res_str)
         
         mul_tds = ""
-        # ลูปถึง div_len + 1 เพื่อสร้างช่องขวาสุดไว้ใส่เครื่องหมายลบ
         for i in range(div_len + 1):
             if i >= pad_len and i <= step['col_index']:
                 digit_idx = i - pad_len
                 border_b = "border-bottom: 2px solid #000;" if i <= step['col_index'] else ""
-                mul_tds += f'<td style="width: 35px; text-align: center; font-size: 38px; {border_b}">{mul_res_str[digit_idx]}</td>'
+                mul_tds += f'<td style="width: 35px; height: 50px; vertical-align: bottom; text-align: center; font-size: 38px; {border_b}">{mul_res_str[digit_idx]}</td>'
             elif i == step['col_index'] + 1:
-                # ใส่เครื่องหมาย "-" ขวามือ พร้อมขยับขึ้นกึ่งกลางบรรทัดด้วย CSS (top: -24px)
                 mul_tds += '<td style="width: 35px; text-align: center; font-size: 38px; color: #333; position: relative; top: -24px;">-</td>'
             else:
                 mul_tds += '<td style="width: 35px;"></td>'
                 
         html += f"<tr><td style='border: none;'></td>{mul_tds}</tr>"
 
-        rem_str = str(step['rem'])
         is_last_step = (idx == len(steps) - 1)
+        if not is_last_step:
+            next_step = steps[idx+1]
+            ns_start = next_step['col_index'] + 1 - len(next_step['top_m'])
+        else:
+            next_step = None
+            
+        rem_str = str(step['rem'])
         next_digit = div_str[step['col_index'] + 1] if not is_last_step else ""
         
         display_str = rem_str if rem_str != "0" or is_last_step else ""
@@ -350,8 +460,21 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
         for i in range(div_len + 1):
             if i >= pad_len_rem and i <= step['col_index'] + (1 if not is_last_step else 0):
                 digit_idx = i - pad_len_rem
+                char_val = display_str[digit_idx]
+                td_content = char_val
+                
+                # นำลอจิกขีดฆ่ายืมเลขมาใช้กับบรรทัดที่กำลังจะถูกลบในสเต็ปถัดไป
+                if is_key and next_step and ns_start <= i <= next_step['col_index']:
+                    t_idx = i - ns_start
+                    mark = next_step['top_m'][t_idx]
+                    is_strik = next_step['strik'][t_idx]
+                    if is_strik:
+                        td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span style="text-decoration: line-through; text-decoration-color: red; text-decoration-thickness: 2px;">{char_val}</span></div>'
+                    elif mark:
+                        td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span>{char_val}</span></div>'
+
                 border_b2 = "border-bottom: 6px double #000;" if is_last_step else ""
-                rem_tds += f'<td style="width: 35px; text-align: center; font-size: 38px; {border_b2}">{display_str[digit_idx]}</td>'
+                rem_tds += f'<td style="width: 35px; height: 50px; vertical-align: bottom; text-align: center; font-size: 38px; {border_b2}">{td_content}</td>'
             else:
                 rem_tds += '<td style="width: 35px;"></td>'
                 
@@ -681,7 +804,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
 def create_page(grade, sub_t, questions, is_key=False):
     title = "เฉลยแบบฝึกหัด" if is_key else "แบบฝึกหัดคณิตศาสตร์"
     
-    # 🔴 ปรับความยาวของเส้นประชื่อ-สกุลให้ยาวขึ้น สำหรับเด็กประถมเขียนตัวใหญ่
     student_info = ""
     if not is_key:
         student_info = """
