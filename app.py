@@ -250,7 +250,11 @@ def generate_long_division_html(divisor, dividend, result=None, is_key=False):
         left_border = "border-left: 3px solid #000;" if i == 0 else ""
         div_tds_list.append(f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px;">{c}</td>')
 
+    # --- เพิ่มโจทย์ประโยคสัญลักษณ์ด้านบน ---
+    equation_html = f"<div style='font-size: 24px; font-weight: bold; margin-bottom: 15px;'>{dividend:,} ÷ {divisor} = ?</div>"
+
     html = f"""
+    {equation_html}
     <div style="display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2; margin: 10px 20px;">
         <table style="border-collapse: collapse;">
     """
@@ -274,9 +278,9 @@ def generate_long_division_html(divisor, dividend, result=None, is_key=False):
     </div>
     """
     
-    # เว้นพื้นที่ 8 บรรทัด สำหรับหน้าโจทย์ (ให้เด็กแสดงวิธีทำ)
+    # เว้นพื้นที่ 12 บรรทัด สำหรับหน้าโจทย์ (ให้เด็กแสดงวิธีทำ)
     if not is_key:
-        html += "<br>" * 8 
+        html += "<br>" * 12 
         
     return html
 
