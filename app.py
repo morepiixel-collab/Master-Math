@@ -227,7 +227,7 @@ def generate_thai_number_text(num_str):
     return int_text + dec_text
 
 # ==========================================
-# 🟢 ฟังก์ชันช่วย 4: สร้างโครงสร้างการหารยาวแบบจับมือทำ (เครื่องหมายลบอยู่ขวามือ)
+# 🟢 ฟังก์ชันช่วย 4: สร้างโครงสร้างการหารยาวแบบจับมือทำ (ปรับเครื่องหมายลบกึ่งกลาง)
 # ==========================================
 def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     div_str = str(dividend)
@@ -325,8 +325,8 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
                 border_b = "border-bottom: 2px solid #000;" if i <= step['col_index'] else ""
                 mul_tds += f'<td style="width: 35px; text-align: center; font-size: 38px; {border_b}">{mul_res_str[digit_idx]}</td>'
             elif i == step['col_index'] + 1:
-                # ใส่เครื่องหมาย "-" ทางขวามือของตัวเลข
-                mul_tds += '<td style="width: 35px; text-align: center; font-size: 38px; color: #333;">-</td>'
+                # 🔴 ไฮไลท์การแก้: ใส่เครื่องหมาย "-" ขวามือ พร้อมขยับขึ้นกึ่งกลางบรรทัดด้วย CSS (top: -24px)
+                mul_tds += '<td style="width: 35px; text-align: center; font-size: 38px; color: #333; position: relative; top: -24px;">-</td>'
             else:
                 mul_tds += '<td style="width: 35px;"></td>'
                 
