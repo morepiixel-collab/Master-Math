@@ -824,10 +824,18 @@ def create_page(grade, sub_t, questions, is_key=False):
     title = "เฉลยแบบฝึกหัด" if is_key else "แบบฝึกหัดคณิตศาสตร์"
     student_info = ""
     if not is_key:
+        # 🔴 ใช้ HTML Table สร้างช่องกรอกชื่อ-สกุล ป้องกันการตกบรรทัด 100%
         student_info = """
-        <div style="text-align: right; margin-bottom: 20px; font-size: 18px;">
-            <b>ชื่อ-สกุล</b>..................................................................................................................... <b>ชั้น</b>........................ <b>เลขที่</b>...................
-        </div>
+        <table style="width: 100%; margin-bottom: 30px; font-size: 18px; border-collapse: collapse;">
+            <tr>
+                <td style="width: 1%; white-space: nowrap; padding-right: 5px;"><b>ชื่อ-สกุล</b></td>
+                <td style="border-bottom: 2px dotted #999; width: 60%;"></td>
+                <td style="width: 1%; white-space: nowrap; padding-left: 20px; padding-right: 5px;"><b>ชั้น</b></td>
+                <td style="border-bottom: 2px dotted #999; width: 15%;"></td>
+                <td style="width: 1%; white-space: nowrap; padding-left: 20px; padding-right: 5px;"><b>เลขที่</b></td>
+                <td style="border-bottom: 2px dotted #999; width: 15%;"></td>
+            </tr>
+        </table>
         """
         
     html = f"""<!DOCTYPE html><html lang="th"><head><meta charset="utf-8">
