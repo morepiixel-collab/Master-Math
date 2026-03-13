@@ -97,7 +97,7 @@ curriculum_db = {
         "การบวก ลบ คูณ หาร": [
             "การบวก (แบบตั้งหลัก)", 
             "การลบ (แบบตั้งหลัก)", 
-            "การคูณ (แบบตั้งหลัก)", # 🔴 เพิ่มการคูณกลับเข้ามาให้ ป.4 แล้วครับ!
+            "การคูณ (แบบตั้งหลัก)", 
             "การหารยาว"
         ],
         "เศษส่วนและทศนิยม": [
@@ -258,7 +258,7 @@ def get_fraction_solution_steps(num, den):
     return extra_steps, final_html
 
 # ==========================================
-# 🟢 ฟังก์ชันช่วย 3, 4, 5 (หารสั้น, ทศนิยม, หารยาว)
+# 🟢 ฟังก์ชันช่วย 3: ตารางหารสั้น ห.ร.ม. / ค.ร.น.
 # ==========================================
 def generate_short_division_html(a, b, mode="ห.ร.ม."):
     factors = []
@@ -288,26 +288,86 @@ def generate_short_division_html(a, b, mode="ห.ร.ม."):
         sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ (หารสั้น):</b></span>{table}<span style='color: #2c3e50;'><b>ค.ร.น.</b> คือนำตัวหารและผลลัพธ์บรรทัดสุดท้ายมาคูณกัน (รูปตัว L):</span><br>= {calc_str}<br>= <b>{ans}</b>"
     return sol
 
-def generate_decimal_vertical_html(a, b, op):
+# ==========================================
+# 🟢 ฟังก์ชันช่วย 4: ตั้งบวกลบทศนิยม (อัปเกรดระบบทดและยืมแบบมีจุด)
+# ==========================================
+def generate_decimal_vertical_html(a, b, op, is_key=False):
     str_a, str_b = f"{a:.2f}", f"{b:.2f}"
     ans = a + b if op == '+' else round(a - b, 2)
     str_ans = f"{ans:.2f}"
-    max_len = max(len(str_a), len(str_b), len(str_ans))
-    str_a, str_b, str_ans = str_a.rjust(max_len, " "), str_b.rjust(max_len, " "), str_ans.rjust(max_len, " ")
-    a_tds = "".join([f"<td style='width: 25px; text-align: center;'>{c}</td>" for c in str_a])
-    b_tds = "".join([f"<td style='width: 25px; text-align: center; border-bottom: 2px solid #000;'>{c}</td>" for c in str_b])
-    ans_tds = "".join([f"<td style='width: 25px; text-align: center; color: red; font-weight: bold;'>{c}</td>" for c in str_ans])
+    
+    max_len = max(len(str_a), len(str_b), len(str_ans)) + 1 # เผื่อที่ให้หลักทดด้านหน้า
+    str_a = str_a.rjust(max_len, " ")
+    str_b = str_b.rjust(max_len, " ")
+    str_ans = str_ans.rjust(max_len, " ")
+    
+    strike = [False] * max_len
+    top_marks = [""] * max_len
+    
+    if is_key:
+        if op == '+':
+            carry = 0
+            for i in range(max_len - 1, -1, -1):
+                if str_a[i] == '.': continue
+                da = int(str_a[i]) if str_a[i].strip() else 0
+                db = int(str_b[i]) if str_b[i].strip() else 0
+                s = da + db + carry
+                carry = s // 10
+                if carry > 0 and i > 0:
+                    next_i = i - 1
+                    if str_a[next_i] == '.': next_i -= 1
+                    if next_i >= 0: top_marks[next_i] = str(carry)
+        elif op == '-':
+            a_chars, b_chars = list(str_a), list(str_b)
+            a_digits = [int(c) if c.strip() and c != '.' else 0 for c in a_chars]
+            b_digits = [int(c) if c.strip() and c != '.' else 0 for c in b_chars]
+            for i in range(max_len - 1, -1, -1):
+                if str_a[i] == '.': continue
+                if a_digits[i] < b_digits[i]:
+                    for j in range(i-1, -1, -1):
+                        if str_a[j] == '.': continue
+                        if a_digits[j] > 0 and str_a[j].strip() != "":
+                            strike[j] = True; a_digits[j] -= 1; top_marks[j] = str(a_digits[j])
+                            for k in range(j+1, i):
+                                if str_a[k] == '.': continue
+                                strike[k] = True; a_digits[k] = 9; top_marks[k] = "9"
+                            strike[i] = True; a_digits[i] += 10; top_marks[i] = str(a_digits[i])
+                            break
+
+    a_tds = ""
+    for i in range(max_len):
+        val = str_a[i].strip() if str_a[i].strip() else ""
+        if str_a[i] == '.': val = "."
+        td_content = val
+        if val and val != '.':
+            mark = top_marks[i]
+            if strike[i] and is_key:
+                td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span style="text-decoration: line-through; text-decoration-color: red; text-decoration-thickness: 2px;">{val}</span></div>'
+            elif mark and is_key:
+                td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span>{val}</span></div>'
+        a_tds += f"<td style='width: 35px; text-align: center; height: 50px; vertical-align: bottom;'>{td_content}</td>"
+        
+    b_tds = "".join([f"<td style='width: 35px; text-align: center; border-bottom: 2px solid #000; height: 40px; vertical-align: bottom;'>{c.strip() if c.strip() else ('.' if c=='.' else '')}</td>" for c in str_b])
+    
+    if is_key:
+        ans_tds = "".join([f"<td style='width: 35px; text-align: center; color: red; font-weight: bold; height: 45px; vertical-align: bottom;'>{c.strip() if c.strip() else ('.' if c=='.' else '')}</td>" for c in str_ans])
+    else:
+        ans_tds = "".join([f"<td style='width: 35px; height: 45px;'></td>" for _ in str_ans])
+
     return f"""
-    <div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 28px; line-height: 1.2; margin: 10px 20px;">
-        <table style="border-collapse: collapse;">
-            <tr><td style="width: 20px;"></td>{a_tds}<td style="padding-left: 15px;">{op}</td></tr>
-            <tr><td></td>{b_tds}<td></td></tr>
+    <div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 38px; line-height: 1.1; margin: 20px;">
+        <table style="border-collapse: collapse; margin-left: auto; margin-right: auto;">
+            <tr><td style="width: 20px;"></td>{a_tds}<td style="width: 50px; text-align: center; vertical-align: middle;" rowspan="2">{op}</td></tr>
+            <tr><td></td>{b_tds}</tr>
             <tr><td></td>{ans_tds}<td></td></tr>
-            <tr><td></td><td colspan="{max_len}" style="border-bottom: 4px double #000;"></td><td></td></tr>
+            <tr><td></td><td colspan="{max_len}" style="border-bottom: 6px double #000; height: 10px;"></td><td></td></tr>
         </table>
     </div>
     """
 
+# ==========================================
+# 🟢 ฟังก์ชันช่วย 5: สร้างโครงสร้างการหารยาวแบบจับมือทำ 
+# ==========================================
 def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     div_str = str(dividend)
     div_len = len(div_str)
@@ -456,11 +516,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
         while attempts < 300:
             
             # --- หมวดตั้งหลัก ---
-            # 🔴 ไฮไลท์: อัปเกรดความยากของการคูณตามชั้นเรียน
             if sub_t == "การคูณ (แบบตั้งหลัก)":
-                if grade in ["ป.1", "ป.2"]: a = random.randint(10, 99) # ป.2: 2 หลัก x 1 หลัก
-                elif grade == "ป.3": a = random.randint(100, 999) # ป.3: 3 หลัก x 1 หลัก
-                else: a = random.randint(1000, 9999) # ป.4 ขึ้นไป: 4 หลัก x 1 หลัก
+                if grade in ["ป.1", "ป.2"]: a = random.randint(10, 99) 
+                elif grade == "ป.3": a = random.randint(100, 999) 
+                else: a = random.randint(1000, 9999) 
                 b = random.randint(2, 9)
                 res = a * b
                 q = generate_vertical_table_html(a, b, '×', is_key=False)
@@ -574,8 +633,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 for _ in range(b50): money_svg += '<svg width="60" height="30" style="vertical-align: middle; margin: 2px;"><rect width="60" height="30" rx="3" fill="#74b9ff" stroke="#2980b9" stroke-width="2"/><text x="30" y="20" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">50</text></svg>'
                 for _ in range(b20): money_svg += '<svg width="60" height="30" style="vertical-align: middle; margin: 2px;"><rect width="60" height="30" rx="3" fill="#55efc4" stroke="#27ae60" stroke-width="2"/><text x="30" y="20" font-size="12" font-weight="bold" fill="#333" text-anchor="middle">20</text></svg>'
                 for _ in range(c10): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="13" fill="#bdc3c7" stroke="#7f8c8d" stroke-width="2"/><circle cx="15" cy="15" r="8" fill="#f1c40f"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">10</text></svg>'
-                for _ in range(c5): money_svg += '<svg width=\"30\" height=\"30\" style=\"vertical-align: middle; margin: 2px;\"><circle cx=\"15\" cy=\"15\" r=\"11\" fill=\"#ecf0f1\" stroke=\"#95a5a6\" stroke-width=\"2\"/><text x=\"15\" y=\"19\" font-size=\"10\" font-weight=\"bold\" fill=\"#333\" text-anchor=\"middle\">5</text></svg>'
-                for _ in range(c1): money_svg += '<svg width=\"30\" height=\"30\" style=\"vertical-align: middle; margin: 2px;\"><circle cx=\"15\" cy=\"15\" r=\"9\" fill=\"#ecf0f1\" stroke=\"#bdc3c7\" stroke-width=\"1.5\"/><text x=\"15\" y=\"19\" font-size=\"10\" font-weight=\"bold\" fill=\"#333\" text-anchor=\"middle\">1</text></svg>'
+                for _ in range(c5): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="11" fill="#ecf0f1" stroke="#95a5a6" stroke-width="2"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">5</text></svg>'
+                for _ in range(c1): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="9" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1.5"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">1</text></svg>'
                 money_svg += "</div>"
                 q = f"จากภาพ มีเงินทั้งหมดกี่บาท? {money_svg}"
                 sol = "<br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>"
@@ -799,18 +858,24 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงเขียน <b>{n}</b> เป็นตัวหนังสือภาษาไทย"
                 sol = f"<b>{generate_thai_number_text(str(n))}</b>"
 
+            # 🔴 ไฮไลท์การแก้: เพิ่มตัวทดและยืมในการบวกลบทศนิยม ป.5
             elif "ทศนิยม" in sub_t and ("บวก" in sub_t or "ลบ" in sub_t):
                 a = round(random.uniform(10.0, 99.9), 2); b = round(random.uniform(1.0, 9.9), 2)
                 op = random.choice(["+", "-"])
                 q = f"จงหาผลลัพธ์ : <b>{a:.2f} {op} {b:.2f} = ?</b>"
-                sol_html = generate_decimal_vertical_html(a, b, op)
+                sol_html = generate_decimal_vertical_html(a, b, op, is_key=True)
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ตั้งจุดทศนิยมให้ตรงกันแล้วดำเนินการตามปกติ</span><br>{sol_html}"
 
+            # 🔴 ไฮไลท์การแก้: เพิ่มการตั้งคูณแนวตั้ง ในการคูณทศนิยม ป.5
             elif "คูณทศนิยม" in sub_t:
                 a = round(random.uniform(1.0, 12.0), 1); b = random.randint(2, 9)
                 ans = round(a*b, 1)
                 q = f"จงหาผลลัพธ์ : <b>{a:.1f} × {b} = ?</b>"
-                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>1) นำทศนิยมออกก่อน จะได้ {int(a*10)} × {b} = {int(a*10)*b}<br>2) เนื่องจากตัวตั้งมีทศนิยม 1 ตำแหน่ง คำตอบจึงต้องใส่ทศนิยม 1 ตำแหน่ง<br>ตอบ:</span> <b>{ans:.1f}</b>"
+                
+                int_a = int(round(a * 10))
+                vert_mul_html = generate_vertical_table_html(int_a, b, '×', result=int_a*b, is_key=True)
+                
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>1) ตั้งคูณโดยนำจุดทศนิยมออกก่อน ({int_a} × {b}):</span><br>{vert_mul_html}<br><span style='color: #2c3e50;'>2) ตัวตั้งมีทศนิยม 1 ตำแหน่ง คำตอบจึงต้องใส่ทศนิยม 1 ตำแหน่ง<br>ตอบ:</span> <b>{ans:.1f}</b>"
 
             elif "ร้อยละ" in sub_t and "เศษส่วน" in sub_t:
                 den = random.choice([2, 4, 5, 10, 20, 25, 50]); num = random.randint(1, den-1)
