@@ -70,7 +70,7 @@ curriculum_db = {
         "สมการ": ["การแก้สมการ (บวก/ลบ)"]
     },
     "ป.5": {
-        "เศษส่วน": ["การบวกและการลบเศษส่วน", "การคูณและการหารเศษส่วน"],
+        "เศษส่วน": ["การบวกเศษส่วน", "การลบเศษส่วน", "การคูณเศษส่วน", "การหารเศษส่วน"],
         "ทศนิยม": ["การบวกและการลบทศนิยม", "การคูณทศนิยม"],
         "ร้อยละและเปอร์เซ็นต์": ["การเขียนเศษส่วนในรูปร้อยละ"],
         "สมการ": ["การแก้สมการ (คูณ/หาร)"]
@@ -609,12 +609,16 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงอ่านและเขียนเศษส่วนที่ระบายสีจากรูปภาพต่อไปนี้ : {svg_bar}"
                 sol = f"<span style='color: #2c3e50;'><b>วิธีทำ:</b> แบ่งรูปออกเป็น <b>{den}</b> ส่วนเท่าๆ กัน และระบายสีไป <b>{num}</b> ส่วน</span><br><div style='display: flex; align-items: center; margin-top: 10px;'><b>เขียนเป็นเศษส่วนได้: </b> {frac_html} <span style='margin-left: 20px;'><b>อ่านว่า: </b> เศษ {num} ส่วน {den}</span></div>"
 
-            elif "บวกลบเศษส่วน" in actual_sub_t or "บวกและการลบเศษส่วน" in actual_sub_t:
+            elif "เศษส่วน" in actual_sub_t and ("บวก" in actual_sub_t or "ลบ" in actual_sub_t) and "ทศนิยม" not in actual_sub_t:
                 if grade == "ป.5":
                     d1 = random.randint(2, 10); d2 = random.randint(2, 10)
                     while d1 == d2: d2 = random.randint(2, 10) 
                     n1 = random.randint(1, d1 - 1); n2 = random.randint(1, d2 - 1)
-                    op = random.choice(["+", "-"])
+                    
+                    if actual_sub_t == "การบวกเศษส่วน": op = "+"
+                    elif actual_sub_t == "การลบเศษส่วน": op = "-"
+                    else: op = random.choice(["+", "-"])
+                    
                     if op == "-" and (n1/d1) < (n2/d2): n1, n2 = n2, n1; d1, d2 = d2, d1
                     lcm_d = (d1 * d2) // math.gcd(d1, d2); m1 = lcm_d // d1; m2 = lcm_d // d2
                     ans_num = (n1 * m1) + (n2 * m2) if op == "+" else (n1 * m1) - (n2 * m2)
@@ -629,7 +633,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     extra_txt, final_html = get_fraction_solution_steps(ans_num, lcm_d)
                     if extra_txt: sol += f"<span style='color: #2c3e50;'><i>*{extra_txt}:</i></span><br><br>{final_html}"
                 else:
-                    den = random.randint(5, 15); num1 = random.randint(1, den-1); num2 = random.randint(1, den-1); op = random.choice(["+", "-"])
+                    den = random.randint(5, 15); num1 = random.randint(1, den-1); num2 = random.randint(1, den-1)
+                    if "บวก" in actual_sub_t and "ลบ" not in actual_sub_t: op = "+"
+                    elif "ลบ" in actual_sub_t and "บวก" not in actual_sub_t: op = "-"
+                    else: op = random.choice(["+", "-"])
+                    
                     if op == "-" and num1 < num2: num1, num2 = num2, num1 
                     ans_num = num1 + num2 if op == "+" else num1 - num2
                     f1 = generate_fraction_html(num1, den); f2 = generate_fraction_html(num2, den)
@@ -639,8 +647,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     extra_txt, final_html = get_fraction_solution_steps(ans_num, den)
                     if extra_txt: sol += f"<span style='color: #2c3e50;'><i>*{extra_txt}:</i></span><br><br>{final_html}"
 
-            elif "คูณและการหารเศษส่วน" in actual_sub_t:
-                n1, d1 = random.randint(1, 5), random.randint(2, 7); n2, d2 = random.randint(1, 5), random.randint(2, 7); op = random.choice(["×", "÷"])
+            elif "เศษส่วน" in actual_sub_t and ("คูณ" in actual_sub_t or "หาร" in actual_sub_t) and "เศษเกิน" not in actual_sub_t:
+                n1, d1 = random.randint(1, 5), random.randint(2, 7); n2, d2 = random.randint(1, 5), random.randint(2, 7)
+                if actual_sub_t == "การคูณเศษส่วน": op = "×"
+                elif actual_sub_t == "การหารเศษส่วน": op = "÷"
+                else: op = random.choice(["×", "÷"])
                 f1 = generate_fraction_html(n1, d1); f2 = generate_fraction_html(n2, d2)
                 q = f"จงหาผลลัพธ์ <span style='display:inline-flex; align-items:center; margin-left:5px;'>{prefix}{f1} <span style='margin: 0 8px; font-weight: bold;'>{op}</span> {f2} <span style='margin: 0 8px; font-weight: bold;'>= </span> {box_html}</span>"
                 if op == "×":
