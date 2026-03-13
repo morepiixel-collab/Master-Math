@@ -227,7 +227,7 @@ def generate_thai_number_text(num_str):
     return int_text + dec_text
 
 # ==========================================
-# 🟢 ฟังก์ชันช่วย 4: สร้างโครงสร้างการหารยาวแบบจับมือทำ (มีเครื่องหมายลบ)
+# 🟢 ฟังก์ชันช่วย 4: สร้างโครงสร้างการหารยาวแบบจับมือทำ (เครื่องหมายลบอยู่ขวามือ)
 # ==========================================
 def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     div_str = str(dividend)
@@ -241,6 +241,9 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
         for i, c in enumerate(div_str):
             left_border = "border-left: 3px solid #000;" if i == 0 else ""
             div_tds_list.append(f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px;">{c}</td>')
+        
+        # คอลัมน์ว่างด้านขวาสุดสำหรับพื้นที่เครื่องหมายลบ
+        div_tds_list.append('<td style="width: 35px;"></td>')
             
         html = f"""
         {equation_html}
@@ -288,11 +291,13 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     ans_padded = ans_str.rjust(div_len, " ")
 
     ans_tds_list = [f'<td style="width: 35px; text-align: center; color: red; font-weight: bold; font-size: 38px;">{c.strip()}</td>' for c in ans_padded]
+    ans_tds_list.append('<td style="width: 35px;"></td>') # คอลัมน์ว่างให้ตรงกับเครื่องหมาย
     
     div_tds_list = []
     for i, c in enumerate(div_str):
         left_border = "border-left: 3px solid #000;" if i == 0 else ""
         div_tds_list.append(f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px;">{c}</td>')
+    div_tds_list.append('<td style="width: 35px;"></td>') # คอลัมน์ว่างให้ตรงกับเครื่องหมาย
 
     html = f"""
     {equation_html}
@@ -313,20 +318,19 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
         pad_len = step['col_index'] + 1 - len(mul_res_str)
         
         mul_tds = ""
-        for i in range(div_len):
-            # แทรกเครื่องหมาย "-" ไว้ด้านซ้ายของตัวเลขเสมอ
-            if i == pad_len - 1:
-                mul_tds += '<td style="width: 35px; text-align: right; font-size: 38px; color: #555;">-</td>'
-            elif i < pad_len or i > step['col_index']:
-                mul_tds += '<td style="width: 35px;"></td>'
-            else:
+        # ลูปถึง div_len + 1 เพื่อสร้างช่องขวาสุดไว้ใส่เครื่องหมายลบ
+        for i in range(div_len + 1):
+            if i >= pad_len and i <= step['col_index']:
                 digit_idx = i - pad_len
                 border_b = "border-bottom: 2px solid #000;" if i <= step['col_index'] else ""
                 mul_tds += f'<td style="width: 35px; text-align: center; font-size: 38px; {border_b}">{mul_res_str[digit_idx]}</td>'
+            elif i == step['col_index'] + 1:
+                # ใส่เครื่องหมาย "-" ทางขวามือของตัวเลข
+                mul_tds += '<td style="width: 35px; text-align: center; font-size: 38px; color: #333;">-</td>'
+            else:
+                mul_tds += '<td style="width: 35px;"></td>'
                 
-        # ถ้าเครื่องหมายลบต้องอยู่หน้าสุด (กรณีดึงหลักแรกมาลบ) ให้นำไปแสดงในคอลัมน์ของตัวหาร
-        divisor_col_content = "-" if pad_len == 0 else ""
-        html += f"<tr><td style='border: none; text-align: right; padding-right: 10px; font-size: 38px; color: #555;'>{divisor_col_content}</td>{mul_tds}</tr>"
+        html += f"<tr><td style='border: none;'></td>{mul_tds}</tr>"
 
         rem_str = str(step['rem'])
         is_last_step = (idx == len(steps) - 1)
@@ -343,13 +347,13 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
         pad_len_rem = step['col_index'] + 1 - len(display_str) + (1 if not is_last_step else 0)
 
         rem_tds = ""
-        for i in range(div_len):
-            if i < pad_len_rem or i > step['col_index'] + (1 if not is_last_step else 0):
-                rem_tds += '<td style="width: 35px;"></td>'
-            else:
+        for i in range(div_len + 1):
+            if i >= pad_len_rem and i <= step['col_index'] + (1 if not is_last_step else 0):
                 digit_idx = i - pad_len_rem
                 border_b2 = "border-bottom: 6px double #000;" if is_last_step else ""
                 rem_tds += f'<td style="width: 35px; text-align: center; font-size: 38px; {border_b2}">{display_str[digit_idx]}</td>'
+            else:
+                rem_tds += '<td style="width: 35px;"></td>'
                 
         html += f"<tr><td style='border: none;'></td>{rem_tds}</tr>"
 
