@@ -252,17 +252,13 @@ def generate_fraction_html(num, den):
     </div>
     """
 
-# ==========================================
-# 🟢 ฟังก์ชันช่วย 2.1: ทอนเป็นเศษส่วนอย่างต่ำ / จำนวนคละ (สำหรับเฉลย)
-# ==========================================
 def simplify_fraction(num, den):
     if num == 0: return "0"
     if num == den: return "1"
     g = math.gcd(num, den)
     s_num = num // g
     s_den = den // g
-    if s_den == 1:
-        return str(s_num)
+    if s_den == 1: return str(s_num)
     if s_num > s_den:
         whole = s_num // s_den
         rem = s_num % s_den
@@ -270,35 +266,72 @@ def simplify_fraction(num, den):
     return f"เศษ {s_num} ส่วน {s_den}"
 
 # ==========================================
-# 🟢 ฟังก์ชันช่วย 3: แปลงตัวเลขเป็นคำอ่านภาษาไทย
+# 🟢 ฟังก์ชันช่วย 3: ตารางหารสั้น ห.ร.ม. / ค.ร.น.
 # ==========================================
-def generate_thai_number_text(num_str):
-    thai_nums = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"]
-    positions = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"]
-    parts = str(num_str).replace(",", "").split(".")
-    int_part = parts[0]
-    dec_part = parts[1] if len(parts) > 1 else ""
+def generate_short_division_html(a, b, mode="ห.ร.ม."):
+    factors = []
+    ca, cb = a, b
+    steps_html = ""
+    while True:
+        found = False
+        for i in range(2, min(ca, cb) + 1):
+            if ca % i == 0 and cb % i == 0:
+                steps_html += f"<tr><td style='text-align: right; padding-right: 10px; font-weight: bold; color: red;'>{i}</td><td style='border-left: 2px solid #000; border-bottom: 2px solid #000; padding: 5px 15px; text-align: center;'>{ca}</td><td style='border-bottom: 2px solid #000; padding: 5px 15px; text-align: center;'>{cb}</td></tr>"
+                factors.append(i)
+                ca //= i
+                cb //= i
+                found = True
+                break
+        if not found: break
+    
+    if not factors:
+        return f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ไม่มีตัวประกอบร่วมที่หารลงตัวทั้งคู่</span><br><b>{mode} = 1</b>" if mode=="ห.ร.ม." else f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ไม่มีตัวประกอบร่วม</span><br><b>ค.ร.น. = {a} × {b} = {a*b}</b>"
 
-    def read_int(s):
-        if s == "0" or s == "": return "ศูนย์"
-        res = ""
-        length = len(s)
-        for i, digit in enumerate(s):
-            d = int(digit)
-            if d == 0: continue
-            pos = length - i - 1
-            if pos == 1 and d == 2: res += "ยี่สิบ"
-            elif pos == 1 and d == 1: res += "สิบ"
-            elif pos == 0 and d == 1 and length > 1: res += "เอ็ด"
-            else: res += thai_nums[d] + positions[pos]
-        return res
-
-    int_text = read_int(int_part)
-    dec_text = ("จุด" + "".join([thai_nums[int(d)] for d in dec_part])) if dec_part else ""
-    return int_text + dec_text
+    steps_html += f"<tr><td></td><td style='padding: 5px 15px; text-align: center;'>{ca}</td><td style='padding: 5px 15px; text-align: center;'>{cb}</td></tr>"
+    table = f"<table style='margin: 10px 0; font-size: 24px; border-collapse: collapse; color: #333;'>{steps_html}</table>"
+    
+    if mode == "ห.ร.ม.":
+        ans = math.prod(factors)
+        calc_str = " × ".join(map(str, factors))
+        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ (หารสั้น):</b></span>{table}<span style='color: #2c3e50;'><b>ห.ร.ม.</b> คือนำตัวหารด้านหน้ามาคูณกัน:</span><br>= {calc_str}<br>= <b>{ans}</b>"
+    else:
+        ans = math.prod(factors) * ca * cb
+        calc_str = " × ".join(map(str, factors + [ca, cb]))
+        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ (หารสั้น):</b></span>{table}<span style='color: #2c3e50;'><b>ค.ร.น.</b> คือนำตัวหารและผลลัพธ์บรรทัดสุดท้ายมาคูณกัน (รูปตัว L):</span><br>= {calc_str}<br>= <b>{ans}</b>"
+    return sol
 
 # ==========================================
-# 🟢 ฟังก์ชันช่วย 4: สร้างโครงสร้างการหารยาวแบบจับมือทำ (อัปเกรดระบบยืม)
+# 🟢 ฟังก์ชันช่วย 4: ตั้งบวกลบทศนิยม
+# ==========================================
+def generate_decimal_vertical_html(a, b, op):
+    str_a = f"{a:.2f}"
+    str_b = f"{b:.2f}"
+    ans = a + b if op == '+' else a - b
+    str_ans = f"{ans:.2f}"
+    
+    max_len = max(len(str_a), len(str_b), len(str_ans))
+    str_a = str_a.rjust(max_len, " ")
+    str_b = str_b.rjust(max_len, " ")
+    str_ans = str_ans.rjust(max_len, " ")
+    
+    a_tds = "".join([f"<td style='width: 25px; text-align: center;'>{c}</td>" for c in str_a])
+    b_tds = "".join([f"<td style='width: 25px; text-align: center; border-bottom: 2px solid #000;'>{c}</td>" for c in str_b])
+    ans_tds = "".join([f"<td style='width: 25px; text-align: center; color: red; font-weight: bold;'>{c}</td>" for c in str_ans])
+    
+    html = f"""
+    <div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 28px; line-height: 1.2; margin: 10px 20px;">
+        <table style="border-collapse: collapse;">
+            <tr><td style="width: 20px;"></td>{a_tds}<td style="padding-left: 15px;">{op}</td></tr>
+            <tr><td></td>{b_tds}<td></td></tr>
+            <tr><td></td>{ans_tds}<td></td></tr>
+            <tr><td></td><td colspan="{max_len}" style="border-bottom: 4px double #000;"></td><td></td></tr>
+        </table>
+    </div>
+    """
+    return html
+
+# ==========================================
+# 🟢 ฟังก์ชันช่วย 5: สร้างโครงสร้างการหารยาวแบบจับมือทำ (อัปเกรดระบบยืม)
 # ==========================================
 def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     div_str = str(dividend)
@@ -331,11 +364,9 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     ans_str = ""
     has_started = False
     
-    # คำนวณลอจิกทุกสเต็ป พร้อมเช็กว่ามีการขีดฆ่า(ยืม)ตรงไหนบ้าง
     for i, digit in enumerate(div_str):
         current_val_str += digit
         current_val = int(current_val_str)
-        
         q = current_val // divisor
         mul_res = q * divisor
         rem = current_val - mul_res
@@ -347,7 +378,6 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
         has_started = True
         ans_str += str(q)
         
-        # คำนวณลอจิกการยืมสำหรับสเต็ปนี้
         cur_chars = list(str(current_val))
         m_chars = list(str(mul_res).zfill(len(cur_chars)))
         c_dig = [int(c) for c in cur_chars]
@@ -385,7 +415,6 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     ans_tds_list = [f'<td style="width: 35px; text-align: center; color: red; font-weight: bold; font-size: 38px;">{c.strip()}</td>' for c in ans_padded]
     ans_tds_list.append('<td style="width: 35px;"></td>') 
     
-    # ส่วนหัวตัวตั้ง
     div_tds_list = []
     s0 = steps[0] if len(steps) > 0 else None
     s0_start = s0['col_index'] + 1 - len(s0['top_m']) if s0 else 0
@@ -437,21 +466,15 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
         html += f"<tr><td style='border: none;'></td>{mul_tds}</tr>"
 
         is_last_step = (idx == len(steps) - 1)
-        if not is_last_step:
-            next_step = steps[idx+1]
-            ns_start = next_step['col_index'] + 1 - len(next_step['top_m'])
-        else:
-            next_step = None
+        next_step = steps[idx+1] if not is_last_step else None
+        ns_start = next_step['col_index'] + 1 - len(next_step['top_m']) if next_step else 0
             
         rem_str = str(step['rem'])
         next_digit = div_str[step['col_index'] + 1] if not is_last_step else ""
         
         display_str = rem_str if rem_str != "0" or is_last_step else ""
-        if not is_last_step and display_str == "":
-            pass
-        else:
-           display_str += next_digit
-           
+        if not is_last_step and display_str == "": pass
+        else: display_str += next_digit
         if display_str == "": display_str = next_digit
 
         pad_len_rem = step['col_index'] + 1 - len(display_str) + (1 if not is_last_step else 0)
@@ -463,7 +486,6 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
                 char_val = display_str[digit_idx]
                 td_content = char_val
                 
-                # นำลอจิกขีดฆ่ายืมเลขมาใช้กับบรรทัดที่กำลังจะถูกลบในสเต็ปถัดไป
                 if is_key and next_step and ns_start <= i <= next_step['col_index']:
                     t_idx = i - ns_start
                     mark = next_step['top_m'][t_idx]
@@ -480,11 +502,33 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
                 
         html += f"<tr><td style='border: none;'></td>{rem_tds}</tr>"
 
-    html += """
-        </table>
-    </div>
-    """
+    html += "</table></div>"
     return html
+
+def generate_thai_number_text(num_str):
+    thai_nums = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"]
+    positions = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"]
+    parts = str(num_str).replace(",", "").split(".")
+    int_part = parts[0]
+    dec_part = parts[1] if len(parts) > 1 else ""
+
+    def read_int(s):
+        if s == "0" or s == "": return "ศูนย์"
+        res = ""
+        length = len(s)
+        for i, digit in enumerate(s):
+            d = int(digit)
+            if d == 0: continue
+            pos = length - i - 1
+            if pos == 1 and d == 2: res += "ยี่สิบ"
+            elif pos == 1 and d == 1: res += "สิบ"
+            elif pos == 0 and d == 1 and length > 1: res += "เอ็ด"
+            else: res += thai_nums[d] + positions[pos]
+        return res
+
+    int_text = read_int(int_part)
+    dec_text = ("จุด" + "".join([thai_nums[int(d)] for d in dec_part])) if dec_part else ""
+    return int_text + dec_text
 
 # ==========================================
 # 2. ฟังก์ชันสมองกลสร้างโจทย์และกราฟิก 
@@ -566,7 +610,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 day = random.choice(["เวลากลางวัน", "เวลากลางคืน"])
                 q = f"หากเป็น <b>{day}</b> จะอ่านเวลาได้กี่นาฬิกา กี่นาที? {svg}"
                 ans_h = h + 12 if day == "เวลากลางวัน" and 1 <= h <= 5 else (h + 12 if day == "เวลากลางคืน" and 6 <= h <= 11 else (0 if day == "เวลากลางคืน" and h == 12 else h))
-                sol = f"{ans_h:02d}.{m:02d} น."
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เข็มสั้นชี้ระหว่างเลข {h} กับ {h+1 if h<12 else 1} (บอกชั่วโมง) และเข็มยาวชี้ที่เลข {m//5} (บอกนาทีคือ {m} นาที)<br>เวลา{day} จึงอ่านได้</span> <b>{ans_h:02d}.{m:02d} น.</b>"
 
             elif "จำนวนเงิน" in sub_t:
                 b100 = random.randint(0, 3); b50 = random.randint(0, 2); b20 = random.randint(0, 4)
@@ -579,12 +623,19 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 for _ in range(b20): money_svg += '<svg width="60" height="30" style="vertical-align: middle; margin: 2px;"><rect width="60" height="30" rx="3" fill="#55efc4" stroke="#27ae60" stroke-width="2"/><text x="30" y="20" font-size="12" font-weight="bold" fill="#333" text-anchor="middle">20</text></svg>'
                 for _ in range(c10): money_svg += '<svg width="30" height="30" style="vertical-align: middle; margin: 2px;"><circle cx="15" cy="15" r="13" fill="#bdc3c7" stroke="#7f8c8d" stroke-width="2"/><circle cx="15" cy="15" r="8" fill="#f1c40f"/><text x="15" y="19" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">10</text></svg>'
                 money_svg += "</div>"
-                q = f"จากภาพ มีเงินทั้งหมดกี่บาท? {money_svg}"; sol = f"{total:,} บาท"
+                q = f"จากภาพ มีเงินทั้งหมดกี่บาท? {money_svg}"
+                sol = "<br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>"
+                if b100 > 0: sol += f"แบงก์ 100 บาท {b100} ใบ = {b100*100} บาท<br>"
+                if b50 > 0: sol += f"แบงก์ 50 บาท {b50} ใบ = {b50*50} บาท<br>"
+                if b20 > 0: sol += f"แบงก์ 20 บาท {b20} ใบ = {b20*20} บาท<br>"
+                if c10 > 0: sol += f"เหรียญ 10 บาท {c10} เหรียญ = {c10*10} บาท<br>"
+                sol += f"นำมาบวกกันทั้งหมดจะได้เงินรวม</span> <b>{total:,} บาท</b>"
 
             elif "เครื่องชั่งสปริง" in sub_t:
                 weight = random.randint(1, 5); angle = -150 + (weight * 60)
                 scale_svg = f"""<br><div style="text-align: center; margin-top: 15px; margin-bottom: 5px;"><svg width="150" height="150"><rect x="25" y="20" width="100" height="110" rx="10" fill="#f1f2f6" stroke="#333" stroke-width="3"/><circle cx="75" cy="75" r="40" fill="#fff" stroke="#333" stroke-width="2"/><text x="75" y="47" font-size="10" font-weight="bold" text-anchor="middle">0</text><text x="105" y="65" font-size="10" font-weight="bold" text-anchor="middle">1</text><text x="100" y="100" font-size="10" font-weight="bold" text-anchor="middle">2</text><text x="75" y="112" font-size="10" font-weight="bold" text-anchor="middle">3</text><text x="50" y="100" font-size="10" font-weight="bold" text-anchor="middle">4</text><text x="45" y="65" font-size="10" font-weight="bold" text-anchor="middle">5</text><line x1="75" y1="75" x2="75" y2="45" stroke="#e74c3c" stroke-width="3" stroke-linecap="round" transform="rotate({angle} 75 75)" /><circle cx="75" cy="75" r="4" fill="#333"/><path d="M 50 20 L 40 5 L 110 5 L 100 20 Z" fill="#bdc3c7" stroke="#333" stroke-width="2"/></svg></div>"""
-                q = f"จากหน้าปัดเครื่องชั่งสปริง สินค้ามีน้ำหนักกี่กิโลกรัม? {scale_svg}"; sol = f"{weight} กิโลกรัม"
+                q = f"จากหน้าปัดเครื่องชั่งสปริง สินค้ามีน้ำหนักกี่กิโลกรัม? {scale_svg}"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ดูที่ปลายเข็มสีแดงบนหน้าปัดชี้ตรงกับเลข {weight} พอดี<br>ดังนั้น สินค้ามีน้ำหนัก</span> <b>{weight} กิโลกรัม</b>"
 
             elif "แผนภูมิรูปภาพ" in sub_t:
                 items = [("🍎 แอปเปิล", "🍎"), ("🍊 ส้ม", "🍊"), ("🍌 กล้วย", "🍌"), ("🍓 องุ่น", "🍓")]
@@ -594,73 +645,81 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 table_html = f"""<br><div style='margin-top:10px; width: 80%; border: 2px solid #333; border-collapse: collapse;'><div style='background-color: #f1f2f6; border-bottom: 2px solid #333; text-align: center; padding: 5px; font-weight: bold;'>จำนวนผลไม้ที่ร้านค้าขายได้</div>"""
                 for i in range(3): table_html += f"<div style='display: flex; border-bottom: 1px solid #ccc;'><div style='width: 30%; border-right: 1px solid #ccc; padding: 5px; font-weight: bold;'>{selected[i][0]}</div><div style='width: 70%; padding: 5px; font-size: 18px;'>{''.join([selected[i][1]] * counts[i])}</div></div>"
                 table_html += f"<div style='background-color: #fdfdfd; text-align: center; padding: 5px; font-weight: bold; color: #e74c3c;'>กำหนดให้ 1 รูปภาพ แทนผลไม้ {multiplier} ผล</div></div>"
-                q = f"จากแผนภูมิ ขายผลไม้ 3 ชนิดรวมกันกี่ผล? {table_html}"; sol = str(sum(counts) * multiplier)
+                q = f"จากแผนภูมิ ขายผลไม้ 3 ชนิดรวมกันกี่ผล? {table_html}"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> นับรูปผลไม้ทั้งหมดรวมกันได้ {sum(counts)} รูปภาพ<br>และกำหนดให้ 1 รูปภาพ แทนผลไม้ {multiplier} ผล<br>นำ {sum(counts)} × {multiplier} =</span> <b>{sum(counts) * multiplier} ผล</b>"
 
             # --- หมวดการนับ เรียงลำดับ เปรียบเทียบ ---
-            elif "การนับทีละ 10" in sub_t:
-                inc = random.choice([True, False]); st_val = random.randint(10, 60)
-                seq = [st_val, st_val+10, st_val+20, st_val+30] if inc else [st_val+30, st_val+20, st_val+10, st_val]
-                idx = random.randint(0, 3); sol = f"{seq[idx]:,}"
-                q = f"จงเติมตัวเลขที่หายไปในแบบรูปที่{'นับเพิ่ม' if inc else 'นับลด'}ทีละ 10 : {', '.join([f'{s:,}' if i != idx else '_____' for i, s in enumerate(seq)])}"
-
-            elif "การนับทีละ 1" in sub_t:
-                inc = random.choice([True, False]); st_val = random.randint(10, 95)
-                seq = [st_val, st_val+1, st_val+2, st_val+3] if inc else [st_val+3, st_val+2, st_val+1, st_val]
-                idx = random.randint(0, 3); sol = f"{seq[idx]:,}"
-                q = f"จงเติมตัวเลขที่หายไปในแบบรูป : {', '.join([f'{s:,}' if i != idx else '_____' for i, s in enumerate(seq)])}"
-
-            elif "การนับทีละ 2" in sub_t:
-                step = random.choice([2, 5, 10, 100]); inc = random.choice([True, False])
+            elif "การนับทีละ" in sub_t:
+                is_10 = "10" in sub_t; is_1 = "1" in sub_t; is_2 = "2" in sub_t
+                step = 10 if is_10 else (1 if is_1 else random.choice([2, 5, 10, 100]))
+                inc = random.choice([True, False])
                 st_val = random.randint(10, 500)
                 seq = [st_val, st_val+step, st_val+2*step, st_val+3*step] if inc else [st_val+3*step, st_val+2*step, st_val+step, st_val]
-                idx = random.randint(0, 3); sol = f"{seq[idx]:,}"
+                idx = random.randint(0, 3)
+                ans_str = f"{seq[idx]:,}"
                 q = f"จงเติมตัวเลขที่หายไปในแบบรูป : {', '.join([f'{s:,}' if i != idx else '_____' for i, s in enumerate(seq)])}"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตความต่างของตัวเลข พบว่าแบบรูปมีการ{'นับเพิ่มขึ้น' if inc else 'นับลดลง'}ทีละ {step}<br>ดังนั้น ตัวเลขที่หายไปคือ</span> <b>{ans_str}</b>"
 
-            elif "เปรียบเทียบจำนวน (> <)" in sub_t:
+            elif "เปรียบเทียบจำนวน" in sub_t:
+                is_eq = "=" in sub_t
                 a = random.randint(10, limit); b = random.randint(10, limit)
-                while a == b: b = random.randint(10, limit)
-                q = f"จงเติมเครื่องหมาย > หรือ < ลงในช่องว่าง: {a:,} _____ {b:,}"; sol = ">" if a > b else "<"
-
-            elif "เปรียบเทียบจำนวน (= ≠)" in sub_t:
-                if random.choice([True, False]): a = random.randint(10, limit); b = a; sol = "="
-                else: a = random.randint(10, limit); b = random.randint(10, limit); sol = "≠"
-                q = f"จงเติมเครื่องหมาย = หรือ ≠ ลงในช่องว่าง: {a:,} _____ {b:,}"
+                if is_eq and random.choice([True, False]): b = a
+                else:
+                    while a == b: b = random.randint(10, limit)
+                
+                sign = ""
+                if is_eq: sign = "=" if a == b else "≠"
+                else: sign = ">" if a > b else "<"
+                
+                q = f"จงเติมเครื่องหมาย {'= หรือ ≠' if is_eq else '> หรือ <'} ลงในช่องว่าง: {a:,} _____ {b:,}"
+                comp_text = "มีค่าเท่ากับ" if a==b else ("มากกว่า" if a>b else "น้อยกว่า")
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เปรียบเทียบค่าทีละหลักจากซ้ายไปขวา จะพบว่า {a:,} {comp_text} {b:,}<br>ตอบ: </span> <b>{sign}</b>"
 
             elif "เรียงลำดับจำนวน" in sub_t:
                 nums = random.sample(range(10, limit), 4)
                 is_asc = "น้อยไปมาก" in sub_t if "น้อยไปมาก" in sub_t else random.choice([True, False])
                 q = f"จงเรียงลำดับจำนวนต่อไปนี้จาก {'น้อยไปมาก' if is_asc else 'มากไปน้อย'}: {', '.join(f'{x:,}' for x in nums)}"
-                res = sorted(nums, reverse=not is_asc); sol = ", ".join(f"{x:,}" for x in res)
+                res = sorted(nums, reverse=not is_asc)
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เปรียบเทียบค่าทีละจำนวนและเรียงจาก{'น้อยไปหามาก' if is_asc else 'มากไปหาน้อย'}<br>ตอบ: </span> <b>{', '.join(f'{x:,}' for x in res)}</b>"
 
             elif "รูปกระจาย" in sub_t:
                 n = random.randint(100, limit-1)
                 parts = [f"{int(d)*(10**(len(str(n))-1-i)):,}" for i,d in enumerate(str(n)) if d != '0']
-                q = f"จงเขียน <b>{n:,}</b> ในรูปกระจาย"; sol = " + ".join(parts)
+                q = f"จงเขียน <b>{n:,}</b> ในรูปกระจาย"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> แยกตัวเลขตามค่าประจำหลักจะได้:<br></span><b>{' + '.join(parts)}</b>"
                 
             elif "จำนวนคู่" in sub_t:
                 n = random.randint(10, limit)
-                q = f"จำนวน <b>{n:,}</b> เป็นจำนวนคู่ หรือ จำนวนคี่?"; sol = "จำนวนคู่" if n % 2 == 0 else "จำนวนคี่"
+                q = f"จำนวน <b>{n:,}</b> เป็นจำนวนคู่ หรือ จำนวนคี่?"
+                is_even = (n % 2 == 0)
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ดูที่หลักหน่วยคือเลข {n%10} ซึ่ง{'หารด้วย 2 ลงตัว' if is_even else 'หารด้วย 2 ไม่ลงตัว'}<br>ดังนั้นจึงเป็น</span> <b>{'จำนวนคู่' if is_even else 'จำนวนคี่'}</b>"
 
             elif "เขียนตัวเลข" in sub_t:
                 if grade in ["ป.1", "ป.2", "ป.3"]:
                     n = random.randint(11, limit-1)
                     q = f"จงเขียนตัวเลขฮินดูอารบิก <b>{n:,}</b> ให้เป็นตัวเลขไทย"
-                    sol = f"{n:,}".translate(str.maketrans('0123456789', '๐๑๒๓๔๕๖๗๘๙'))
+                    sol = f"<b>{n:,}</b>".translate(str.maketrans('0123456789', '๐๑๒๓๔๕๖๗๘๙'))
                 else:
                     n = random.randint(100000, 9999999)
                     q = f"จงเขียนตัวเลข <b>{n:,}</b> ให้เป็นตัวหนังสือภาษาไทย"
-                    sol = generate_thai_number_text(str(n))
+                    sol = f"<b>{generate_thai_number_text(str(n))}</b>"
 
             # --- หมวดประถมปลาย (ทศนิยม เศษส่วน สมการ เรขาคณิต) ---
             elif "ค่าประมาณ" in sub_t:
                 n = random.randint(1111, 99999); ptype = random.choice(["เต็มสิบ", "เต็มร้อย", "เต็มพัน"])
                 if ptype == "เต็มสิบ":
                     ans = ((n + 5) // 10) * 10
+                    chk_d = n % 10; chk_p = "หลักหน่วย"
                 elif ptype == "เต็มร้อย":
                     ans = ((n + 50) // 100) * 100
+                    chk_d = (n // 10) % 10; chk_p = "หลักสิบ"
                 else:
                     ans = ((n + 500) // 1000) * 1000
-                q = f"จงหาค่าประมาณเป็นจำนวน<b>{ptype}</b> ของ {n:,}"; sol = f"{ans:,}"
+                    chk_d = (n // 100) % 10; chk_p = "หลักร้อย"
+                
+                action = "ปัดขึ้น" if chk_d >= 5 else "ปัดทิ้ง"
+                q = f"จงหาค่าประมาณเป็นจำนวน<b>{ptype}</b> ของ {n:,}"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ประมาณเป็นจำนวน{ptype} ให้พิจารณาตัวเลขใน {chk_p} ซึ่งก็คือเลข <b>{chk_d}</b><br>ตามกฎแล้วต้องทำการ <b>{action}</b> จะได้เป็น:</span> <b>{ans:,}</b>"
 
             elif "หารยาว" in sub_t:
                 divisor = random.randint(2, 12); quotient = random.randint(100, 999); dividend = divisor * quotient
@@ -670,27 +729,36 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             elif "เศษเกินเป็นจำนวนคละ" in sub_t:
                 den = random.randint(3, 12)
                 num = random.randint(den + 1, den * 5)
-                while num % den == 0:
-                    num = random.randint(den + 1, den * 5)
+                while num % den == 0: num = random.randint(den + 1, den * 5)
                 frac_html = generate_fraction_html(num, den)
                 q = f"จงเขียนเศษเกินต่อไปนี้ให้อยู่ในรูปจำนวนคละ : {frac_html}"
-                sol = simplify_fraction(num, den)
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> นำตัวเศษหารด้วยตัวส่วน ({num} ÷ {den}) จะได้ {num//den} เศษ {num%den}<br>ตอบ: </span><b>{simplify_fraction(num, den)}</b>"
                 
             elif "อ่านและเขียนเศษส่วน" in sub_t:
                 den = random.randint(3, 12); num = random.randint(1, den - 1)
                 frac_html = generate_fraction_html(num, den)
                 q = f"จงอ่านเศษส่วนต่อไปนี้ : {frac_html}"
-                sol = f"เศษ {num} ส่วน {den}"
+                sol = f"<b>เศษ {num} ส่วน {den}</b>"
 
             elif "บวกลบเศษส่วน" in sub_t or "บวกและการลบเศษส่วน" in sub_t:
                 den = random.randint(5, 15); num1 = random.randint(1, den-1); num2 = random.randint(1, den-1)
                 op = random.choice(["+", "-"])
                 if op == "-" and num1 < num2: num1, num2 = num2, num1 
                 ans_num = num1 + num2 if op == "+" else num1 - num2
+                
                 f1 = generate_fraction_html(num1, den)
                 f2 = generate_fraction_html(num2, den)
                 q = f"จงหาผลลัพธ์ของ : {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= ?</span>"
-                sol = simplify_fraction(ans_num, den) 
+                
+                s1 = generate_fraction_html(f"{num1} {op} {num2}", den)
+                s2 = generate_fraction_html(ans_num, den)
+                final_ans = simplify_fraction(ans_num, den)
+                
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เนื่องจากตัวส่วนเท่ากัน ให้นำตัวเศษมา{op}กันได้เลย</span><br><div style='display:flex; align-items:center;'>{f1} <span style='margin:0 10px;'>{op}</span> {f2} <span style='margin:0 10px;'>=</span> {s1} <span style='margin:0 10px;'>=</span> {s2}</div>"
+                if str(ans_num) != final_ans.split(" ")[1] and "ส่วน" in final_ans: 
+                    sol += f"<br><span style='color: #2c3e50;'>ทอนเป็นเศษส่วนอย่างต่ำ / จำนวนคละ:</span> <b>{final_ans}</b>"
+                elif "ส่วน" not in final_ans:
+                    sol += f"<br><span style='color: #2c3e50;'>ผลลัพธ์:</span> <b>{final_ans}</b>"
 
             elif "คูณและการหารเศษส่วน" in sub_t:
                 n1, d1 = random.randint(1, 5), random.randint(2, 7)
@@ -699,99 +767,112 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 f1 = generate_fraction_html(n1, d1)
                 f2 = generate_fraction_html(n2, d2)
                 q = f"จงหาผลลัพธ์ของ : {f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= ?</span>"
-                ans_n = n1 * n2 if op == "×" else n1 * d2
-                ans_d = d1 * d2 if op == "×" else d1 * n2
-                sol = simplify_fraction(ans_n, ans_d) 
+                
+                if op == "×":
+                    s1 = generate_fraction_html(f"{n1} × {n2}", f"{d1} × {d2}")
+                    ans_n, ans_d = n1*n2, d1*d2
+                    s2 = generate_fraction_html(ans_n, ans_d)
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> การคูณเศษส่วน ให้นำตัวเศษคูณตัวเศษ และตัวส่วนคูณตัวส่วน</span><br><div style='display:flex; align-items:center;'>{f1} <span style='margin:0 10px;'>×</span> {f2} <span style='margin:0 10px;'>=</span> {s1} <span style='margin:0 10px;'>=</span> {s2}</div>"
+                else:
+                    f2_flip = generate_fraction_html(d2, n2)
+                    s1 = generate_fraction_html(f"{n1} × {d2}", f"{d1} × {n2}")
+                    ans_n, ans_d = n1*d2, d1*n2
+                    s2 = generate_fraction_html(ans_n, ans_d)
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เปลี่ยนเครื่องหมายหารเป็นคูณ แล้วกลับเศษเป็นส่วนของตัวหารด้านหลัง</span><br><div style='display:flex; align-items:center;'>{f1} <span style='margin:0 10px;'>÷</span> {f2} <span style='margin:0 10px;'>=</span> {f1} <span style='margin:0 10px;'>×</span> {f2_flip} <span style='margin:0 10px;'>=</span> {s1} <span style='margin:0 10px;'>=</span> {s2}</div>"
+                    
+                final_ans = simplify_fraction(ans_n, ans_d)
+                if str(ans_n) != final_ans.split(" ")[1] and "ส่วน" in final_ans: 
+                    sol += f"<br><span style='color: #2c3e50;'>ทอนเป็นเศษส่วนอย่างต่ำ / จำนวนคละ:</span> <b>{final_ans}</b>"
+                elif "ส่วน" not in final_ans:
+                    sol += f"<br><span style='color: #2c3e50;'>ผลลัพธ์:</span> <b>{final_ans}</b>"
 
             elif "ทศนิยม" in sub_t and "อ่าน" in sub_t:
                 n = round(random.uniform(0.1, 99.999), random.randint(1, 3))
                 q = f"จงเขียน <b>{n}</b> เป็นตัวหนังสือภาษาไทย"
-                sol = generate_thai_number_text(str(n))
+                sol = f"<b>{generate_thai_number_text(str(n))}</b>"
 
             elif "ทศนิยม" in sub_t and ("บวก" in sub_t or "ลบ" in sub_t):
                 a = round(random.uniform(10.0, 99.9), 2); b = round(random.uniform(1.0, 9.9), 2)
-                op = random.choice(["+", "-"]); q = f"จงหาผลลัพธ์ : <b>{a} {op} {b} = ?</b>"
-                sol = f"{round(a+b, 2) if op=='+' else round(a-b, 2):,}"
+                op = random.choice(["+", "-"])
+                q = f"จงหาผลลัพธ์ : <b>{a:.2f} {op} {b:.2f} = ?</b>"
+                sol_html = generate_decimal_vertical_html(a, b, op)
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ตั้งจุดทศนิยมให้ตรงกันแล้วดำเนินการตามปกติ</span><br>{sol_html}"
 
             elif "คูณทศนิยม" in sub_t:
                 a = round(random.uniform(1.0, 12.0), 1); b = random.randint(2, 9)
-                q = f"จงหาผลลัพธ์ : <b>{a} × {b} = ?</b>"; sol = f"{round(a*b, 1):,}"
+                ans = round(a*b, 1)
+                q = f"จงหาผลลัพธ์ : <b>{a:.1f} × {b} = ?</b>"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>1) นำทศนิยมออกก่อน จะได้ {int(a*10)} × {b} = {int(a*10)*b}<br>2) เนื่องจากตัวตั้งมีทศนิยม 1 ตำแหน่ง คำตอบจึงต้องใส่ทศนิยม 1 ตำแหน่ง<br>ตอบ:</span> <b>{ans:.1f}</b>"
 
             elif "ร้อยละ" in sub_t and "เศษส่วน" in sub_t:
                 den = random.choice([2, 4, 5, 10, 20, 25, 50]); num = random.randint(1, den-1)
                 ans = int((num / den) * 100)
                 frac_html = generate_fraction_html(num, den)
                 q = f"จงเขียนเศษส่วนต่อไปนี้ให้อยู่ในรูปร้อยละ : {frac_html}"
-                sol = f"ร้อยละ {ans} หรือ {ans}%"
+                mul = 100 // den
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ทำตัวส่วนให้เป็น 100 โดยการคูณด้วย {mul} ทั้งเศษและส่วน</span><br><div style='display:flex; align-items:center;'>{frac_html} <span style='margin:0 10px;'>=</span> {generate_fraction_html(f'{num} × {mul}', f'{den} × {mul}')} <span style='margin:0 10px;'>=</span> {generate_fraction_html(num*mul, 100)}</div><br>ตอบ: <b>ร้อยละ {ans} หรือ {ans}%</b>"
 
             elif "โจทย์ปัญหาร้อยละ" in sub_t:
                 price = random.choice([100, 200, 500, 1000, 1500])
                 percent = random.choice([10, 15, 20, 25, 50])
                 discount = int(price * (percent / 100))
-                q = f"เสื้อราคา {price:,} บาท ร้านค้าลดราคาให้ {percent}% ร้านค้าลดราคาให้กี่บาท?"; sol = f"{discount:,} บาท"
+                q = f"เสื้อราคา {price:,} บาท ร้านค้าลดราคาให้ {percent}% ร้านค้าลดราคาให้กี่บาท?"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b><br>คำว่า ลดราคา {percent}% หมายถึง ({percent} ÷ 100) × ราคาป้าย<br>= ({percent} ÷ 100) × {price:,}<br>ตอบ:</span> <b>{discount:,} บาท</b>"
 
             elif "ห.ร.ม." in sub_t:
                 a = random.randint(12, 48); b = random.randint(12, 48)
                 while a == b: b = random.randint(12, 48) 
-                q = f"จงหา ห.ร.ม. ของ <b>{a}</b> และ <b>{b}</b>"; sol = str(math.gcd(a, b))
+                q = f"จงหา ห.ร.ม. ของ <b>{a}</b> และ <b>{b}</b>"
+                sol = generate_short_division_html(a, b, mode="ห.ร.ม.")
 
             elif "ค.ร.น." in sub_t:
                 a = random.randint(4, 24); b = random.randint(4, 24)
                 while a == b: b = random.randint(4, 24) 
-                q = f"จงหา ค.ร.น. ของ <b>{a}</b> และ <b>{b}</b>"; sol = str((a * b) // math.gcd(a, b))
+                q = f"จงหา ค.ร.น. ของ <b>{a}</b> และ <b>{b}</b>"
+                sol = generate_short_division_html(a, b, mode="ค.ร.น.")
 
             elif "สมการ" in sub_t:
                 x = random.randint(5, 50); a = random.randint(1, 20); b = x + a
-                q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x + {a} = {b}</b>"; sol = f"x = {x}"
+                q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x + {a} = {b}</b>"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ย้ายข้างตัวเลขเพื่อหาค่าตัวแปร (จากบวกย้ายไปลบ)<br>x = {b} - {a}<br>ตอบ:</span> <b>x = {x}</b>"
 
             elif "ไม้โปรแทรกเตอร์" in sub_t:
                 angle = random.randint(15, 165)
                 arm_rad = math.radians(angle)
-                ax = 150 + 120 * math.cos(arm_rad)
-                ay = 140 - 120 * math.sin(arm_rad)
-                
+                ax = 150 + 120 * math.cos(arm_rad); ay = 140 - 120 * math.sin(arm_rad)
                 ticks_svg = ""
                 for i in range(0, 181):
                     rad = math.radians(i)
                     r_out = 120
-                    if i % 10 == 0:
-                        r_in = 105
-                        stroke_w = "1.5"
-                        tx_text = 150 + 88 * math.cos(rad)
-                        ty_text = 140 - 88 * math.sin(rad)
-                        ticks_svg += f'<text x="{tx_text}" y="{ty_text+4}" font-size="10" font-weight="bold" text-anchor="middle" fill="#333">{i}</text>'
-                    elif i % 5 == 0:
-                        r_in = 110
-                        stroke_w = "1.2"
-                    else:
-                        r_in = 115
-                        stroke_w = "0.6"
-                        
-                    tx1 = 150 + r_out * math.cos(rad)
-                    ty1 = 140 - r_out * math.sin(rad)
-                    tx2 = 150 + r_in * math.cos(rad)
-                    ty2 = 140 - r_in * math.sin(rad)
+                    if i % 10 == 0: r_in, stroke_w = 105, "1.5"
+                    elif i % 5 == 0: r_in, stroke_w = 110, "1.2"
+                    else: r_in, stroke_w = 115, "0.6"
+                    tx1 = 150 + r_out * math.cos(rad); ty1 = 140 - r_out * math.sin(rad)
+                    tx2 = 150 + r_in * math.cos(rad); ty2 = 140 - r_in * math.sin(rad)
                     ticks_svg += f'<line x1="{tx1}" y1="{ty1}" x2="{tx2}" y2="{ty2}" stroke="#333" stroke-width="{stroke_w}"/>'
+                    if i % 10 == 0:
+                        tx_text = 150 + 88 * math.cos(rad); ty_text = 140 - 88 * math.sin(rad)
+                        ticks_svg += f'<text x="{tx_text}" y="{ty_text+4}" font-size="10" font-weight="bold" text-anchor="middle" fill="#333">{i}</text>'
                 
                 arc_r = 30
-                arc_x = 150 + arc_r * math.cos(arm_rad)
-                arc_y = 140 - arc_r * math.sin(arm_rad)
+                arc_x = 150 + arc_r * math.cos(arm_rad); arc_y = 140 - arc_r * math.sin(arm_rad)
                 angle_arc = f'<path d="M 180 140 A 30 30 0 0 0 {arc_x} {arc_y}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
-
                 svg = f"""<br><div style="text-align: center;"><svg width="300" height="160"><path d="M 30 140 A 120 120 0 0 1 270 140" fill="#fdfdfd" stroke="#333" stroke-width="2"/><line x1="150" y1="140" x2="270" y2="140" stroke="#3498db" stroke-width="2"/><line x1="150" y1="140" x2="{ax}" y2="{ay}" stroke="#e74c3c" stroke-width="1.5"/>{angle_arc}<line x1="30" y1="140" x2="270" y2="140" stroke="#333" stroke-width="2"/>{ticks_svg}<circle cx="150" cy="140" r="4" fill="#e74c3c"/></svg></div>"""
-                
                 q = f"มุมที่แสดงบนไม้โปรแทรกเตอร์มีขนาดกี่องศา? {svg}"
-                sol = f"{angle} องศา"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตเส้นสีแดงชี้ตรงกับตัวเลขสเกลด้านในที่เลข {angle} พอดี<br>ตอบ:</span> <b>{angle} องศา</b>"
                 
             elif "คูณ" in sub_t or "หาร" in sub_t:
                 a, b = random.randint(2, 12), random.randint(2, 12)
-                q = f"จงหาผลลัพธ์ของ {a} × {b} = ?" if "คูณ" in sub_t else f"จงหาผลลัพธ์ของ {a * b} ÷ {a} = ?"
-                sol = str(a * b) if "คูณ" in sub_t else str(b)
-
+                if "คูณ" in sub_t:
+                    q = f"จงหาผลลัพธ์ของ {a} × {b} = ?"
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ท่องสูตรคูณแม่ {a} จะได้ว่า {a} × {b} =</span> <b>{a * b}</b>"
+                else:
+                    q = f"จงหาผลลัพธ์ของ {a * b} ÷ {a} = ?"
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เนื่องจาก {a} × {b} = {a * b}<br>ดังนั้น {a * b} ÷ {a} =</span> <b>{b}</b>"
             else:
                 a, b = random.randint(10, 50), random.randint(10, 50)
                 q = f"จงหาผลลัพธ์ : {a} + {b} = ?"
-                sol = str(a + b)
+                sol = f"<b>{a + b}</b>"
 
             if q not in seen:
                 seen.add(q); questions.append({"question": q, "solution": sol}); break
@@ -819,7 +900,7 @@ def create_page(grade, sub_t, questions, is_key=False):
         .header {{ text-align: center; border-bottom: 2px solid #333; margin-bottom: 20px; padding-bottom: 10px; }}
         .q-box {{ margin-bottom: 30px; padding: 15px; page-break-inside: avoid; border-bottom: 1px solid #eee; }}
         .ans-line {{ margin-top: 15px; border-bottom: 1px dotted #999; width: 80%; height: 30px; }}
-        .sol-text {{ color: red; font-weight: bold; border-left: 3px solid red; padding-left: 10px; display: inline-block; margin-top: 10px; }}
+        .sol-text {{ color: red; font-size: 20px; display: inline-block; margin-top: 10px; line-height: 1.5; }}
     </style></head><body>
     <div class="header"><h2>{title} - {grade}</h2><p><b>เรื่อง:</b> {sub_t}</p></div>
     {student_info}"""
@@ -829,7 +910,7 @@ def create_page(grade, sub_t, questions, is_key=False):
             html += f'<div class="q-box"><b>ข้อที่ {i}.</b><br>{item["solution"] if is_key else item["question"]}</div>'
         else:
             html += f'<div class="q-box"><b>ข้อที่ {i}.</b> {item["question"]}'
-            if is_key: html += f'<br><div class="sol-text">คำตอบ: &nbsp;{item["solution"]}</div>'
+            if is_key: html += f'<br><div class="sol-text">{item["solution"]}</div>'
             else: html += '<div class="ans-line">ตอบ: </div>'
             html += '</div>'
     return html + "</body></html>"
