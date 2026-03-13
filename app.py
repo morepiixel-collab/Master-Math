@@ -227,7 +227,7 @@ def generate_thai_number_text(num_str):
     return int_text + dec_text
 
 # ==========================================
-# 🟢 ฟังก์ชันช่วย 4: สร้างโครงสร้างการหารยาวแบบจับมือทำ (ปรับเครื่องหมายลบกึ่งกลาง)
+# 🟢 ฟังก์ชันช่วย 4: สร้างโครงสร้างการหารยาวแบบจับมือทำ (เครื่องหมายลบอยู่ขวามือ)
 # ==========================================
 def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     div_str = str(dividend)
@@ -325,7 +325,7 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
                 border_b = "border-bottom: 2px solid #000;" if i <= step['col_index'] else ""
                 mul_tds += f'<td style="width: 35px; text-align: center; font-size: 38px; {border_b}">{mul_res_str[digit_idx]}</td>'
             elif i == step['col_index'] + 1:
-                # 🔴 ไฮไลท์การแก้: ใส่เครื่องหมาย "-" ขวามือ พร้อมขยับขึ้นกึ่งกลางบรรทัดด้วย CSS (top: -24px)
+                # ใส่เครื่องหมาย "-" ขวามือ พร้อมขยับขึ้นกึ่งกลางบรรทัดด้วย CSS (top: -24px)
                 mul_tds += '<td style="width: 35px; text-align: center; font-size: 38px; color: #333; position: relative; top: -24px;">-</td>'
             else:
                 mul_tds += '<td style="width: 35px;"></td>'
@@ -680,16 +680,27 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
 # ==========================================
 def create_page(grade, sub_t, questions, is_key=False):
     title = "เฉลยแบบฝึกหัด" if is_key else "แบบฝึกหัดคณิตศาสตร์"
+    
+    # 🔴 เพิ่มช่องกรอกข้อมูลนักเรียน เฉพาะในหน้าใบงาน (ไม่แสดงในหน้าเฉลย)
+    student_info = ""
+    if not is_key:
+        student_info = """
+        <div style="text-align: right; margin-bottom: 20px; font-size: 18px;">
+            <b>ชื่อ-สกุล</b>...................................................................... <b>ชั้น</b>.................. <b>เลขที่</b>.............
+        </div>
+        """
+        
     html = f"""<!DOCTYPE html><html lang="th"><head><meta charset="utf-8">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun&display=swap" rel="stylesheet">
     <style>
         body {{ font-family: 'Sarabun', sans-serif; padding: 40px; line-height: 1.8; }}
-        .header {{ text-align: center; border-bottom: 2px solid #333; margin-bottom: 20px; }}
+        .header {{ text-align: center; border-bottom: 2px solid #333; margin-bottom: 20px; padding-bottom: 10px; }}
         .q-box {{ margin-bottom: 30px; padding: 15px; page-break-inside: avoid; border-bottom: 1px solid #eee; }}
         .ans-line {{ margin-top: 15px; border-bottom: 1px dotted #999; width: 80%; height: 30px; }}
         .sol-text {{ color: red; font-weight: bold; border-left: 3px solid red; padding-left: 10px; display: inline-block; margin-top: 10px; }}
     </style></head><body>
-    <div class="header"><h2>{title} - {grade}</h2><p><b>เรื่อง:</b> {sub_t}</p></div>"""
+    <div class="header"><h2>{title} - {grade}</h2><p><b>เรื่อง:</b> {sub_t}</p></div>
+    {student_info}"""
     
     for i, item in enumerate(questions, 1):
         if "(แบบตั้งหลัก)" in sub_t or "หารยาว" in sub_t:
