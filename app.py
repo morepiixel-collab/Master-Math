@@ -521,15 +521,70 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"รูปที่หายไปคือรูปใด? {html}"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตจะพบว่ารูปภาพมีการเรียงซ้ำกันเป็นชุด ชุดละ {len(set(pt))} รูป เมื่อนับลำดับต่อมาเรื่อยๆ รูปที่หายไปคือ:</span><br><br><svg width='30' height='30' style='vertical-align: middle;'>{shapes[seq[slen]]}</svg>"
 
+            # 🔴 ไฮไลท์การแก้: วาดนาฬิกาใหม่ ขยายขนาด 50% เพิ่มสเกลย่อย และแยกสีเข็ม/ตัวเลข
             elif "นาฬิกา" in sub_t:
-                h = random.randint(1, 12); m = random.choice([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])
-                am = m * 6; ah = (h % 12) * 30 + (m / 60) * 30
-                ticks = "".join([f'<line x1="60" y1="15" x2="60" y2="20" stroke="#333" stroke-width="2" transform="rotate({i*30} 60 60)" />' for i in range(12)])
-                svg = f"""<br><div style="text-align: center; margin-top: 15px; margin-bottom: 5px;"><svg width="120" height="120"><circle cx="60" cy="60" r="50" fill="#fdfdfd" stroke="#333" stroke-width="3"/>{ticks}<line x1="60" y1="60" x2="60" y2="35" stroke="#e74c3c" stroke-width="4" stroke-linecap="round" transform="rotate({ah} 60 60)" /><line x1="60" y1="60" x2="60" y2="20" stroke="#3498db" stroke-width="3" stroke-linecap="round" transform="rotate({am} 60 60)" /><circle cx="60" cy="60" r="4" fill="#333"/></svg></div>"""
+                h = random.randint(1, 12)
+                m = random.randint(0, 59) # สุ่มนาทีละเอียดขึ้น
+                
+                cx, cy = 100, 100
+                svg_elements = []
+                svg_elements.append(f'<circle cx="{cx}" cy="{cy}" r="75" fill="#fdfdfd" stroke="#333" stroke-width="3"/>')
+                
+                for i in range(60):
+                    angle_deg = i * 6 - 90
+                    angle_rad = math.radians(angle_deg)
+                    if i % 5 == 0:
+                        # ขีดชั่วโมง (ใหญ่)
+                        tx1 = cx + 65 * math.cos(angle_rad)
+                        ty1 = cy + 65 * math.sin(angle_rad)
+                        tx2 = cx + 75 * math.cos(angle_rad)
+                        ty2 = cy + 75 * math.sin(angle_rad)
+                        svg_elements.append(f'<line x1="{tx1}" y1="{ty1}" x2="{tx2}" y2="{ty2}" stroke="#333" stroke-width="3" />')
+                        
+                        # ตัวเลขชั่วโมง (สีแดง ด้านใน)
+                        hour = i // 5
+                        if hour == 0: hour = 12
+                        tx_h = cx + 50 * math.cos(angle_rad)
+                        ty_h = cy + 50 * math.sin(angle_rad) + 6
+                        svg_elements.append(f'<text x="{tx_h}" y="{ty_h}" font-size="18" font-weight="bold" fill="#e74c3c" text-anchor="middle">{hour}</text>')
+                        
+                        # ตัวเลขนาที (สีน้ำเงิน ด้านนอก)
+                        tx_m = cx + 88 * math.cos(angle_rad)
+                        ty_m = cy + 88 * math.sin(angle_rad) + 4
+                        svg_elements.append(f'<text x="{tx_m}" y="{ty_m}" font-size="12" font-weight="bold" fill="#3498db" text-anchor="middle">{i}</text>')
+                    else:
+                        # ขีดนาที (เล็ก)
+                        tx1 = cx + 70 * math.cos(angle_rad)
+                        ty1 = cy + 70 * math.sin(angle_rad)
+                        tx2 = cx + 75 * math.cos(angle_rad)
+                        ty2 = cy + 75 * math.sin(angle_rad)
+                        svg_elements.append(f'<line x1="{tx1}" y1="{ty1}" x2="{tx2}" y2="{ty2}" stroke="#777" stroke-width="1.5" />')
+
+                ah = (h % 12) * 30 + (m / 60) * 30
+                am = m * 6
+                
+                # เข็มสั้น (สีแดง)
+                hx = cx + 40 * math.cos(math.radians(ah - 90))
+                hy = cy + 40 * math.sin(math.radians(ah - 90))
+                svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{hx}" y2="{hy}" stroke="#e74c3c" stroke-width="5" stroke-linecap="round" />')
+                
+                # เข็มยาว (สีน้ำเงิน)
+                mx = cx + 65 * math.cos(math.radians(am - 90))
+                my = cy + 65 * math.sin(math.radians(am - 90))
+                svg_elements.append(f'<line x1="{cx}" y1="{cy}" x2="{mx}" y2="{my}" stroke="#3498db" stroke-width="3" stroke-linecap="round" />')
+                
+                svg_elements.append(f'<circle cx="{cx}" cy="{cy}" r="5" fill="#333"/>')
+                
+                svg_content = "".join(svg_elements)
+                # ขนาด viewBox ใหญ่ขึ้นเพื่อให้เห็นตัวเลขด้านนอก และแสดงผลที่ขนาด 180x180 px
+                svg = f'<br><div style="text-align: center; margin-top: 15px; margin-bottom: 15px;"><svg width="180" height="180" viewBox="0 0 200 200">{svg_content}</svg></div>'
+
                 day = random.choice(["เวลากลางวัน", "เวลากลางคืน"])
                 q = f"หากเป็น <b>{day}</b> จะอ่านเวลาได้กี่นาฬิกา กี่นาที? {svg}"
+                
                 ans_h = h + 12 if day == "เวลากลางวัน" and 1 <= h <= 5 else (h + 12 if day == "เวลากลางคืน" and 6 <= h <= 11 else (0 if day == "เวลากลางคืน" and h == 12 else h))
-                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เข็มสั้นชี้ระหว่างเลข {h} กับ {h+1 if h<12 else 1} (บอกชั่วโมง) และเข็มยาวชี้ที่เลข {m//5} (บอกนาทีคือ {m} นาที)<br>เวลา{day} จึงอ่านได้</span> <b>{ans_h:02d}.{m:02d} น.</b>"
+                
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> <br>1. เข็มสั้น(สีแดง) ชี้ระหว่างเลข {h} กับ {h+1 if h<12 else 1} แสดงถึงชั่วโมงที่ {h} <br>2. เข็มยาว(สีน้ำเงิน) ชี้ที่ขีดนาทีที่ {m} (ดูตัวเลขด้านนอกประกอบ)<br>ถ้าเป็น{day} จึงอ่านเวลาได้</span> <b>{ans_h:02d}.{m:02d} น.</b>"
 
             elif "จำนวนเงิน" in sub_t:
                 b100 = random.randint(0, 3); b50 = random.randint(0, 2); b20 = random.randint(0, 4)
@@ -654,12 +709,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     mixed_sim = generate_mixed_number_html(w, sim_r, sim_den)
                     sol += f"<br><br><span style='color: #2c3e50;'><i>*ทอนเป็นเศษส่วนอย่างต่ำได้ (ใช้แม่ {g} หารเศษและส่วน):</i></span><br><br>{mixed_sim}"
                 
-            # 🔴 เพิ่มรูปภาพการระบายสีแท่งเศษส่วน
             elif "อ่านและเขียนเศษส่วน" in sub_t:
                 den = random.randint(3, 8); num = random.randint(1, den - 1)
                 frac_html = generate_fraction_html(num, den)
-                
-                # โค้ดวาดแท่งเศษส่วน
                 bar_w = 40; bar_h = 30
                 total_w = den * bar_w
                 rects = ""
@@ -667,7 +719,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     fill_color = "#3498db" if i < num else "#ffffff"
                     rects += f'<rect x="{i*bar_w}" y="0" width="{bar_w}" height="{bar_h}" fill="{fill_color}" stroke="#333" stroke-width="2"/>'
                 svg_bar = f'<br><div style="text-align: center; margin: 15px 0;"><svg width="{total_w + 4}" height="{bar_h + 4}"><g transform="translate(2,2)">{rects}</g></svg></div>'
-
                 q = f"จงอ่านและเขียนเศษส่วนที่ระบายสีจากรูปภาพต่อไปนี้ : {svg_bar}"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> แบ่งรูปออกเป็น <b>{den}</b> ส่วนเท่าๆ กัน และระบายสีไป <b>{num}</b> ส่วน</span><br><div style='display: flex; align-items: center; margin-top: 10px;'><b>เขียนเป็นเศษส่วนได้: </b> {frac_html} <span style='margin-left: 20px;'><b>อ่านว่า: </b> เศษ {num} ส่วน {den}</span></div>"
 
@@ -787,14 +838,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 else: ans_type = "มุมกลับ"; explain = "เพราะมีขนาดมากกว่า 180 องศา แต่น้อยกว่า 360 องศา (มุมโค้งกลับด้านหลัง)"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> {explain}<br>ตอบ:</span> <b>{ans_type}</b>"
 
-            # 🔴 เพิ่มการวาดรูปสี่เหลี่ยมพร้อมตัวเลขกำกับ
             elif "ความยาวรอบรูป" in sub_t or ("พื้นที่" in sub_t and "สี่เหลี่ยม" in sub_t):
                 is_peri = "ความยาวรอบรูป" in sub_t
                 is_square = random.choice([True, False])
                 
                 if is_square:
                     s = random.randint(5, 30) if is_peri else random.randint(5, 25)
-                    # วาดสี่เหลี่ยมจัตุรัส พร้อมขีดสัญลักษณ์ด้านเท่า
                     svg = f"""<br><div style="text-align: center; margin: 10px 0;"><svg width="150" height="150"><rect x="25" y="25" width="100" height="100" fill="#e8f4f8" stroke="#2980b9" stroke-width="3"/><line x1="70" y1="20" x2="80" y2="30" stroke="#c0392b" stroke-width="2"/><line x1="70" y1="120" x2="80" y2="130" stroke="#c0392b" stroke-width="2"/><line x1="20" y1="70" x2="30" y2="80" stroke="#c0392b" stroke-width="2"/><line x1="120" y1="70" x2="130" y2="80" stroke="#c0392b" stroke-width="2"/><text x="75" y="18" font-size="16" font-family="Sarabun" font-weight="bold" fill="#333" text-anchor="middle">{s} ซม.</text></svg></div>"""
                     
                     q = f"จากรูปภาพ จงหา{'ความยาวรอบรูป' if is_peri else 'พื้นที่'}ของ<b>รูปสี่เหลี่ยมจัตุรัส</b> {svg}"
@@ -807,7 +856,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 else:
                     w = random.randint(5, 20)
                     l = random.randint(w + 2, 30)
-                    # วาดสี่เหลี่ยมผืนผ้า พร้อมสัญลักษณ์มุมฉาก
                     svg = f"""<br><div style="text-align: center; margin: 10px 0;"><svg width="220" height="120"><rect x="20" y="20" width="140" height="80" fill="#e8f8f5" stroke="#16a085" stroke-width="3"/><polyline points="20,35 35,35 35,20" fill="none" stroke="#16a085" stroke-width="1.5"/><polyline points="160,35 145,35 145,20" fill="none" stroke="#16a085" stroke-width="1.5"/><text x="90" y="15" font-size="16" font-family="Sarabun" font-weight="bold" fill="#333" text-anchor="middle">{l} ซม.</text><text x="165" y="65" font-size="16" font-family="Sarabun" font-weight="bold" fill="#333" text-anchor="start">{w} ซม.</text></svg></div>"""
                     
                     q = f"จากรูปภาพ จงหา{'ความยาวรอบรูป' if is_peri else 'พื้นที่'}ของ<b>รูปสี่เหลี่ยมผืนผ้า</b> {svg}"
