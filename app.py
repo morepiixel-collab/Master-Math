@@ -482,14 +482,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = generate_vertical_table_html(a, b, '×', is_key=False)
                 sol = generate_vertical_table_html(a, b, '×', result=res, is_key=True)
 
-            # --- หมวดกราฟิก ป.1-ป.3 (เพิ่มคำอธิบายวิธีคิด) ---
+            # --- หมวดกราฟิก ป.1-ป.3 ---
             elif "ส่วนย่อย-ส่วนรวม" in sub_t:
                 total = random.randint(5, 20); p1 = random.randint(1, total - 1); p2 = total - p1
                 miss = random.choice(['t', 'p1', 'p2'])
                 svg_t = f"""<br><div style="text-align: center;"><svg width="200" height="160"><line x1="100" y1="40" x2="50" y2="120" stroke="#333" stroke-width="2"/><line x1="100" y1="40" x2="150" y2="120" stroke="#333" stroke-width="2"/><circle cx="100" cy="40" r="28" fill="#ffffff" stroke="#333" stroke-width="2"/><circle cx="50" cy="120" r="28" fill="#ffffff" stroke="#333" stroke-width="2"/><circle cx="150" cy="120" r="28" fill="#ffffff" stroke="#333" stroke-width="2"/><text x="100" y="47" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='t' else "#333"}">{{t}}</text><text x="50" y="127" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='p1' else "#333"}">{{p1}}</text><text x="150" y="127" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='p2' else "#333"}">{{p2}}</text></svg></div>"""
                 q = f"จงหาตัวเลขที่หายไป (?) : " + svg_t.format(t="?" if miss=='t' else total, p1="?" if miss=='p1' else p1, p2="?" if miss=='p2' else p2)
-                
-                # อธิบายวิธีคิด
                 miss_map = {'t': 'ส่วนรวม (วงกลมบน)', 'p1': 'ส่วนย่อย (วงกลมซ้าย)', 'p2': 'ส่วนย่อย (วงกลมขวา)'}
                 if miss == 't': calc_str = f"นำส่วนย่อยมาบวกกัน: {p1} + {p2} = <b>{total}</b>"
                 elif miss == 'p1': calc_str = f"นำส่วนรวมลบด้วยส่วนย่อยที่มี: {total} - {p2} = <b>{p1}</b>"
@@ -503,8 +501,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 svg_d = f"""<br><div style="text-align: center;"><svg width="400" height="80"><line x1="20" y1="76" x2="380" y2="76" stroke="#95a5a6" stroke-width="4"/><rect x="350" y="30" width="10" height="46" fill="#fff" stroke="#333"/><text x="355" y="20" font-size="14" font-weight="bold" text-anchor="middle" fill="#e74c3c">เส้นชัย</text>{cars}</svg></div>"""
                 idx = random.randint(0, 4); name = cols[idx]
                 ans_svg = f'<svg width="60" height="30" style="vertical-align: middle; margin-left: 10px;"><path d="M 10 10 L 15 2 L 30 2 L 35 10 Z" fill="#e0e0e0" stroke="#333"/><rect y="10" width="50" height="12" rx="3" fill="{c_map[name]}" stroke="#333"/><circle cx="12" cy="22" r="5" fill="#333"/><circle cx="38" cy="22" r="5" fill="#333"/></svg>'
-                
-                # อธิบายวิธีคิด
                 if random.choice([True, False]): 
                     q = f"รถสี{name} วิ่งอยู่อันดับที่เท่าไร? {svg_d}"
                     sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตจากป้ายเส้นชัยทางขวามือ แล้วนับย้อนมาทางซ้าย คันที่ 1, 2... จะพบว่ารถคันนี้อยู่ใน</span><br><b>อันดับที่ {idx + 1}</b> {ans_svg}"
@@ -520,10 +516,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 slen = random.randint(5, 8) 
                 html = "<br><div style='margin-top:10px; text-align:center;'>" + "".join([f'<svg width="30" height="30" style="vertical-align: middle; margin: 0 5px;">{shapes[seq[i]]}</svg>' for i in range(slen)]) + '<span style="display:inline-block; width:30px; height:30px; border-bottom:2px dashed #000; margin: 0 5px;"></span></div>'
                 q = f"รูปที่หายไปคือรูปใด? {html}"
-                
-                # อธิบายวิธีคิด
-                pattern_len = len(set(pt))
-                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตจะพบว่ารูปภาพมีการเรียงซ้ำกันเป็นชุด ชุดละ {pattern_len} รูป เมื่อนับลำดับต่อมาเรื่อยๆ รูปที่หายไปคือ:</span><br><br><svg width='30' height='30' style='vertical-align: middle;'>{shapes[seq[slen]]}</svg>"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตจะพบว่ารูปภาพมีการเรียงซ้ำกันเป็นชุด ชุดละ {len(set(pt))} รูป เมื่อนับลำดับต่อมาเรื่อยๆ รูปที่หายไปคือ:</span><br><br><svg width='30' height='30' style='vertical-align: middle;'>{shapes[seq[slen]]}</svg>"
 
             elif "นาฬิกา" in sub_t:
                 h = random.randint(1, 12); m = random.choice([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])
@@ -583,27 +576,26 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงเติมตัวเลขที่หายไปในแบบรูป : {', '.join([f'{s:,}' if i != idx else '_____' for i, s in enumerate(seq)])}"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตความต่างของตัวเลข พบว่าแบบรูปมีการ{'นับเพิ่มขึ้น' if inc else 'นับลดลง'}ทีละ {step}<br>ดังนั้น ตัวเลขที่หายไปคือ</span> <b>{ans_str}</b>"
 
-            elif "เปรียบเทียบจำนวน" in sub_t:
-                is_eq = "=" in sub_t
-                a = random.randint(10, limit); b = random.randint(10, limit)
-                if is_eq and random.choice([True, False]): b = a
-                else:
-                    while a == b: b = random.randint(10, limit)
-                
-                sign = ""
-                if is_eq: sign = "=" if a == b else "≠"
-                else: sign = ">" if a > b else "<"
-                
-                q = f"จงเติมเครื่องหมาย {'= หรือ ≠' if is_eq else '> หรือ <'} ลงในช่องว่าง: {a:,} _____ {b:,}"
-                comp_text = "มีค่าเท่ากับ" if a==b else ("มากกว่า" if a>b else "น้อยกว่า")
-                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เปรียบเทียบค่าทีละหลักจากซ้ายไปขวา จะพบว่า {a:,} {comp_text} {b:,}<br>ตอบ: </span> <b>{sign}</b>"
-
-            elif "เรียงลำดับจำนวน" in sub_t:
+            # 🔴 แก้ไขจุดที่ผิดพลาด: แยก "เปรียบเทียบ" ออกจาก "เรียงลำดับ" ให้ชัดเจน
+            elif "เรียงลำดับ" in sub_t:
                 nums = random.sample(range(10, limit), 4)
                 is_asc = "น้อยไปมาก" in sub_t if "น้อยไปมาก" in sub_t else random.choice([True, False])
                 q = f"จงเรียงลำดับจำนวนต่อไปนี้จาก {'น้อยไปมาก' if is_asc else 'มากไปน้อย'}: {', '.join(f'{x:,}' for x in nums)}"
                 res = sorted(nums, reverse=not is_asc)
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เปรียบเทียบค่าทีละจำนวนและเรียงจาก{'น้อยไปหามาก' if is_asc else 'มากไปหาน้อย'}<br>ตอบ: </span> <b>{', '.join(f'{x:,}' for x in res)}</b>"
+
+            elif "เปรียบเทียบ" in sub_t:
+                is_eq = "=" in sub_t
+                a = random.randint(10, limit); b = random.randint(10, limit)
+                if is_eq and random.choice([True, False]): b = a
+                else:
+                    while a == b: b = random.randint(10, limit)
+                sign = ""
+                if is_eq: sign = "=" if a == b else "≠"
+                else: sign = ">" if a > b else "<"
+                q = f"จงเติมเครื่องหมาย {'= หรือ ≠' if is_eq else '> หรือ <'} ลงในช่องว่าง: {a:,} _____ {b:,}"
+                comp_text = "มีค่าเท่ากับ" if a==b else ("มากกว่า" if a>b else "น้อยกว่า")
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เปรียบเทียบค่าทีละหลักจากซ้ายไปขวา จะพบว่า {a:,} {comp_text} {b:,}<br>ตอบ: </span> <b>{sign}</b>"
 
             elif "รูปกระจาย" in sub_t:
                 n = random.randint(100, limit-1)
@@ -631,15 +623,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             elif "ค่าประมาณ" in sub_t:
                 n = random.randint(1111, 99999); ptype = random.choice(["เต็มสิบ", "เต็มร้อย", "เต็มพัน"])
                 if ptype == "เต็มสิบ":
-                    ans = ((n + 5) // 10) * 10
-                    chk_d = n % 10; chk_p = "หลักหน่วย"
+                    ans = ((n + 5) // 10) * 10; chk_d = n % 10; chk_p = "หลักหน่วย"
                 elif ptype == "เต็มร้อย":
-                    ans = ((n + 50) // 100) * 100
-                    chk_d = (n // 10) % 10; chk_p = "หลักสิบ"
+                    ans = ((n + 50) // 100) * 100; chk_d = (n // 10) % 10; chk_p = "หลักสิบ"
                 else:
-                    ans = ((n + 500) // 1000) * 1000
-                    chk_d = (n // 100) % 10; chk_p = "หลักร้อย"
-                
+                    ans = ((n + 500) // 1000) * 1000; chk_d = (n // 100) % 10; chk_p = "หลักร้อย"
                 action = "ปัดขึ้น" if chk_d >= 5 else "ปัดทิ้ง"
                 q = f"จงหาค่าประมาณเป็นจำนวน<b>{ptype}</b> ของ {n:,}"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ประมาณเป็นจำนวน{ptype} ให้พิจารณาตัวเลขใน {chk_p} ซึ่งก็คือเลข <b>{chk_d}</b><br>ตามกฎแล้วต้องทำการ <b>{action}</b> จะได้เป็น:</span> <b>{ans:,}</b>"
@@ -655,15 +643,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 while num % den == 0: num = random.randint(den + 1, den * 5)
                 frac_html = generate_fraction_html(num, den)
                 q = f"จงเขียนเศษเกินต่อไปนี้ให้อยู่ในรูปจำนวนคละ : <br>{frac_html}"
-                
                 w, r = num // den, num % den
                 g = math.gcd(r, den)
-                
                 mixed_raw = generate_mixed_number_html(w, r, den)
-                
-                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> นำตัวเศษตั้ง หารด้วยตัวส่วน<br>จะได้ <b>{num} ÷ {den} = {w} เศษ {r}</b><br>"
-                sol += f"เขียนเป็นจำนวนคละโดยให้ <b>{w}</b> เป็นจำนวนเต็ม และ <b>{r}</b> เป็นเศษ: </span><br><br>{mixed_raw}"
-
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> นำตัวเศษตั้ง หารด้วยตัวส่วน<br>จะได้ <b>{num} ÷ {den} = {w} เศษ {r}</b><br>เขียนเป็นจำนวนคละโดยให้ <b>{w}</b> เป็นจำนวนเต็ม และ <b>{r}</b> เป็นเศษ: </span><br><br>{mixed_raw}"
                 if g > 1:
                     sim_r, sim_den = r // g, den // g
                     mixed_sim = generate_mixed_number_html(w, sim_r, sim_den)
@@ -680,19 +663,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 op = random.choice(["+", "-"])
                 if op == "-" and num1 < num2: num1, num2 = num2, num1 
                 ans_num = num1 + num2 if op == "+" else num1 - num2
-                
                 f1 = generate_fraction_html(num1, den)
                 f2 = generate_fraction_html(num2, den)
                 q = f"จงหาผลลัพธ์ของ : <div style='display:flex; align-items:center; margin-top:10px;'>{f1} <span style='font-size:30px; margin: 0 10px;'>{op}</span> {f2} <span style='font-size:30px; margin: 0 10px;'>= ?</span></div>"
-                
                 s1 = generate_fraction_html(f"{num1} {op} {num2}", den)
                 s2 = generate_fraction_html(ans_num, den)
-                
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เนื่องจากตัวส่วนเท่ากัน ให้นำตัวเศษมา{op}กันได้เลย</span><br><br><div style='display:flex; align-items:center; margin-bottom: 15px;'>{f1} <span style='margin:0 10px;'>{op}</span> {f2} <span style='margin:0 10px;'>=</span> {s1} <span style='margin:0 10px;'>=</span> {s2}</div>"
-                
                 extra_txt, final_html = get_fraction_solution_steps(ans_num, den)
-                if extra_txt:
-                    sol += f"<span style='color: #2c3e50;'><i>*{extra_txt}:</i></span><br><br>{final_html}"
+                if extra_txt: sol += f"<span style='color: #2c3e50;'><i>*{extra_txt}:</i></span><br><br>{final_html}"
 
             elif "คูณและการหารเศษส่วน" in sub_t:
                 n1, d1 = random.randint(1, 5), random.randint(2, 7)
@@ -715,8 +693,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เปลี่ยนเครื่องหมายหารเป็นคูณ แล้วกลับเศษเป็นส่วนของตัวหารด้านหลัง</span><br><br><div style='display:flex; align-items:center; margin-bottom: 15px;'>{f1} <span style='margin:0 10px;'>÷</span> {f2} <span style='margin:0 10px;'>=</span> {f1} <span style='margin:0 10px;'>×</span> {f2_flip} <span style='margin:0 10px;'>=</span> {s1} <span style='margin:0 10px;'>=</span> {s2}</div>"
 
                 extra_txt, final_html = get_fraction_solution_steps(ans_n, ans_d)
-                if extra_txt:
-                    sol += f"<span style='color: #2c3e50;'><i>*{extra_txt}:</i></span><br><br>{final_html}"
+                if extra_txt: sol += f"<span style='color: #2c3e50;'><i>*{extra_txt}:</i></span><br><br>{final_html}"
 
             elif "ทศนิยม" in sub_t and "อ่าน" in sub_t:
                 n = round(random.uniform(0.1, 99.999), random.randint(1, 3))
