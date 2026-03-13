@@ -377,7 +377,6 @@ def generate_long_division_step_by_step_html(divisor, dividend, is_key=False):
     div_str = str(dividend)
     div_len = len(div_str)
     
-    # 🔴 ไฮไลท์: เพิ่มประโยคสัญลักษณ์ให้หารยาว
     equation_html = f"<div style='font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #2c3e50;'>ประโยคสัญลักษณ์: {dividend:,} ÷ {divisor} = {box_html}</div>"
     
     if not is_key:
@@ -522,7 +521,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
         attempts = 0
         while attempts < 300:
             
-            # --- หมวดตั้งหลัก (เพิ่มประโยคสัญลักษณ์) ---
+            # --- หมวดตั้งหลัก ---
             if sub_t == "การคูณ (แบบตั้งหลัก)":
                 if grade in ["ป.1", "ป.2"]: a = random.randint(10, 99) 
                 elif grade == "ป.3": a = random.randint(100, 999) 
@@ -718,11 +717,16 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> นับรูปผลไม้ทั้งหมดรวมกันได้ {sum(counts)} รูปภาพ<br>และกำหนดให้ 1 รูปภาพ แทนผลไม้ {multiplier} ผล<br>นำ {sum(counts)} × {multiplier} =</span> <b>{sum(counts) * multiplier} ผล</b>"
 
             # --- หมวดการนับ เรียงลำดับ เปรียบเทียบ ---
+            # 🔴 แก้ไขให้การนับสำหรับ ป.1 ตัวเลขไม่เกิน 100
             elif "การนับทีละ" in sub_t:
                 is_10 = "10" in sub_t; is_1 = "1" in sub_t; is_2 = "2" in sub_t
                 step = 10 if is_10 else (1 if is_1 else random.choice([2, 5, 10, 100]))
                 inc = random.choice([True, False])
-                st_val = random.randint(10, 500)
+                
+                max_val = limit - (3 * step)
+                if max_val <= 1: max_val = 10 # ป้องกัน Error กรณี limit ต่ำไป
+                st_val = random.randint(1, max_val)
+                
                 seq = [st_val, st_val+step, st_val+2*step, st_val+3*step] if inc else [st_val+3*step, st_val+2*step, st_val+step, st_val]
                 idx = random.randint(0, 3)
                 ans_str = f"{seq[idx]:,}"
@@ -737,20 +741,22 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เปรียบเทียบค่าทีละจำนวนและเรียงจาก{'น้อยไปหามาก' if is_asc else 'มากไปหาน้อย'}<br>ตอบ: </span> <b>{', '.join(f'{x:,}' for x in res)}</b>"
 
             elif "เปรียบเทียบ" in sub_t:
+                a = random.randint(10, limit)
                 is_eq = "=" in sub_t
-                a = random.randint(10, limit); b = random.randint(10, limit)
                 if is_eq and random.choice([True, False]): b = a
                 else:
+                    b = random.randint(10, limit)
                     while a == b: b = random.randint(10, limit)
-                sign = ""
-                if is_eq: sign = "=" if a == b else "≠"
-                else: sign = ">" if a > b else "<"
+                sign = "=" if a == b else ("≠" if is_eq else (">" if a > b else "<"))
                 q = f"จงเติมเครื่องหมาย {'= หรือ ≠' if is_eq else '> หรือ <'} ลงในช่องว่าง: {a:,} _____ {b:,}"
                 comp_text = "มีค่าเท่ากับ" if a==b else ("มากกว่า" if a>b else "น้อยกว่า")
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เปรียบเทียบค่าทีละหลักจากซ้ายไปขวา จะพบว่า {a:,} {comp_text} {b:,}<br>ตอบ: </span> <b>{sign}</b>"
 
+            # 🔴 แก้ไขให้สุ่มรูปกระจายไม่เกิน limit ของ ป.1
             elif "รูปกระจาย" in sub_t:
-                n = random.randint(100, limit-1)
+                min_val = 10 if limit <= 1000 else 100
+                max_val = limit - 1 if limit > 10 else 99
+                n = random.randint(min_val, max_val)
                 parts = [f"{int(d)*(10**(len(str(n))-1-i)):,}" for i,d in enumerate(str(n)) if d != '0']
                 q = f"จงเขียน <b>{n:,}</b> ในรูปกระจาย"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> แยกตัวเลขตามค่าประจำหลักจะได้:<br></span><b>{' + '.join(parts)}</b>"
@@ -771,7 +777,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     q = f"จงเขียนตัวเลข <b>{n:,}</b> ให้เป็นตัวหนังสือภาษาไทย"
                     sol = f"<b>{generate_thai_number_text(str(n))}</b>"
 
-            # --- หมวดประถมปลาย (ทศนิยม เศษส่วน สมการ เรขาคณิต) (เพิ่มประโยคสัญลักษณ์) ---
+            # --- หมวดประถมปลาย (ทศนิยม เศษส่วน สมการ เรขาคณิต) ---
             elif "ค่าประมาณ" in sub_t:
                 n = random.randint(1111, 99999); ptype = random.choice(["เต็มสิบ", "เต็มร้อย", "เต็มพัน"])
                 if ptype == "เต็มสิบ":
