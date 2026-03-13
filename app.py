@@ -654,11 +654,22 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     mixed_sim = generate_mixed_number_html(w, sim_r, sim_den)
                     sol += f"<br><br><span style='color: #2c3e50;'><i>*ทอนเป็นเศษส่วนอย่างต่ำได้ (ใช้แม่ {g} หารเศษและส่วน):</i></span><br><br>{mixed_sim}"
                 
+            # 🔴 เพิ่มรูปภาพการระบายสีแท่งเศษส่วน
             elif "อ่านและเขียนเศษส่วน" in sub_t:
-                den = random.randint(3, 12); num = random.randint(1, den - 1)
+                den = random.randint(3, 8); num = random.randint(1, den - 1)
                 frac_html = generate_fraction_html(num, den)
-                q = f"จงอ่านเศษส่วนต่อไปนี้ : <br>{frac_html}"
-                sol = f"<b>เศษ {num} ส่วน {den}</b>"
+                
+                # โค้ดวาดแท่งเศษส่วน
+                bar_w = 40; bar_h = 30
+                total_w = den * bar_w
+                rects = ""
+                for i in range(den):
+                    fill_color = "#3498db" if i < num else "#ffffff"
+                    rects += f'<rect x="{i*bar_w}" y="0" width="{bar_w}" height="{bar_h}" fill="{fill_color}" stroke="#333" stroke-width="2"/>'
+                svg_bar = f'<br><div style="text-align: center; margin: 15px 0;"><svg width="{total_w + 4}" height="{bar_h + 4}"><g transform="translate(2,2)">{rects}</g></svg></div>'
+
+                q = f"จงอ่านและเขียนเศษส่วนที่ระบายสีจากรูปภาพต่อไปนี้ : {svg_bar}"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> แบ่งรูปออกเป็น <b>{den}</b> ส่วนเท่าๆ กัน และระบายสีไป <b>{num}</b> ส่วน</span><br><div style='display: flex; align-items: center; margin-top: 10px;'><b>เขียนเป็นเศษส่วนได้: </b> {frac_html} <span style='margin-left: 20px;'><b>อ่านว่า: </b> เศษ {num} ส่วน {den}</span></div>"
 
             elif "บวกลบเศษส่วน" in sub_t or "บวกและการลบเศษส่วน" in sub_t:
                 den = random.randint(5, 15); num1 = random.randint(1, den-1); num2 = random.randint(1, den-1)
@@ -747,86 +758,65 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงแก้สมการเพื่อหาค่า x : <br><b style='font-size: 24px;'>x + {a} = {b}</b>"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ย้ายข้างตัวเลขเพื่อหาค่าตัวแปร (จากบวกย้ายไปลบ)<br>x = {b} - {a}<br>ตอบ:</span> <b>x = {x}</b>"
 
-            # 🔴 หัวข้อย่อย: ชนิดของมุม (พร้อมกราฟิก SVG อัตโนมัติ)
             elif "ชนิดของมุม" in sub_t:
                 angle = random.choice([30, 45, 60, 90, 120, 135, 150, 180, 210, 270, 300])
-                
-                # สร้างรูปภาพ SVG
                 rad = math.radians(angle)
                 cx, cy = 100, 100
                 r_line, r_arc = 70, 25
                 line1 = f'<line x1="{cx}" y1="{cy}" x2="{cx+r_line}" y2="{cy}" stroke="#333" stroke-width="3" stroke-linecap="round"/>'
-                
-                end_x = cx + r_line * math.cos(rad)
-                end_y = cy - r_line * math.sin(rad)
+                end_x = cx + r_line * math.cos(rad); end_y = cy - r_line * math.sin(rad)
                 line2 = f'<line x1="{cx}" y1="{cy}" x2="{end_x}" y2="{end_y}" stroke="#3498db" stroke-width="3" stroke-linecap="round"/>'
-                
-                if angle == 90:
-                    arc_svg = f'<polyline points="{cx+15},{cy} {cx+15},{cy-15} {cx},{cy-15}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
-                elif angle == 180:
-                    arc_svg = f'<path d="M {cx+r_arc} {cy} A {r_arc} {r_arc} 0 0 0 {cx-r_arc} {cy}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
+                if angle == 90: arc_svg = f'<polyline points="{cx+15},{cy} {cx+15},{cy-15} {cx},{cy-15}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
+                elif angle == 180: arc_svg = f'<path d="M {cx+r_arc} {cy} A {r_arc} {r_arc} 0 0 0 {cx-r_arc} {cy}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
                 else:
                     large_arc = 1 if angle > 180 else 0
-                    arc_end_x = cx + r_arc * math.cos(rad)
-                    arc_end_y = cy - r_arc * math.sin(rad)
+                    arc_end_x = cx + r_arc * math.cos(rad); arc_end_y = cy - r_arc * math.sin(rad)
                     arc_svg = f'<path d="M {cx+r_arc} {cy} A {r_arc} {r_arc} 0 {large_arc} 0 {arc_end_x} {arc_end_y}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
-                
                 text_r = r_arc + 15
                 text_rad = math.radians(angle / 2)
-                text_x = cx + text_r * math.cos(text_rad)
-                text_y = cy - text_r * math.sin(text_rad)
+                text_x = cx + text_r * math.cos(text_rad); text_y = cy - text_r * math.sin(text_rad)
                 angle_text = f'<text x="{text_x}" y="{text_y+5}" font-size="14" font-weight="bold" fill="#e74c3c" text-anchor="middle">{angle}°</text>'
-                
                 dot = f'<circle cx="{cx}" cy="{cy}" r="4" fill="#333"/>'
                 svg = f'<div style="text-align: center; margin: 15px 0;"><svg width="150" height="150" viewBox="20 20 160 160">{line1}{line2}{arc_svg}{angle_text}{dot}</svg></div>'
 
                 q = f"จากรูปภาพ มุมที่มีขนาด <b>{angle} องศา</b> เรียกว่ามุมชนิดใด? {svg}"
-                
-                if angle < 90:
-                    ans_type = "มุมแหลม"
-                    explain = "เพราะมีขนาดมากกว่า 0 องศา แต่น้อยกว่า 90 องศา (แคบกว่ามุมฉาก)"
-                elif angle == 90:
-                    ans_type = "มุมฉาก"
-                    explain = "เพราะมีขนาดเท่ากับ 90 องศาพอดี (ตั้งฉาก)"
-                elif angle < 180:
-                    ans_type = "มุมป้าน"
-                    explain = "เพราะมีขนาดมากกว่า 90 องศา แต่น้อยกว่า 180 องศา (กว้างกว่ามุมฉาก แต่ไม่ถึงเส้นตรง)"
-                elif angle == 180:
-                    ans_type = "มุมตรง"
-                    explain = "เพราะมีขนาดเท่ากับ 180 องศาพอดี (เป็นเส้นตรง)"
-                else:
-                    ans_type = "มุมกลับ"
-                    explain = "เพราะมีขนาดมากกว่า 180 องศา แต่น้อยกว่า 360 องศา (มุมโค้งกลับด้านหลัง)"
-                    
+                if angle < 90: ans_type = "มุมแหลม"; explain = "เพราะมีขนาดมากกว่า 0 องศา แต่น้อยกว่า 90 องศา (แคบกว่ามุมฉาก)"
+                elif angle == 90: ans_type = "มุมฉาก"; explain = "เพราะมีขนาดเท่ากับ 90 องศาพอดี (ตั้งฉาก)"
+                elif angle < 180: ans_type = "มุมป้าน"; explain = "เพราะมีขนาดมากกว่า 90 องศา แต่น้อยกว่า 180 องศา (กว้างกว่ามุมฉาก แต่ไม่ถึงเส้นตรง)"
+                elif angle == 180: ans_type = "มุมตรง"; explain = "เพราะมีขนาดเท่ากับ 180 องศาพอดี (เป็นเส้นตรง)"
+                else: ans_type = "มุมกลับ"; explain = "เพราะมีขนาดมากกว่า 180 องศา แต่น้อยกว่า 360 องศา (มุมโค้งกลับด้านหลัง)"
                 sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> {explain}<br>ตอบ:</span> <b>{ans_type}</b>"
 
-            elif "ความยาวรอบรูป" in sub_t:
+            # 🔴 เพิ่มการวาดรูปสี่เหลี่ยมพร้อมตัวเลขกำกับ
+            elif "ความยาวรอบรูป" in sub_t or ("พื้นที่" in sub_t and "สี่เหลี่ยม" in sub_t):
+                is_peri = "ความยาวรอบรูป" in sub_t
                 is_square = random.choice([True, False])
+                
                 if is_square:
-                    s = random.randint(5, 30)
-                    q = f"จงหาความยาวรอบรูปของ<b>รูปสี่เหลี่ยมจัตุรัส</b> ที่มีความยาวด้านละ <b>{s} เซนติเมตร</b>"
-                    ans = 4 * s
-                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ความยาวรอบรูปสี่เหลี่ยมจัตุรัส = 4 × ความยาวด้าน<br>= 4 × {s}<br>ตอบ:</span> <b>{ans} เซนติเมตร</b>"
+                    s = random.randint(5, 30) if is_peri else random.randint(5, 25)
+                    # วาดสี่เหลี่ยมจัตุรัส พร้อมขีดสัญลักษณ์ด้านเท่า
+                    svg = f"""<br><div style="text-align: center; margin: 10px 0;"><svg width="150" height="150"><rect x="25" y="25" width="100" height="100" fill="#e8f4f8" stroke="#2980b9" stroke-width="3"/><line x1="70" y1="20" x2="80" y2="30" stroke="#c0392b" stroke-width="2"/><line x1="70" y1="120" x2="80" y2="130" stroke="#c0392b" stroke-width="2"/><line x1="20" y1="70" x2="30" y2="80" stroke="#c0392b" stroke-width="2"/><line x1="120" y1="70" x2="130" y2="80" stroke="#c0392b" stroke-width="2"/><text x="75" y="18" font-size="16" font-family="Sarabun" font-weight="bold" fill="#333" text-anchor="middle">{s} ซม.</text></svg></div>"""
+                    
+                    q = f"จากรูปภาพ จงหา{'ความยาวรอบรูป' if is_peri else 'พื้นที่'}ของ<b>รูปสี่เหลี่ยมจัตุรัส</b> {svg}"
+                    if is_peri:
+                        ans = 4 * s
+                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ความยาวรอบรูปสี่เหลี่ยมจัตุรัส = 4 × ความยาวด้าน<br>= 4 × {s}<br>ตอบ:</span> <b>{ans} เซนติเมตร</b>"
+                    else:
+                        ans = s * s
+                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> พื้นที่สี่เหลี่ยมจัตุรัส = ด้าน × ด้าน<br>= {s} × {s}<br>ตอบ:</span> <b>{ans:,} ตารางเซนติเมตร</b>"
                 else:
                     w = random.randint(5, 20)
                     l = random.randint(w + 2, 30)
-                    q = f"จงหาความยาวรอบรูปของ<b>รูปสี่เหลี่ยมผืนผ้า</b> ที่มีความกว้าง <b>{w} ซม.</b> และความยาว <b>{l} ซม.</b>"
-                    ans = 2 * (w + l)
-                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ความยาวรอบรูปสี่เหลี่ยมผืนผ้า = 2 × (กว้าง + ยาว)<br>= 2 × ({w} + {l})<br>= 2 × {w+l}<br>ตอบ:</span> <b>{ans} เซนติเมตร</b>"
-
-            elif "พื้นที่" in sub_t and "สี่เหลี่ยม" in sub_t:
-                is_square = random.choice([True, False])
-                if is_square:
-                    s = random.randint(5, 25)
-                    q = f"จงหาพื้นที่ของ<b>รูปสี่เหลี่ยมจัตุรัส</b> ที่มีความยาวด้านละ <b>{s} เซนติเมตร</b>"
-                    ans = s * s
-                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> พื้นที่สี่เหลี่ยมจัตุรัส = ด้าน × ด้าน<br>= {s} × {s}<br>ตอบ:</span> <b>{ans:,} ตารางเซนติเมตร</b>"
-                else:
-                    w = random.randint(5, 20)
-                    l = random.randint(w + 2, 30)
-                    q = f"จงหาพื้นที่ของ<b>รูปสี่เหลี่ยมผืนผ้า</b> ที่มีความกว้าง <b>{w} ซม.</b> และความยาว <b>{l} ซม.</b>"
-                    ans = w * l
-                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> พื้นที่สี่เหลี่ยมผืนผ้า = กว้าง × ยาว<br>= {w} × {l}<br>ตอบ:</span> <b>{ans:,} ตารางเซนติเมตร</b>"
+                    # วาดสี่เหลี่ยมผืนผ้า พร้อมสัญลักษณ์มุมฉาก
+                    svg = f"""<br><div style="text-align: center; margin: 10px 0;"><svg width="220" height="120"><rect x="20" y="20" width="140" height="80" fill="#e8f8f5" stroke="#16a085" stroke-width="3"/><polyline points="20,35 35,35 35,20" fill="none" stroke="#16a085" stroke-width="1.5"/><polyline points="160,35 145,35 145,20" fill="none" stroke="#16a085" stroke-width="1.5"/><text x="90" y="15" font-size="16" font-family="Sarabun" font-weight="bold" fill="#333" text-anchor="middle">{l} ซม.</text><text x="165" y="65" font-size="16" font-family="Sarabun" font-weight="bold" fill="#333" text-anchor="start">{w} ซม.</text></svg></div>"""
+                    
+                    q = f"จากรูปภาพ จงหา{'ความยาวรอบรูป' if is_peri else 'พื้นที่'}ของ<b>รูปสี่เหลี่ยมผืนผ้า</b> {svg}"
+                    if is_peri:
+                        ans = 2 * (w + l)
+                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ความยาวรอบรูปสี่เหลี่ยมผืนผ้า = 2 × (กว้าง + ยาว)<br>= 2 × ({w} + {l})<br>= 2 × {w+l}<br>ตอบ:</span> <b>{ans} เซนติเมตร</b>"
+                    else:
+                        ans = w * l
+                        sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> พื้นที่สี่เหลี่ยมผืนผ้า = กว้าง × ยาว<br>= {w} × {l}<br>ตอบ:</span> <b>{ans:,} ตารางเซนติเมตร</b>"
 
             elif "ไม้โปรแทรกเตอร์" in sub_t:
                 angle = random.randint(15, 165)
