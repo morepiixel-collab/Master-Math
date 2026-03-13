@@ -135,7 +135,7 @@ curriculum_db = {
 }
 
 # ==========================================
-# 🟢 ฟังก์ชันช่วย 1: สร้างตารางตั้งหลักเลข 
+# 🟢 ฟังก์ชันช่วย 1: สร้างตารางตั้งหลักเลข
 # ==========================================
 def generate_vertical_table_html(a, b, op, result=None, is_key=False):
     num_len = max(len(str(a)), len(str(b)), len(str(result)) if result else 0) + 1
@@ -286,7 +286,7 @@ def generate_short_division_html(a, b, mode="ห.ร.ม."):
 
 def generate_decimal_vertical_html(a, b, op):
     str_a, str_b = f"{a:.2f}", f"{b:.2f}"
-    ans = a + b if op == '+' else a - b
+    ans = a + b if op == '+' else round(a - b, 2)
     str_ans = f"{ans:.2f}"
     max_len = max(len(str_a), len(str_b), len(str_ans))
     str_a, str_b, str_ans = str_a.rjust(max_len, " "), str_b.rjust(max_len, " "), str_ans.rjust(max_len, " ")
@@ -482,13 +482,19 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = generate_vertical_table_html(a, b, '×', is_key=False)
                 sol = generate_vertical_table_html(a, b, '×', result=res, is_key=True)
 
-            # --- หมวดกราฟิก ป.1-ป.3 ---
+            # --- หมวดกราฟิก ป.1-ป.3 (เพิ่มคำอธิบายวิธีคิด) ---
             elif "ส่วนย่อย-ส่วนรวม" in sub_t:
                 total = random.randint(5, 20); p1 = random.randint(1, total - 1); p2 = total - p1
                 miss = random.choice(['t', 'p1', 'p2'])
                 svg_t = f"""<br><div style="text-align: center;"><svg width="200" height="160"><line x1="100" y1="40" x2="50" y2="120" stroke="#333" stroke-width="2"/><line x1="100" y1="40" x2="150" y2="120" stroke="#333" stroke-width="2"/><circle cx="100" cy="40" r="28" fill="#ffffff" stroke="#333" stroke-width="2"/><circle cx="50" cy="120" r="28" fill="#ffffff" stroke="#333" stroke-width="2"/><circle cx="150" cy="120" r="28" fill="#ffffff" stroke="#333" stroke-width="2"/><text x="100" y="47" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='t' else "#333"}">{{t}}</text><text x="50" y="127" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='p1' else "#333"}">{{p1}}</text><text x="150" y="127" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='p2' else "#333"}">{{p2}}</text></svg></div>"""
                 q = f"จงหาตัวเลขที่หายไป (?) : " + svg_t.format(t="?" if miss=='t' else total, p1="?" if miss=='p1' else p1, p2="?" if miss=='p2' else p2)
-                sol = svg_t.format(t=total, p1=p1, p2=p2)
+                
+                # อธิบายวิธีคิด
+                miss_map = {'t': 'ส่วนรวม (วงกลมบน)', 'p1': 'ส่วนย่อย (วงกลมซ้าย)', 'p2': 'ส่วนย่อย (วงกลมขวา)'}
+                if miss == 't': calc_str = f"นำส่วนย่อยมาบวกกัน: {p1} + {p2} = <b>{total}</b>"
+                elif miss == 'p1': calc_str = f"นำส่วนรวมลบด้วยส่วนย่อยที่มี: {total} - {p2} = <b>{p1}</b>"
+                else: calc_str = f"นำส่วนรวมลบด้วยส่วนย่อยที่มี: {total} - {p1} = <b>{p2}</b>"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> หา{miss_map[miss]}ที่หายไป โดย{calc_str}</span><br>" + svg_t.format(t=total, p1=p1, p2=p2)
 
             elif "การบอกอันดับที่" in sub_t:
                 c_map = {"แดง": "#ff4d4d", "ฟ้า": "#3498db", "เขียว": "#2ecc71", "เหลือง": "#f1c40f", "ชมพู": "#ff9ff3"}
@@ -497,8 +503,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 svg_d = f"""<br><div style="text-align: center;"><svg width="400" height="80"><line x1="20" y1="76" x2="380" y2="76" stroke="#95a5a6" stroke-width="4"/><rect x="350" y="30" width="10" height="46" fill="#fff" stroke="#333"/><text x="355" y="20" font-size="14" font-weight="bold" text-anchor="middle" fill="#e74c3c">เส้นชัย</text>{cars}</svg></div>"""
                 idx = random.randint(0, 4); name = cols[idx]
                 ans_svg = f'<svg width="60" height="30" style="vertical-align: middle; margin-left: 10px;"><path d="M 10 10 L 15 2 L 30 2 L 35 10 Z" fill="#e0e0e0" stroke="#333"/><rect y="10" width="50" height="12" rx="3" fill="{c_map[name]}" stroke="#333"/><circle cx="12" cy="22" r="5" fill="#333"/><circle cx="38" cy="22" r="5" fill="#333"/></svg>'
-                if random.choice([True, False]): q, sol = f"รถสี{name} วิ่งอยู่อันดับที่เท่าไร? {svg_d}", f"อันดับที่ {idx + 1} {ans_svg}"
-                else: q, sol = f"รถที่วิ่งอยู่ในอันดับที่ {idx + 1} คือรถสีอะไร? {svg_d}", f"สี{name} {ans_svg}"
+                
+                # อธิบายวิธีคิด
+                if random.choice([True, False]): 
+                    q = f"รถสี{name} วิ่งอยู่อันดับที่เท่าไร? {svg_d}"
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตจากป้ายเส้นชัยทางขวามือ แล้วนับย้อนมาทางซ้าย คันที่ 1, 2... จะพบว่ารถคันนี้อยู่ใน</span><br><b>อันดับที่ {idx + 1}</b> {ans_svg}"
+                else: 
+                    q = f"รถที่วิ่งอยู่ในอันดับที่ {idx + 1} คือรถสีอะไร? {svg_d}"
+                    sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> เริ่มนับคันแรกจากป้ายเส้นชัยฝั่งขวามือ นับย้อนไป {idx + 1} คัน จะพบว่าเป็น</span><br><b>สี{name}</b> {ans_svg}"
 
             elif "แบบรูปซ้ำ" in sub_t:
                 shapes = {"วงกลม": '<circle cx="15" cy="15" r="12" fill="#ffb3ba" stroke="#333" stroke-width="2"/>', "สี่เหลี่ยม": '<rect x="3" y="3" width="24" height="24" fill="#bae1ff" stroke="#333" stroke-width="2"/>', "สามเหลี่ยม": '<polygon points="15,3 27,27 3,27" fill="#baffc9" stroke="#333" stroke-width="2"/>', "ดาว": '<polygon points="15,1 19,10 29,10 21,16 24,26 15,20 6,26 9,16 1,10 11,10" fill="#ffffba" stroke="#333" stroke-width="2"/>'}
@@ -507,7 +519,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 seq = [keys[pt[i % len(pt)]] for i in range(12)]
                 slen = random.randint(5, 8) 
                 html = "<br><div style='margin-top:10px; text-align:center;'>" + "".join([f'<svg width="30" height="30" style="vertical-align: middle; margin: 0 5px;">{shapes[seq[i]]}</svg>' for i in range(slen)]) + '<span style="display:inline-block; width:30px; height:30px; border-bottom:2px dashed #000; margin: 0 5px;"></span></div>'
-                q = f"รูปที่หายไปคือรูปใด? {html}"; sol = f"<svg width='30' height='30' style='vertical-align: middle;'>{shapes[seq[slen]]}</svg>"
+                q = f"รูปที่หายไปคือรูปใด? {html}"
+                
+                # อธิบายวิธีคิด
+                pattern_len = len(set(pt))
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตจะพบว่ารูปภาพมีการเรียงซ้ำกันเป็นชุด ชุดละ {pattern_len} รูป เมื่อนับลำดับต่อมาเรื่อยๆ รูปที่หายไปคือ:</span><br><br><svg width='30' height='30' style='vertical-align: middle;'>{shapes[seq[slen]]}</svg>"
 
             elif "นาฬิกา" in sub_t:
                 h = random.randint(1, 12); m = random.choice([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55])
@@ -633,7 +649,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = generate_long_division_step_by_step_html(divisor, dividend, is_key=False)
                 sol = generate_long_division_step_by_step_html(divisor, dividend, is_key=True)
 
-            # 🔴 แก้ไขการเฉลยเศษเกินเป็นจำนวนคละ ให้เห็นภาพการหาร และจำนวนคละดิบก่อนตัดทอน
             elif "เศษเกินเป็นจำนวนคละ" in sub_t:
                 den = random.randint(3, 12)
                 num = random.randint(den + 1, den * 5)
@@ -660,7 +675,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงอ่านเศษส่วนต่อไปนี้ : <br>{frac_html}"
                 sol = f"<b>เศษ {num} ส่วน {den}</b>"
 
-            # 🔴 นำการวาดเศษส่วนและจำนวนคละมาประยุกต์ใช้ในการบวกลบคูณหารเศษส่วน
             elif "บวกลบเศษส่วน" in sub_t or "บวกและการลบเศษส่วน" in sub_t:
                 den = random.randint(5, 15); num1 = random.randint(1, den-1); num2 = random.randint(1, den-1)
                 op = random.choice(["+", "-"])
@@ -790,7 +804,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             else:
                 a, b = random.randint(10, 50), random.randint(10, 50)
                 q = f"จงหาผลลัพธ์ : {a} + {b} = ?"
-                sol = f"<b>{a + b}</b>"
+                sol = f"<br><span style='color: #2c3e50;'><b>วิธีทำ:</b> ตั้งบวกหลักหน่วยและหลักสิบให้ตรงกัน</span><br><b>ตอบ: {a + b}</b>"
 
             if q not in seen:
                 seen.add(q); questions.append({"question": q, "solution": sol}); break
