@@ -224,28 +224,21 @@ def generate_decimal_vertical_html(a, b, op, is_key=False):
 def generate_long_division_step_by_step_html(divisor, dividend, equation_html, is_key=False):
     div_str = str(dividend); div_len = len(div_str)
     if not is_key:
-        # 1. แถวสำหรับใส่คำตอบด้านบนเครื่องหมายหาร
         ans_tds_list = [f'<td style="width: 35px; height: 45px;"></td>' for _ in div_str]
         ans_tds_list.append('<td style="width: 35px;"></td>')
-        
-        # 2. แถวตัวตั้ง (เครื่องหมายหาร)
         div_tds_list = []
         for i, c in enumerate(div_str):
             left_border = "border-left: 3px solid #000;" if i == 0 else ""
             div_tds_list.append(f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px; height: 50px; vertical-align: bottom;">{c}</td>')
         div_tds_list.append('<td style="width: 35px;"></td>')
-        
-        # 3. แถวว่างด้านล่างสำหรับการทดเลขหารยาว
         empty_rows = ""
         for _ in range(div_len + 1): 
             empty_rows += f"<tr><td style='border: none;'></td>"
             for _ in range(div_len + 1):
                 empty_rows += f"<td style='width: 35px; height: 45px;'></td>"
             empty_rows += "</tr>"
-
         return f"{equation_html}<div style=\"display: block; text-align: center; margin-top: 10px;\"><div style=\"display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2; margin: 10px 20px;\"><table style=\"border-collapse: collapse;\"><tr><td style=\"border: none;\"></td>{''.join(ans_tds_list)}</tr><tr><td style=\"border: none; text-align: right; padding-right: 12px; vertical-align: bottom; font-size: 38px;\">{divisor}</td>{''.join(div_tds_list)}</tr>{empty_rows}</table></div></div>"
     
-    # โหมดเฉลย (is_key=True) ยังคงลอจิกเดิมที่สมบูรณ์แบบ
     steps = []; current_val_str = ""; ans_str = ""; has_started = False
     for i, digit in enumerate(div_str):
         current_val_str += digit; current_val = int(current_val_str)
@@ -334,7 +327,6 @@ def generate_thai_number_text(num_str):
     return int_text + dec_text
 
 def get_prefix(grade):
-    # ป.1 - ป.3 ให้แสดงคำว่า ประโยคสัญลักษณ์: นอกนั้นให้ซ่อนไว้
     if grade in ["ป.1", "ป.2", "ป.3"]:
         return "<b style='color: #2c3e50; margin-right: 5px;'>ประโยคสัญลักษณ์:</b>"
     return ""
@@ -342,20 +334,54 @@ def get_prefix(grade):
 def generate_questions_logic(grade, main_t, sub_t, num_q):
     questions = []; seen = set()
     limit_map = {"ป.1": 100, "ป.2": 1000, "ป.3": 100000, "ป.4": 1000000, "ป.5": 9000000, "ป.6": 9000000}
-    limit = limit_map.get(grade, 100)
+    limit = limit_map.get(grade, 100) # ถ้าหาไม่เจอจะคืนค่า 100 (เช่นโหมด TMC)
 
     for _ in range(num_q):
         q, sol = "", ""; attempts = 0
         while attempts < 300:
             actual_sub_t = sub_t
+            
+            # จัดการกับระบบสุ่มโหมดต่างๆ
             if sub_t == "แบบทดสอบรวมปลายภาค":
                 all_mains = [m for m in curriculum_db[grade].keys() if m != "🌟 โหมดพิเศษ (สุ่มทุกเรื่อง)"]
                 rand_m = random.choice(all_mains)
                 actual_sub_t = random.choice(curriculum_db[grade][rand_m])
+            elif sub_t == "🌟 สุ่มรวมทุกแนว":
+                actual_sub_t = random.choice(["สัญลักษณ์และสมการ", "โจทย์ปัญหาแถวคอย", "โจทย์ปัญหาอายุ", "โจทย์ปัญหาสัตว์และขา"])
 
             prefix = get_prefix(grade)
 
-            if actual_sub_t == "การคูณ (แบบตั้งหลัก)":
+            # ==============================
+            # โหมดข้อสอบแข่งขัน (TMC)
+            # ==============================
+            if actual_sub_t == "สัญลักษณ์และสมการ":
+                val1 = random.randint(2, 9); val2 = random.randint(2, 9)
+                while val1 == val2: val2 = random.randint(2, 9)
+                q = f"พิจารณาความสัมพันธ์ต่อไปนี้:<br><br><span style='margin-left: 20px; font-weight: bold; color: #2c3e50;'>🍎 + 🍎 = {val1 * 2}</span><br><span style='margin-left: 20px; font-weight: bold; color: #2c3e50;'>🍎 + 🍌 = {val1 + val2}</span><br><br>จงหาว่า <b>🍌 + 🍌</b> มีค่าเท่ากับเท่าใด?"
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำ:</b><br>1) จาก 🍎 + 🍎 = {val1 * 2} แสดงว่า 🍎 = {val1} (เพราะ {val1} + {val1} = {val1 * 2})<br>2) นำ 🍎 ไปแทนค่าในบรรทัดที่สอง จะได้ {val1} + 🍌 = {val1 + val2}<br>3) แสดงว่า 🍌 = {val2}<br>ดังนั้น 🍌 + 🍌 = {val2} + {val2} = </span><b>{val2 * 2}</b>"
+
+            elif actual_sub_t == "โจทย์ปัญหาแถวคอย":
+                front = random.randint(3, 12); back = random.randint(3, 12)
+                names = ["ต้น", "กล้า", "ฟ้า", "พลอย", "บอย", "นนท์"]
+                name = random.choice(names)
+                q = f"{name}เข้าแถวเพื่อซื้อขนม โดยมีคนยืนอยู่ข้างหน้า{name} <b>{front}</b> คน และมีคนยืนอยู่ข้างหลัง{name} <b>{back}</b> คน จงหาว่าแถวนี้มีคนทั้งหมดกี่คน?"
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำ:</b><br>ให้นับจำนวนคนทั้งหมด ดังนี้:<br>คนข้างหน้า ({front} คน) + ตัว{name}เอง (1 คน) + คนข้างหลัง ({back} คน)<br>จะได้ {front} + 1 + {back} = </span><b>{front + 1 + back} คน</b>"
+
+            elif actual_sub_t == "โจทย์ปัญหาอายุ":
+                age1 = random.randint(8, 15); diff = random.randint(2, 5)   
+                age2 = age1 - diff; future = random.randint(3, 6) 
+                q = f"ปัจจุบัน พี่มีอายุ <b>{age1}</b> ปี น้องมีอายุน้อยกว่าพี่ <b>{diff}</b> ปี <br>อีก <b>{future}</b> ปีข้างหน้า พี่และน้องจะมีอายุรวมกันกี่ปี?"
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำ:</b><br>1) หาอายุปัจจุบันของน้อง: {age1} - {diff} = {age2} ปี<br>2) อีก {future} ปีข้างหน้า พี่จะอายุ: {age1} + {future} = {age1 + future} ปี<br>3) อีก {future} ปีข้างหน้า น้องจะอายุ: {age2} + {future} = {age2 + future} ปี<br>นำอายุในอนาคตมารวมกัน: {age1 + future} + {age2 + future} = </span><b>{(age1 + future) + (age2 + future)} ปี</b>"
+
+            elif actual_sub_t == "โจทย์ปัญหาสัตว์และขา":
+                cows = random.randint(2, 8); chickens = random.randint(4, 12)
+                q = f"ในฟาร์มแห่งหนึ่งมี วัว <b>{cows}</b> ตัว และ ไก่ <b>{chickens}</b> ตัว ถ้านับขาของสัตว์ทั้งหมดรวมกัน จะมีขาทั้งหมดกี่ขา?"
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำ:</b><br>1) วัว 1 ตัวมี 4 ขา ดังนั้น วัว {cows} ตัว มีขา = {cows} × 4 = <b>{cows * 4} ขา</b><br>2) ไก่ 1 ตัวมี 2 ขา ดังนั้น ไก่ {chickens} ตัว มีขา = {chickens} × 2 = <b>{chickens * 2} ขา</b><br>นำขามารวมกัน: {cows * 4} + {chickens * 2} = </span><b>{(cows * 4) + (chickens * 2)} ขา</b>"
+
+            # ==============================
+            # โหมดหลักสูตรปกติ
+            # ==============================
+            elif actual_sub_t == "การคูณ (แบบตั้งหลัก)":
                 if grade in ["ป.1", "ป.2"]: a = random.randint(10, 99) 
                 elif grade == "ป.3": a = random.randint(100, 999) 
                 else: a = random.randint(1000, 9999) 
@@ -531,13 +557,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 items = [("🍎 แอปเปิล", "🍎"), ("🍊 ส้ม", "🍊"), ("🍌 กล้วย", "🍌"), ("🍓 องุ่น", "🍓")]
                 selected = random.sample(items, 3)
                 
-                # ปรับแก้ตัวคูณตามความสามารถของแต่ละระดับชั้น
-                if grade == "ป.1":
-                    multiplier = 1
-                elif grade == "ป.2":
-                    multiplier = random.choice([2, 5, 10])
-                else:
-                    multiplier = random.randint(2, 12) # ป.3 ขึ้นไป สุ่มตัวเลขตั้งแต่ 2 ถึง 12
+                if grade == "ป.1": multiplier = 1
+                elif grade == "ป.2": multiplier = random.choice([2, 5, 10])
+                else: multiplier = random.randint(2, 12)
                     
                 counts = [random.randint(1, 5), random.randint(1, 5), random.randint(1, 5)]
                 table_html = f"""<div style='margin: 15px auto; width: 80%; border: 2px solid #333; border-collapse: collapse;'><div style='background-color: #f1f2f6; border-bottom: 2px solid #333; text-align: center; padding: 5px; font-weight: bold;'>จำนวนผลไม้ที่ร้านค้าขายได้</div>"""
@@ -553,7 +575,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 st_val = random.randint(1, max_val)
                 seq = [st_val, st_val+step, st_val+2*step, st_val+3*step] if inc else [st_val+3*step, st_val+2*step, st_val+step, st_val]
                 idx = random.randint(0, 3); ans_str = f"{seq[idx]:,}"
-                # แทนที่การใช้จุลภาคคั่นด้วยเว้นวรรคกว้าง
                 seq_str = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".join([f"{s:,}" if i != idx else "_____" for i, s in enumerate(seq)])
                 q = f"จงเติมตัวเลขที่หายไปในแบบรูป : <span style='font-weight: bold; margin-left: 10px;'>{seq_str}</span>"
                 sol = f"<span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตความต่างของตัวเลข พบว่าแบบรูปมีการ{'นับเพิ่มขึ้น' if inc else 'นับลดลง'}ทีละ {step}<br>ดังนั้น ตัวเลขที่หายไปคือ</span> <b>{ans_str}</b>"
@@ -561,7 +582,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             elif "เรียงลำดับ" in actual_sub_t:
                 nums = random.sample(range(10, limit), 4)
                 is_asc = "น้อยไปมาก" in actual_sub_t if "น้อยไปมาก" in actual_sub_t else random.choice([True, False])
-                # แทนที่การใช้จุลภาคคั่นด้วยเว้นวรรคกว้าง
                 num_str = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".join([f"{x:,}" for x in nums])
                 q = f"จงเรียงลำดับจำนวนต่อไปนี้จาก {'น้อยไปมาก' if is_asc else 'มากไปน้อย'} : <span style='font-weight: bold; margin-left: 10px;'>{num_str}</span>"
                 
@@ -916,7 +936,6 @@ def create_page(grade, sub_t, questions, is_key=False, q_margin="10px", brand_na
             else:
                 html += f'{item["question"]}<br><div class="sol-text">{item["solution"]}</div>'
         else:
-            # เพิ่มพื้นที่ทดเลขและบรรทัดตอบให้ทุกข้อ แบบ 100% ไม่มีเงื่อนไขข้อยกเว้น
             html += f'{item["question"]}'
             html += '<div class="workspace">พื้นที่แสดงวิธีทำ / ทดเลข...</div><div class="ans-line">ตอบ: </div>'
         html += '</div>'
@@ -954,15 +973,28 @@ def generate_cover_html(grade, main_t, sub_t, num_q, theme_colors, brand_name):
 # 4. Streamlit UI (Sidebar & Result Grouping)
 # ==========================================
 st.sidebar.markdown("## ⚙️ พารามิเตอร์การสร้าง")
-selected_grade = st.sidebar.selectbox("📚 เลือกระดับชั้น:", list(curriculum_db.keys()))
-main_topics_list = list(curriculum_db[selected_grade].keys()) + ["🌟 โหมดพิเศษ (สุ่มทุกเรื่อง)"]
-selected_main = st.sidebar.selectbox("📂 เลือกหัวข้อหลัก:", main_topics_list)
 
-if selected_main == "🌟 โหมดพิเศษ (สุ่มทุกเรื่อง)":
-    selected_sub = "แบบทดสอบรวมปลายภาค"
-    st.sidebar.info("💡 โหมดนี้จะสุ่มดึงโจทย์จากทุกเรื่องในชั้นเรียนนี้มายำรวมกัน")
-else:
-    selected_sub = st.sidebar.selectbox("📝 เลือกหัวข้อย่อย:", curriculum_db[selected_grade][selected_main])
+# เพิ่มปุ่มเลือกรูปแบบโจทย์ที่ต้องการ
+worksheet_mode = st.sidebar.radio("🎯 เลือกหมวดหมู่โจทย์:", ["📚 หลักสูตรปกติ (ป.1 - ป.6)", "🏆 ข้อสอบแข่งขัน (แนว TMC)"])
+st.sidebar.markdown("---")
+
+if worksheet_mode == "📚 หลักสูตรปกติ (ป.1 - ป.6)":
+    selected_grade = st.sidebar.selectbox("📚 เลือกระดับชั้น:", list(curriculum_db.keys()))
+    main_topics_list = list(curriculum_db[selected_grade].keys()) + ["🌟 โหมดพิเศษ (สุ่มทุกเรื่อง)"]
+    selected_main = st.sidebar.selectbox("📂 เลือกหัวข้อหลัก:", main_topics_list)
+
+    if selected_main == "🌟 โหมดพิเศษ (สุ่มทุกเรื่อง)":
+        selected_sub = "แบบทดสอบรวมปลายภาค"
+        st.sidebar.info("💡 โหมดนี้จะสุ่มดึงโจทย์จากทุกเรื่องในชั้นเรียนนี้มายำรวมกัน")
+    else:
+        selected_sub = st.sidebar.selectbox("📝 เลือกหัวข้อย่อย:", curriculum_db[selected_grade][selected_main])
+
+else: # โหมดข้อสอบแข่งขัน
+    selected_grade = st.sidebar.selectbox("🏆 เลือกระดับชั้นแข่งขัน:", ["ป.2 (TMC)"]) 
+    selected_main = "ข้อสอบแข่งขัน"
+    selected_sub = st.sidebar.selectbox("📝 เลือกแนวข้อสอบ:", ["สัญลักษณ์และสมการ", "โจทย์ปัญหาแถวคอย", "โจทย์ปัญหาอายุ", "โจทย์ปัญหาสัตว์และขา", "🌟 สุ่มรวมทุกแนว"])
+    if selected_sub == "🌟 สุ่มรวมทุกแนว":
+        st.sidebar.info("💡 โหมดนี้จะสุ่มข้อสอบแข่งขันทุกแนวมาคละกัน ให้เด็กๆ ได้ฝึกกระบวนการคิดที่หลากหลาย")
 
 num_input = st.sidebar.number_input("🔢 จำนวนข้อ:", min_value=1, max_value=100, value=10)
 
