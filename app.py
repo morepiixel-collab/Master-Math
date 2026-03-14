@@ -84,7 +84,6 @@ curriculum_db = {
 
 box_html = "<span style='display: inline-block; width: 22px; height: 22px; border: 2px solid #333; border-radius: 3px; vertical-align: middle; margin-left: 5px; position: relative; top: -2px;'></span>"
 
-# ฟังก์ชันกราฟิก (ห้ามตัดทิ้งตามสั่ง)
 def generate_vertical_table_html(a, b, op, result=None, is_key=False):
     num_len = max(len(str(a)), len(str(b)), len(str(result)) if result else 0) + 1
     str_a = str(a).rjust(num_len, " "); str_b = str(b).rjust(num_len, " ")
@@ -225,12 +224,28 @@ def generate_decimal_vertical_html(a, b, op, is_key=False):
 def generate_long_division_step_by_step_html(divisor, dividend, equation_html, is_key=False):
     div_str = str(dividend); div_len = len(div_str)
     if not is_key:
+        # 1. แถวสำหรับใส่คำตอบด้านบนเครื่องหมายหาร
+        ans_tds_list = [f'<td style="width: 35px; height: 45px;"></td>' for _ in div_str]
+        ans_tds_list.append('<td style="width: 35px;"></td>')
+        
+        # 2. แถวตัวตั้ง (เครื่องหมายหาร)
         div_tds_list = []
         for i, c in enumerate(div_str):
             left_border = "border-left: 3px solid #000;" if i == 0 else ""
-            div_tds_list.append(f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px;">{c}</td>')
+            div_tds_list.append(f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px; height: 50px; vertical-align: bottom;">{c}</td>')
         div_tds_list.append('<td style="width: 35px;"></td>')
-        return f"{equation_html}<div style=\"display: block; text-align: center; margin-top: 10px;\"><div style=\"display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2; margin: 10px 20px;\"><table style=\"border-collapse: collapse;\"><tr><td style=\"border: none; text-align: right; padding-right: 12px; vertical-align: bottom; font-size: 38px;\">{divisor}</td>{''.join(div_tds_list)}</tr></table></div></div>"
+        
+        # 3. แถวว่างด้านล่างสำหรับการทดเลขหารยาว
+        empty_rows = ""
+        for _ in range(div_len + 1): 
+            empty_rows += f"<tr><td style='border: none;'></td>"
+            for _ in range(div_len + 1):
+                empty_rows += f"<td style='width: 35px; height: 45px;'></td>"
+            empty_rows += "</tr>"
+
+        return f"{equation_html}<div style=\"display: block; text-align: center; margin-top: 10px;\"><div style=\"display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2; margin: 10px 20px;\"><table style=\"border-collapse: collapse;\"><tr><td style=\"border: none;\"></td>{''.join(ans_tds_list)}</tr><tr><td style=\"border: none; text-align: right; padding-right: 12px; vertical-align: bottom; font-size: 38px;\">{divisor}</td>{''.join(div_tds_list)}</tr>{empty_rows}</table></div></div>"
+    
+    # โหมดเฉลย (is_key=True) ยังคงลอจิกเดิมที่สมบูรณ์แบบ
     steps = []; current_val_str = ""; ans_str = ""; has_started = False
     for i, digit in enumerate(div_str):
         current_val_str += digit; current_val = int(current_val_str)
@@ -877,14 +892,20 @@ def create_page(grade, sub_t, questions, is_key=False, q_margin="10px", brand_na
     </style></head><body>
     <div class="header"><h2>{title} - {grade}</h2><p><b>เรื่อง:</b> {sub_t}</p></div>
     {student_info}"""
+    
     for i, item in enumerate(questions, 1):
-        if ("(แบบตั้งหลัก)" in sub_t and "สมการ" not in sub_t) or "หารยาว" in sub_t:
-            html += f'<div class="q-box"><b>ข้อที่ {i}.</b> {item["solution"] if is_key else item["question"]}</div>'
+        html += f'<div class="q-box"><b>ข้อที่ {i}.</b> '
+        if is_key:
+            if ("(แบบตั้งหลัก)" in sub_t and "สมการ" not in sub_t) or "หารยาว" in sub_t:
+                html += f'{item["solution"]}'
+            else:
+                html += f'{item["question"]}<br><div class="sol-text">{item["solution"]}</div>'
         else:
-            html += f'<div class="q-box"><b>ข้อที่ {i}.</b> {item["question"]}'
-            if is_key: html += f'<br><div class="sol-text">{item["solution"]}</div>'
-            else: html += '<div class="workspace">พื้นที่ทดเลข...</div><div class="ans-line">ตอบ: </div>'
-            html += '</div>'
+            # เพิ่มพื้นที่ทดเลขและบรรทัดตอบให้ทุกข้อ แบบ 100% ไม่มีเงื่อนไขข้อยกเว้น
+            html += f'{item["question"]}'
+            html += '<div class="workspace">พื้นที่แสดงวิธีทำ / ทดเลข...</div><div class="ans-line">ตอบ: </div>'
+        html += '</div>'
+        
     if brand_name: html += f'<div class="page-footer">&copy; 2026 {brand_name} | สงวนลิขสิทธิ์</div>'
     return html + "</body></html>"
 
