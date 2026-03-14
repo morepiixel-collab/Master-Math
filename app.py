@@ -529,7 +529,16 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
 
             elif "แผนภูมิรูปภาพ" in actual_sub_t:
                 items = [("🍎 แอปเปิล", "🍎"), ("🍊 ส้ม", "🍊"), ("🍌 กล้วย", "🍌"), ("🍓 องุ่น", "🍓")]
-                selected = random.sample(items, 3); multiplier = 1 if grade == "ป.1" else random.choice([2, 5])
+                selected = random.sample(items, 3)
+                
+                # ปรับแก้ตัวคูณตามความสามารถของแต่ละระดับชั้น
+                if grade == "ป.1":
+                    multiplier = 1
+                elif grade == "ป.2":
+                    multiplier = random.choice([2, 5, 10])
+                else:
+                    multiplier = random.randint(2, 12) # ป.3 ขึ้นไป สุ่มตัวเลขตั้งแต่ 2 ถึง 12
+                    
                 counts = [random.randint(1, 5), random.randint(1, 5), random.randint(1, 5)]
                 table_html = f"""<div style='margin: 15px auto; width: 80%; border: 2px solid #333; border-collapse: collapse;'><div style='background-color: #f1f2f6; border-bottom: 2px solid #333; text-align: center; padding: 5px; font-weight: bold;'>จำนวนผลไม้ที่ร้านค้าขายได้</div>"""
                 for i in range(3): table_html += f"<div style='display: flex; border-bottom: 1px solid #ccc;'><div style='width: 30%; border-right: 1px solid #ccc; padding: 5px; font-weight: bold;'>{selected[i][0]}</div><div style='width: 70%; padding: 5px; font-size: 18px;'>{''.join([selected[i][1]] * counts[i])}</div></div>"
@@ -939,7 +948,7 @@ def generate_cover_html(grade, main_t, sub_t, num_q, theme_colors, brand_name):
 # 4. Streamlit UI (Sidebar & Result Grouping)
 # ==========================================
 st.sidebar.markdown("## ⚙️ พารามิเตอร์การสร้าง")
-selected_grade = st.sidebar.selectbox("📚 เลือกระดับชั้น:", list(curriculum_db.keys()))
+selected_grade = st.sidebar.selectbox("📚 เลือระดับชั้น:", list(curriculum_db.keys()))
 main_topics_list = list(curriculum_db[selected_grade].keys()) + ["🌟 โหมดพิเศษ (สุ่มทุกเรื่อง)"]
 selected_main = st.sidebar.selectbox("📂 เลือกหัวข้อหลัก:", main_topics_list)
 
