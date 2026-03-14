@@ -553,15 +553,21 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 st_val = random.randint(1, max_val)
                 seq = [st_val, st_val+step, st_val+2*step, st_val+3*step] if inc else [st_val+3*step, st_val+2*step, st_val+step, st_val]
                 idx = random.randint(0, 3); ans_str = f"{seq[idx]:,}"
-                q = f"จงเติมตัวเลขที่หายไปในแบบรูป : {', '.join([f'{s:,}' if i != idx else '_____' for i, s in enumerate(seq)])}"
+                # แทนที่การใช้จุลภาคคั่นด้วยเว้นวรรคกว้าง
+                seq_str = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".join([f"{s:,}" if i != idx else "_____" for i, s in enumerate(seq)])
+                q = f"จงเติมตัวเลขที่หายไปในแบบรูป : <span style='font-weight: bold; margin-left: 10px;'>{seq_str}</span>"
                 sol = f"<span style='color: #2c3e50;'><b>วิธีทำ:</b> สังเกตความต่างของตัวเลข พบว่าแบบรูปมีการ{'นับเพิ่มขึ้น' if inc else 'นับลดลง'}ทีละ {step}<br>ดังนั้น ตัวเลขที่หายไปคือ</span> <b>{ans_str}</b>"
 
             elif "เรียงลำดับ" in actual_sub_t:
                 nums = random.sample(range(10, limit), 4)
                 is_asc = "น้อยไปมาก" in actual_sub_t if "น้อยไปมาก" in actual_sub_t else random.choice([True, False])
-                q = f"จงเรียงลำดับจำนวนต่อไปนี้จาก {'น้อยไปมาก' if is_asc else 'มากไปน้อย'}: {', '.join(f'{x:,}' for x in nums)}"
+                # แทนที่การใช้จุลภาคคั่นด้วยเว้นวรรคกว้าง
+                num_str = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".join([f"{x:,}" for x in nums])
+                q = f"จงเรียงลำดับจำนวนต่อไปนี้จาก {'น้อยไปมาก' if is_asc else 'มากไปน้อย'} : <span style='font-weight: bold; margin-left: 10px;'>{num_str}</span>"
+                
                 res = sorted(nums, reverse=not is_asc)
-                sol = f"<span style='color: #2c3e50;'><b>วิธีทำ:</b> เปรียบเทียบค่าทีละจำนวนและเรียงจาก{'น้อยไปหามาก' if is_asc else 'มากไปหาน้อย'}<br>ตอบ: </span> <b>{', '.join(f'{x:,}' for x in res)}</b>"
+                ans_str = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".join([f"{x:,}" for x in res])
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำ:</b> เปรียบเทียบค่าทีละจำนวนและเรียงจาก{'น้อยไปหามาก' if is_asc else 'มากไปหาน้อย'}<br>ตอบ: </span> <b>{ans_str}</b>"
 
             elif "เปรียบเทียบ" in actual_sub_t:
                 a = random.randint(10, limit); is_eq = "=" in actual_sub_t
@@ -948,7 +954,7 @@ def generate_cover_html(grade, main_t, sub_t, num_q, theme_colors, brand_name):
 # 4. Streamlit UI (Sidebar & Result Grouping)
 # ==========================================
 st.sidebar.markdown("## ⚙️ พารามิเตอร์การสร้าง")
-selected_grade = st.sidebar.selectbox("📚 เลือระดับชั้น:", list(curriculum_db.keys()))
+selected_grade = st.sidebar.selectbox("📚 เลือกระดับชั้น:", list(curriculum_db.keys()))
 main_topics_list = list(curriculum_db[selected_grade].keys()) + ["🌟 โหมดพิเศษ (สุ่มทุกเรื่อง)"]
 selected_main = st.sidebar.selectbox("📂 เลือกหัวข้อหลัก:", main_topics_list)
 
