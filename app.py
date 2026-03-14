@@ -6,6 +6,9 @@ import zipfile
 import io
 import time
 
+# ==========================================
+# ตั้งค่าหน้าเพจ Web App & Professional CSS
+# ==========================================
 st.set_page_config(page_title="Math Worksheet: Standard", page_icon="📚", layout="wide")
 
 st.markdown("""
@@ -16,51 +19,55 @@ st.markdown("""
     div.stDownloadButton > button { border-radius: 8px; font-weight: bold; border: 1px solid #bdc3c7; }
     div.stDownloadButton > button:hover { border-color: #3498db; color: #3498db; }
     .main-header { background: linear-gradient(135deg, #27ae60, #2ecc71); padding: 2rem; border-radius: 15px; color: white; margin-bottom: 2rem; }
-    .main-header h1 { margin: 0; font-size: 2.5rem; font-weight: 800; }
+    .main-header h1 { margin: 0; font-size: 2.5rem; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+    .main-header p { margin: 10px 0 0 0; font-size: 1.2rem; opacity: 0.9; }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("""
 <div class="main-header">
-    <h1>📚 Math Worksheet: Standard</h1>
-    <p>ระบบสร้างสื่อการสอนคณิตศาสตร์ หลักสูตรปกติ ป.1 - ป.6 พร้อมเฉลยละเอียด</p>
+    <h1>📚 Math Worksheet Pro <span style="font-size: 20px; background: #f39c12; padding: 5px 15px; border-radius: 20px; vertical-align: middle;">Standard Edition</span></h1>
+    <p>ระบบสร้างสื่อการสอนคณิตศาสตร์ หลักสูตรปกติ ป.1 - ป.6 พร้อมเฉลยละเอียดแบบ Step-by-Step</p>
 </div>
 """, unsafe_allow_html=True)
 
+# ==========================================
+# 1. ฐานข้อมูลหลักสูตรปกติ (ไม่มี TMC)
+# ==========================================
 curriculum_db = {
     "ป.1": {
-        "จำนวนนับ 1 ถึง 100 และ 0": ["การนับทีละ 1", "การนับทีละ 10", "การอ่านและการเขียนตัวเลข", "การแสดงจำนวนในรูปความสัมพันธ์แบบส่วนย่อย-ส่วนรวม", "แบบรูปซ้ำของรูปเรขาคณิต", "การบอกอันดับที่ (รถแข่ง)", "หลัก ค่าของเลขโดดในแต่ละหลัก และรูปกระจาย", "การเปรียบเทียบจำนวน (> <)",  "การเปรียบเทียบจำนวน (= ≠)", "การเรียงลำดับจำนวน (น้อยไปมาก)", "การเรียงลำดับจำนวน (มากไปน้อย)"],
+        "จำนวนนับ 1 ถึง 100 และ 0": ["การนับทีละ 1", "การนับทีละ 10", "การอ่านและการเขียนตัวเลข", "ส่วนย่อย-ส่วนรวม", "แบบรูปซ้ำ", "การบอกอันดับที่", "รูปกระจาย", "การเปรียบเทียบจำนวน", "การเรียงลำดับจำนวน"],
         "การบวก การลบ": ["การบวก (แบบตั้งหลัก)", "การลบ (แบบตั้งหลัก)"],
         "แผนภูมิรูปภาพ": ["การอ่านแผนภูมิรูปภาพ"]
     },
     "ป.2": {
-        "จำนวนนับไม่เกิน 1,000 และ 0": ["การนับทีละ 2 ทีละ 5 ทีละ 10 และทีละ 100", "การอ่านและการเขียนตัวเลข", "จำนวนคู่ จำนวนคี่", "หลัก ค่าของเลขโดด และรูปกระจาย", "การเปรียบเทียบจำนวน (> <)", "การเรียงลำดับจำนวน (น้อยไปมาก)", "การเรียงลำดับจำนวน (มากไปน้อย)"],
-        "เวลาและการวัด": ["การบอกเวลาเป็นนาฬิกาและนาที", "การอ่านน้ำหนักจากเครื่องชั่งสปริง"],
+        "จำนวนนับไม่เกิน 1,000 และ 0": ["การนับทีละ 2, 5, 10, 100", "การอ่านและการเขียนตัวเลข", "จำนวนคู่ จำนวนคี่", "รูปกระจาย", "การเปรียบเทียบจำนวน", "การเรียงลำดับจำนวน"],
+        "เวลาและการวัด": ["นาฬิกา", "เครื่องชั่งสปริง"],
         "การบวก ลบ คูณ หาร": ["การบวก (แบบตั้งหลัก)", "การลบ (แบบตั้งหลัก)", "การคูณ (แบบตั้งหลัก)", "การหารพื้นฐาน"],
         "แผนภูมิรูปภาพ": ["การอ่านแผนภูมิรูปภาพ"]
     },
     "ป.3": {
-        "จำนวนนับและเศษส่วน": ["การอ่าน การเขียนตัวเลข", "หลัก ค่าของเลขโดด และรูปกระจาย", "การเปรียบเทียบจำนวน (> <)", "การเรียงลำดับจำนวน (น้อยไปมาก)", "การเรียงลำดับจำนวน (มากไปน้อย)", "การอ่านและเขียนเศษส่วน", "การบวกลบเศษส่วน (ตัวส่วนเท่ากัน)"],
-        "เวลา เงิน และการวัด": ["การบอกเวลาเป็นนาฬิกาและนาที", "การบอกจำนวนเงินทั้งหมด", "การอ่านน้ำหนักจากเครื่องชั่งสปริง"],
-        "การบวก ลบ คูณ หาร": ["การบวก (แบบตั้งหลัก)", "การลบ (แบบตั้งหลัก)", "การคูณ (แบบตั้งหลัก)", "การหารยาว"],
+        "จำนวนนับและเศษส่วน": ["การอ่าน การเขียนตัวเลข", "รูปกระจาย", "การเปรียบเทียบจำนวน", "การเรียงลำดับจำนวน", "อ่านและเขียนเศษส่วน", "บวกลบเศษส่วน"],
+        "เวลา เงิน และการวัด": ["นาฬิกา", "จำนวนเงิน", "เครื่องชั่งสปริง"],
+        "การบวก ลบ คูณ หาร": ["การบวก (แบบตั้งหลัก)", "การลบ (แบบตั้งหลัก)", "การคูณ (แบบตั้งหลัก)", "หารยาว"],
         "แผนภูมิรูปภาพ": ["การอ่านแผนภูมิรูปภาพ"]
     },
     "ป.4": {
-        "จำนวนนับที่มากกว่า 100,000": ["การอ่านและการเขียนตัวเลข", "หลัก ค่าประจำหลัก และรูปกระจาย", "การเปรียบเทียบและเรียงลำดับ", "ค่าประมาณเป็นจำนวนเต็มสิบ เต็มร้อย เต็มพัน"],
-        "การบวก ลบ คูณ หาร": ["การบวก (แบบตั้งหลัก)", "การลบ (แบบตั้งหลัก)", "การคูณ (แบบตั้งหลัก)", "การหารยาว"],
-        "เศษส่วนและทศนิยม": ["แปลงเศษเกินเป็นจำนวนคละ", "การอ่านและการเขียนทศนิยม"],
-        "เรขาคณิตและการวัด": ["การบอกชนิดของมุม", "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)", "การหาความยาวรอบรูปสี่เหลี่ยมมุมฉาก", "การหาพื้นที่รูปสี่เหลี่ยมมุมฉาก"],
-        "สมการ": ["การแก้สมการ (บวก/ลบ)"]
+        "จำนวนนับ": ["การอ่าน การเขียนตัวเลข", "รูปกระจาย", "การเปรียบเทียบจำนวน", "ค่าประมาณ"],
+        "การบวก ลบ คูณ หาร": ["การบวก (แบบตั้งหลัก)", "การลบ (แบบตั้งหลัก)", "การคูณ (แบบตั้งหลัก)", "หารยาว"],
+        "เศษส่วนและทศนิยม": ["เศษเกินเป็นจำนวนคละ", "อ่านทศนิยม"],
+        "เรขาคณิตและการวัด": ["ชนิดของมุม", "ไม้โปรแทรกเตอร์", "ความยาวรอบรูปและพื้นที่"],
+        "สมการ": ["การแก้สมการ (+/-)"]
     },
     "ป.5": {
-        "เศษส่วน": ["การบวกเศษส่วน", "การลบเศษส่วน", "การคูณเศษส่วน", "การหารเศษส่วน"],
-        "ทศนิยม": ["การบวกและการลบทศนิยม", "การคูณทศนิยม"],
-        "ร้อยละและเปอร์เซ็นต์": ["การเขียนเศษส่วนในรูปร้อยละ"],
+        "เศษส่วน": ["บวกลบเศษส่วน", "คูณหารเศษส่วน"],
+        "ทศนิยม": ["บวกลบทศนิยม", "คูณทศนิยม"],
+        "ร้อยละและเปอร์เซ็นต์": ["ร้อยละเศษส่วน"],
         "สมการ": ["การแก้สมการ (คูณ/หาร)"]
     },
     "ป.6": {
-        "ตัวประกอบของจำนวนนับ": ["การหา ห.ร.ม.", "การหา ค.ร.น."],
-        "อัตราส่วนและร้อยละ": ["การหาอัตราส่วนที่เท่ากัน", "โจทย์ปัญหาอัตราส่วน", "โจทย์ปัญหาร้อยละ"],
+        "ตัวประกอบ": ["ห.ร.ม.", "ค.ร.น."],
+        "อัตราส่วนและร้อยละ": ["อัตราส่วนที่เท่ากัน", "โจทย์ปัญหาอัตราส่วน", "โจทย์ปัญหาร้อยละ"],
         "สมการ": ["การแก้สมการ (สองขั้นตอน)"]
     }
 }
@@ -82,7 +89,9 @@ def generate_vertical_table_html(a, b, op, result=None, is_key=False):
                 db = int(str_b[i]) if str_b[i].strip() else 0
                 s = da + db + carry
                 carry = s // 10
-                if carry > 0 and i > 0: top_marks[i-1] = str(carry)
+                if carry > 0 and i > 0:
+                    top_marks[i-1] = str(carry)
+                    
         elif op == '-':
             a_chars = list(str_a)
             b_chars = list(str_b)
@@ -95,7 +104,7 @@ def generate_vertical_table_html(a, b, op, result=None, is_key=False):
                             strike[j] = True
                             a_digits[j] -= 1
                             top_marks[j] = str(a_digits[j])
-                            for k in range(j+1, i): 
+                            for k in range(j+1, i):
                                 strike[k] = True
                                 a_digits[k] = 9
                                 top_marks[k] = "9"
@@ -103,6 +112,7 @@ def generate_vertical_table_html(a, b, op, result=None, is_key=False):
                             a_digits[i] += 10
                             top_marks[i] = str(a_digits[i])
                             break
+                            
         elif op == '×':
             b_val = b
             carry = 0
@@ -140,76 +150,20 @@ def generate_vertical_table_html(a, b, op, result=None, is_key=False):
         
     return f"""<div style="display: block; text-align: center; margin-top: 10px;"><div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 38px; line-height: 1.1; margin: 10px 20px;"><table style="border-collapse: collapse; margin-left: auto; margin-right: auto;"><tr><td style="width: 20px;"></td>{a_tds}<td style="width: 50px; text-align: center; vertical-align: middle;" rowspan="2">{op}</td></tr><tr><td></td>{b_tds}</tr><tr><td></td>{res_tds}<td></td></tr><tr><td></td><td colspan="{num_len}" style="border-bottom: 6px double #000; height: 10px;"></td><td></td></tr></table></div></div>"""
 
-def generate_fraction_html(num, den, color="#000"):
-    return f"""<div style="display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 5px; font-family: 'Sarabun', sans-serif;"><span style="font-size: 20px; font-weight: bold; border-bottom: 2px solid {color}; padding: 0 4px; line-height: 1.1; color: {color};">{num}</span><span style="font-size: 20px; font-weight: bold; padding: 0 4px; line-height: 1.1; color: {color};">{den}</span></div>"""
-
-def generate_mixed_number_html(whole, num, den):
-    return f"""<div style="display: inline-flex; align-items: center; vertical-align: middle; margin: 0 5px; font-family: 'Sarabun', sans-serif;"><span style="font-size: 24px; font-weight: bold; margin-right: 4px; color: red;">{whole}</span><div style="display: inline-flex; flex-direction: column; align-items: center;"><span style="font-size: 20px; font-weight: bold; border-bottom: 2px solid red; padding: 0 4px; line-height: 1.1; color: red;">{num}</span><span style="font-size: 20px; font-weight: bold; padding: 0 4px; line-height: 1.1; color: red;">{den}</span></div></div>"""
-
-def get_fraction_solution_steps(num, den):
-    g = math.gcd(num, den)
-    if num == 0: return "เศษส่วนที่มีตัวเศษเป็น 0 จะมีค่าเท่ากับ 0 เสมอ", "<span style='font-size: 24px; font-weight: bold; color: red;'>0</span>"
-    if num == den: return "เศษส่วนที่มีตัวเศษและตัวส่วนเท่ากัน (หารกันลงตัวพอดี) จะมีค่าเท่ากับ 1 เสมอ", "<span style='font-size: 24px; font-weight: bold; color: red;'>1</span>"
-    sim_num = num // g
-    sim_den = den // g
-    extra_steps = ""
-    final_html = ""
-    if sim_den == 1:
-        final_html = f"<span style='font-size: 24px; font-weight: bold; color: red;'>{sim_num}</span>"
-        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำ (นำ {g} มาหารทั้งตัวเศษและตัวส่วน) จะได้ผลลัพธ์เป็นจำนวนเต็ม"
-    elif sim_num > sim_den:
-        w = sim_num // sim_den
-        r = sim_num % sim_den
-        final_html = generate_mixed_number_html(w, r, sim_den)
-        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำ (นำ {g} มาหารทั้งตัวเศษและตัวส่วน) และนำไปตั้งหารเพื่อแปลงเศษเกินให้อยู่ในรูปจำนวนคละ"
-        else: extra_steps = f"นำไปตั้งหารเพื่อแปลงเศษเกินให้อยู่ในรูปจำนวนคละ"
-    else:
-        final_html = f"""<div style="display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 5px; font-family: 'Sarabun', sans-serif;"><span style="font-size: 20px; font-weight: bold; border-bottom: 2px solid red; padding: 0 4px; line-height: 1.1; color: red;">{sim_num}</span><span style="font-size: 20px; font-weight: bold; padding: 0 4px; line-height: 1.1; color: red;">{sim_den}</span></div>"""
-        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำโดยนำ {g} มาหารทั้งตัวเศษและตัวส่วน"
-    return extra_steps, final_html
-
-def generate_short_division_html(a, b, mode="ห.ร.ม."):
-    factors = []
-    ca = a
-    cb = b
-    steps_html = ""
-    while True:
-        found = False
-        for i in range(2, min(ca, cb) + 1):
-            if ca % i == 0 and cb % i == 0:
-                steps_html += f"<tr><td style='text-align: right; padding-right: 10px; font-weight: bold; color: red;'>{i}</td><td style='border-left: 2px solid #000; border-bottom: 2px solid #000; padding: 5px 15px; text-align: center;'>{ca}</td><td style='border-bottom: 2px solid #000; padding: 5px 15px; text-align: center;'>{cb}</td></tr>"
-                factors.append(i)
-                ca //= i
-                cb //= i
-                found = True
-                break
-        if not found: break
-    if not factors:
-        if mode == "ห.ร.ม.": return f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ลองหาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน<br>2) พบว่าไม่มีตัวเลขใดเลยที่หารทั้งคู่ลงตัว (นอกจากเลข 1)<br><b>ดังนั้น ห.ร.ม. = 1</b></span>"
-        else: return f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ลองหาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน<br>2) พบว่าไม่มีตัวเลขใดเลยที่หารทั้งคู่ลงตัว<br>3) การหา ค.ร.น. ในกรณีนี้ ให้นำตัวเลขทั้งสองตัวมาคูณกันได้เลย<br><b>ดังนั้น ค.ร.น. = {a} × {b} = {a*b}</b></span>"
-    steps_html += f"<tr><td></td><td style='padding: 5px 15px; text-align: center;'>{ca}</td><td style='padding: 5px 15px; text-align: center;'>{cb}</td></tr>"
-    table = f"<table style='margin: 10px 0; font-size: 20px; border-collapse: collapse; color: #333;'>{steps_html}</table>"
-    if mode == "ห.ร.ม.":
-        ans = math.prod(factors)
-        calc_str = " × ".join(map(str, factors))
-        sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การตั้งหารสั้น):</b><br>1) หาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน แล้วนำมาใส่เป็นตัวหารด้านหน้า<br>2) หารไปเรื่อยๆ จนกว่าจะไม่มีตัวเลขใดหารลงตัวทั้งคู่แล้ว<br>{table}<br>3) <b>การหา ห.ร.ม.</b> ให้นำเฉพาะ <b>ตัวเลขด้านหน้าเครื่องหมายหารสั้น</b> มาคูณกัน<br><b>ดังนั้น ห.ร.ม. = {calc_str} = {ans}</b></span>"
-    else:
-        ans = math.prod(factors) * ca * cb
-        calc_str = " × ".join(map(str, factors + [ca, cb]))
-        sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การตั้งหารสั้น):</b><br>1) หาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน แล้วนำมาใส่เป็นตัวหารด้านหน้า<br>2) หารไปเรื่อยๆ จนกว่าจะไม่มีตัวเลขใดหารลงตัวทั้งคู่แล้ว<br>{table}<br>3) <b>การหา ค.ร.น.</b> ให้นำ <b>ตัวเลขด้านหน้าทั้งหมด และ เศษที่เหลือด้านล่างสุดทั้งหมด (มองเป็นรูปตัว L)</b> มาคูณกัน<br><b>ดังนั้น ค.ร.น. = {calc_str} = {ans}</b></span>"
-    return sol
-
 def generate_decimal_vertical_html(a, b, op, is_key=False):
     str_a = f"{a:.2f}"
     str_b = f"{b:.2f}"
     ans = a + b if op == '+' else round(a - b, 2)
     str_ans = f"{ans:.2f}"
     max_len = max(len(str_a), len(str_b), len(str_ans)) + 1 
+    
     str_a = str_a.rjust(max_len, " ")
     str_b = str_b.rjust(max_len, " ")
     str_ans = str_ans.rjust(max_len, " ")
+    
     strike = [False] * max_len
     top_marks = [""] * max_len
+    
     if is_key:
         if op == '+':
             carry = 0
@@ -246,6 +200,7 @@ def generate_decimal_vertical_html(a, b, op, is_key=False):
                             a_digits[i] += 10
                             top_marks[i] = str(a_digits[i])
                             break
+                            
     a_tds = ""
     for i in range(max_len):
         val = str_a[i].strip() if str_a[i].strip() else ""
@@ -253,56 +208,71 @@ def generate_decimal_vertical_html(a, b, op, is_key=False):
         td_content = val
         if val and val != '.':
             mark = top_marks[i]
-            if strike[i] and is_key: 
+            if strike[i] and is_key:
                 td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span style="text-decoration: line-through; text-decoration-color: red; text-decoration-thickness: 2px;">{val}</span></div>'
-            elif mark and is_key: 
+            elif mark and is_key:
                 td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span>{val}</span></div>'
         a_tds += f"<td style='width: 35px; text-align: center; height: 50px; vertical-align: bottom;'>{td_content}</td>"
+        
     b_tds = "".join([f"<td style='width: 35px; text-align: center; border-bottom: 2px solid #000; height: 40px; vertical-align: bottom;'>{c.strip() if c.strip() else ('.' if c=='.' else '')}</td>" for c in str_b])
-    if is_key: ans_tds = "".join([f"<td style='width: 35px; text-align: center; color: red; font-weight: bold; height: 45px; vertical-align: bottom;'>{c.strip() if c.strip() else ('.' if c=='.' else '')}</td>" for c in str_ans])
-    else: ans_tds = "".join([f"<td style='width: 35px; height: 45px;'></td>" for _ in str_ans])
+    
+    if is_key:
+        ans_tds = "".join([f"<td style='width: 35px; text-align: center; color: red; font-weight: bold; height: 45px; vertical-align: bottom;'>{c.strip() if c.strip() else ('.' if c=='.' else '')}</td>" for c in str_ans])
+    else:
+        ans_tds = "".join([f"<td style='width: 35px; height: 45px;'></td>" for _ in str_ans])
+        
     return f"""<div style="display: block; text-align: center; margin-top: 10px;"><div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 38px; line-height: 1.2; margin: 10px 20px;"><table style="border-collapse: collapse; margin-left: auto; margin-right: auto;"><tr><td style="width: 20px;"></td>{a_tds}<td style="width: 50px; text-align: center; vertical-align: middle;" rowspan="2">{op}</td></tr><tr><td></td>{b_tds}</tr><tr><td></td>{ans_tds}<td></td></tr><tr><td></td><td colspan="{max_len}" style="border-bottom: 6px double #000; height: 10px;"></td><td></td></tr></table></div></div>"""
 
 def generate_long_division_step_by_step_html(divisor, dividend, equation_html, is_key=False):
     div_str = str(dividend)
     div_len = len(div_str)
+    
     if not is_key:
         ans_tds_list = [f'<td style="width: 35px; height: 45px;"></td>' for _ in div_str]
         ans_tds_list.append('<td style="width: 35px;"></td>')
+        
         div_tds_list = []
         for i, c in enumerate(div_str):
             left_border = "border-left: 3px solid #000;" if i == 0 else ""
             div_tds_list.append(f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px; height: 50px; vertical-align: bottom;">{c}</td>')
         div_tds_list.append('<td style="width: 35px;"></td>')
+        
         empty_rows = ""
         for _ in range(div_len + 1): 
             empty_rows += f"<tr><td style='border: none;'></td>"
             for _ in range(div_len + 1):
                 empty_rows += f"<td style='width: 35px; height: 45px;'></td>"
             empty_rows += "</tr>"
+            
         return f"{equation_html}<div style=\"display: block; text-align: center; margin-top: 10px;\"><div style=\"display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2; margin: 10px 20px;\"><table style=\"border-collapse: collapse;\"><tr><td style=\"border: none;\"></td>{''.join(ans_tds_list)}</tr><tr><td style=\"border: none; text-align: right; padding-right: 12px; vertical-align: bottom; font-size: 38px;\">{divisor}</td>{''.join(div_tds_list)}</tr>{empty_rows}</table></div></div>"
     
     steps = []
     current_val_str = ""
     ans_str = ""
     has_started = False
+    
     for i, digit in enumerate(div_str):
         current_val_str += digit
         current_val = int(current_val_str)
         q = current_val // divisor
         mul_res = q * divisor
         rem = current_val - mul_res
+        
         if not has_started and q == 0 and i < len(div_str) - 1:
              current_val_str = str(rem) if rem != 0 else ""
              continue
+             
         has_started = True
         ans_str += str(q)
+        
         cur_chars = list(str(current_val))
         m_chars = list(str(mul_res).zfill(len(str(current_val))))
         c_dig = [int(c) for c in cur_chars]
         m_dig = [int(c) for c in m_chars]
+        
         top_m = [""] * len(c_dig)
         strik = [False] * len(c_dig)
+        
         for idx_b in range(len(c_dig) - 1, -1, -1):
             if c_dig[idx_b] < m_dig[idx_b]:
                 for j in range(idx_b-1, -1, -1):
@@ -318,15 +288,24 @@ def generate_long_division_step_by_step_html(divisor, dividend, equation_html, i
                         c_dig[idx_b] += 10
                         top_m[idx_b] = str(c_dig[idx_b])
                         break
-        steps.append({'mul_res': mul_res, 'rem': rem, 'col_index': i, 'top_m': top_m, 'strik': strik})
+                        
+        steps.append({
+            'mul_res': mul_res, 
+            'rem': rem, 
+            'col_index': i, 
+            'top_m': top_m, 
+            'strik': strik
+        })
         current_val_str = str(rem) if rem != 0 else ""
         
     ans_padded = ans_str.rjust(div_len, " ")
     ans_tds_list = [f'<td style="width: 35px; text-align: center; color: red; font-weight: bold; font-size: 38px;">{c.strip()}</td>' for c in ans_padded]
     ans_tds_list.append('<td style="width: 35px;"></td>') 
+    
     div_tds_list = []
     s0 = steps[0] if len(steps) > 0 else None
     s0_start = s0['col_index'] + 1 - len(s0['top_m']) if s0 else 0
+    
     for i, c in enumerate(div_str):
         left_border = "border-left: 3px solid #000;" if i == 0 else ""
         td_content = c
@@ -390,9 +369,77 @@ def generate_long_division_step_by_step_html(divisor, dividend, equation_html, i
             else: 
                 rem_tds += '<td style="width: 35px;"></td>'
         html += f"<tr><td style='border: none;'></td>{rem_tds}</tr>"
+        
     html += "</table></div></div>"
-    html += f"<div style='margin-top: 15px; color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) นำตัวหาร ({divisor}) ไปหารตัวตั้งทีละหลักจากซ้ายไปขวา<br>2) ท่องสูตรคูณแม่ {divisor} ว่าคูณอะไรแล้วได้ใกล้เคียงหรือเท่ากับตัวตั้งในหลักนั้นที่สุด (แต่ห้ามเกิน)<br>3) ใส่ผลลัพธ์ไว้ด้านบน และนำผลคูณมาลบกันด้านล่าง<br>4) ดึงตัวเลขในหลักถัดไปลงมา แล้วทำซ้ำขั้นตอนเดิมจนหมดทุกหลัก</div>"
+    
+    html += f"<div style='margin-top: 15px; color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) นำตัวหาร ({divisor}) ไปหารตัวตั้ง ({dividend}) ทีละหลักจากซ้ายไปขวา<br>2) ท่องสูตรคูณแม่ {divisor} ว่าคูณอะไรแล้วได้ใกล้เคียงหรือเท่ากับตัวตั้งในหลักนั้นที่สุด (แต่ห้ามเกิน)<br>3) ใส่ผลลัพธ์ไว้ด้านบน และนำผลคูณมาลบกันด้านล่าง<br>4) ดึงตัวเลขในหลักถัดไปลงมา แล้วทำซ้ำขั้นตอนเดิมจนหมดทุกหลัก</div>"
     return html
+
+def generate_fraction_html(num, den, color="#000"):
+    return f"""<div style="display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 5px; font-family: 'Sarabun', sans-serif;"><span style="font-size: 20px; font-weight: bold; border-bottom: 2px solid {color}; padding: 0 4px; line-height: 1.1; color: {color};">{num}</span><span style="font-size: 20px; font-weight: bold; padding: 0 4px; line-height: 1.1; color: {color};">{den}</span></div>"""
+
+def generate_mixed_number_html(whole, num, den):
+    return f"""<div style="display: inline-flex; align-items: center; vertical-align: middle; margin: 0 5px; font-family: 'Sarabun', sans-serif;"><span style="font-size: 24px; font-weight: bold; margin-right: 4px; color: red;">{whole}</span><div style="display: inline-flex; flex-direction: column; align-items: center;"><span style="font-size: 20px; font-weight: bold; border-bottom: 2px solid red; padding: 0 4px; line-height: 1.1; color: red;">{num}</span><span style="font-size: 20px; font-weight: bold; padding: 0 4px; line-height: 1.1; color: red;">{den}</span></div></div>"""
+
+def get_fraction_solution_steps(num, den):
+    g = math.gcd(num, den)
+    if num == 0: return "เศษส่วนที่มีตัวเศษเป็น 0 จะมีค่าเท่ากับ 0 เสมอ", "<span style='font-size: 24px; font-weight: bold; color: red;'>0</span>"
+    if num == den: return "เศษส่วนที่มีตัวเศษและตัวส่วนเท่ากัน (หารกันลงตัวพอดี) จะมีค่าเท่ากับ 1 เสมอ", "<span style='font-size: 24px; font-weight: bold; color: red;'>1</span>"
+    sim_num = num // g
+    sim_den = den // g
+    extra_steps = ""
+    final_html = ""
+    if sim_den == 1:
+        final_html = f"<span style='font-size: 24px; font-weight: bold; color: red;'>{sim_num}</span>"
+        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำ (นำ {g} มาหารทั้งตัวเศษและตัวส่วน) จะได้ผลลัพธ์เป็นจำนวนเต็ม"
+    elif sim_num > sim_den:
+        w = sim_num // sim_den
+        r = sim_num % sim_den
+        final_html = generate_mixed_number_html(w, r, sim_den)
+        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำ (นำ {g} มาหารทั้งตัวเศษและตัวส่วน) และนำไปตั้งหารเพื่อแปลงเศษเกินให้อยู่ในรูปจำนวนคละ"
+        else: extra_steps = f"นำไปตั้งหารเพื่อแปลงเศษเกินให้อยู่ในรูปจำนวนคละ"
+    else:
+        final_html = f"""<div style="display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 5px; font-family: 'Sarabun', sans-serif;"><span style="font-size: 20px; font-weight: bold; border-bottom: 2px solid red; padding: 0 4px; line-height: 1.1; color: red;">{sim_num}</span><span style="font-size: 20px; font-weight: bold; padding: 0 4px; line-height: 1.1; color: red;">{sim_den}</span></div>"""
+        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำโดยนำ {g} มาหารทั้งตัวเศษและตัวส่วน"
+    return extra_steps, final_html
+
+def generate_short_division_html(a, b, mode="ห.ร.ม."):
+    factors = []
+    ca = a
+    cb = b
+    steps_html = ""
+    while True:
+        found = False
+        for i in range(2, min(ca, cb) + 1):
+            if ca % i == 0 and cb % i == 0:
+                steps_html += f"<tr><td style='text-align: right; padding-right: 10px; font-weight: bold; color: red;'>{i}</td><td style='border-left: 2px solid #000; border-bottom: 2px solid #000; padding: 5px 15px; text-align: center;'>{ca}</td><td style='border-bottom: 2px solid #000; padding: 5px 15px; text-align: center;'>{cb}</td></tr>"
+                factors.append(i)
+                ca //= i
+                cb //= i
+                found = True
+                break
+        if not found:
+            break
+            
+    if not factors:
+        if mode == "ห.ร.ม.":
+            return f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ลองหาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน<br>2) พบว่าไม่มีตัวเลขใดเลยที่หารทั้งคู่ลงตัว (นอกจากเลข 1)<br><b>ดังนั้น ห.ร.ม. = 1</b></span>"
+        else:
+            return f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ลองหาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน<br>2) พบว่าไม่มีตัวเลขใดเลยที่หารทั้งคู่ลงตัว<br>3) การหา ค.ร.น. ในกรณีนี้ ให้นำตัวเลขทั้งสองตัวมาคูณกันได้เลย<br><b>ดังนั้น ค.ร.น. = {a} × {b} = {a*b}</b></span>"
+            
+    steps_html += f"<tr><td></td><td style='padding: 5px 15px; text-align: center;'>{ca}</td><td style='padding: 5px 15px; text-align: center;'>{cb}</td></tr>"
+    table = f"<table style='margin: 10px 0; font-size: 20px; border-collapse: collapse; color: #333;'>{steps_html}</table>"
+    
+    if mode == "ห.ร.ม.":
+        ans = math.prod(factors)
+        calc_str = " × ".join(map(str, factors))
+        sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การตั้งหารสั้น):</b><br>1) หาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน แล้วนำมาใส่เป็นตัวหารด้านหน้า<br>2) หารไปเรื่อยๆ จนกว่าจะไม่มีตัวเลขใดหารลงตัวทั้งคู่แล้ว<br>{table}<br>3) <b>การหา ห.ร.ม.</b> ให้นำเฉพาะ <b>ตัวเลขด้านหน้าเครื่องหมายหารสั้น</b> มาคูณกัน<br><b>ดังนั้น ห.ร.ม. = {calc_str} = {ans}</b></span>"
+    else:
+        ans = math.prod(factors) * ca * cb
+        calc_str = " × ".join(map(str, factors + [ca, cb]))
+        sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การตั้งหารสั้น):</b><br>1) หาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน แล้วนำมาใส่เป็นตัวหารด้านหน้า<br>2) หารไปเรื่อยๆ จนกว่าจะไม่มีตัวเลขใดหารลงตัวทั้งคู่แล้ว<br>{table}<br>3) <b>การหา ค.ร.น.</b> ให้นำ <b>ตัวเลขด้านหน้าทั้งหมด และ เศษที่เหลือด้านล่างสุดทั้งหมด (มองเป็นรูปตัว L)</b> มาคูณกัน<br><b>ดังนั้น ค.ร.น. = {calc_str} = {ans}</b></span>"
+        
+    return sol
 
 def generate_thai_number_text(num_str):
     thai_nums = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"]
@@ -400,6 +447,7 @@ def generate_thai_number_text(num_str):
     parts = str(num_str).replace(",", "").split(".")
     int_part = parts[0]
     dec_part = parts[1] if len(parts) > 1 else ""
+    
     def read_int(s):
         if s == "0" or s == "": return "ศูนย์"
         res = ""
@@ -413,6 +461,7 @@ def generate_thai_number_text(num_str):
             elif pos == 0 and d == 1 and length > 1: res += "เอ็ด"
             else: res += thai_nums[d] + positions[pos]
         return res
+        
     int_text = read_int(int_part)
     dec_text = ("จุด" + "".join([thai_nums[int(d)] for d in dec_part])) if dec_part else ""
     return int_text + dec_text
@@ -439,16 +488,19 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 all_mains = [m for m in curriculum_db[grade].keys() if m != "🌟 โหมดพิเศษ (สุ่มทุกเรื่อง)"]
                 rand_main = random.choice(all_mains)
                 actual_sub_t = random.choice(curriculum_db[grade][rand_main])
-                
+
             prefix = get_prefix(grade)
 
             # =========================================================
             # โหมดหลักสูตรปกติ (เขียนอธิบายละเอียด Step-by-Step เช่นกัน)
             # =========================================================
             if actual_sub_t == "การคูณ (แบบตั้งหลัก)":
-                if grade in ["ป.1", "ป.2"]: a = random.randint(10, 99) 
-                elif grade == "ป.3": a = random.randint(100, 999) 
-                else: a = random.randint(1000, 9999) 
+                if grade in ["ป.1", "ป.2"]:
+                    a = random.randint(10, 99) 
+                elif grade == "ป.3":
+                    a = random.randint(100, 999) 
+                else:
+                    a = random.randint(1000, 9999) 
                 b = random.randint(2, 9)
                 res = a * b
                 q = f"จงหาผลลัพธ์ <span style='display:inline-flex; align-items:center; font-weight: bold; color: #2c3e50; margin-left: 5px;'>{prefix} {a:,} × {b:,} = {box_html}</span>" + generate_vertical_table_html(a, b, '×', is_key=False)
@@ -507,7 +559,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 else:
                     sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>ในการหา 'ส่วนย่อย' ที่หายไป เราต้องนำ 'ส่วนรวม' (วงกลมด้านบน) มาลบด้วย 'ส่วนย่อย' อีกข้างที่เราทราบค่าแล้ว<br>จะได้: {total} - {p1} = <b>{p2}</b><br><b>ตอบ: {p2}</b></span><br>" + svg_t.format(t=total, p1=p1, p2=p2)
 
-            elif "หลัก ค่าของเลขโดดในแต่ละหลัก และรูปกระจาย" in actual_sub_t or "หลักและรูปกระจาย" in actual_sub_t:
+            elif "หลัก ค่าของเลขโดดในแต่ละหลัก และรูปกระจาย" in actual_sub_t or "รูปกระจาย" in actual_sub_t:
                 n = random.randint(100, limit - 1 if limit > 10 else 99)
                 parts = [f"{int(d)*(10**(len(str(n))-1-i)):,}" for i,d in enumerate(str(n)) if d != '0']
                 q = f"จงเขียนจำนวน <b>{n:,}</b> ให้อยู่ในรูปกระจาย"
@@ -825,7 +877,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 sol = generate_short_division_html(a, b, mode="ค.ร.น.")
 
             else:
-                # Fallback ป้องกัน Error
                 a, b = random.randint(10, 50), random.randint(10, 50)
                 q = f"จงหาผลลัพธ์ <span style='display:inline-flex; align-items:center; font-weight: bold; color: #2c3e50; margin-left: 5px;'>{prefix} {a} + {b} = {box_html}</span>"
                 sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b> นำ {a} มาบวกกับ {b} ตามหลักคณิตศาสตร์พื้นฐาน จะได้คำตอบเท่ากับ <b>{a + b}</b><br><b>ตอบ: {a + b}</b></span>"
