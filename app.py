@@ -6,50 +6,26 @@ import zipfile
 import io
 import time
 
-# ==========================================
-# ตั้งค่าหน้าเพจ Web App & Professional CSS
-# ==========================================
-st.set_page_config(page_title="Math Generator Pro Ultimate", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="Math Worksheet: Standard", page_icon="📚", layout="wide")
 
 st.markdown("""
 <style>
     .block-container { padding-top: 2rem; padding-bottom: 2rem; max-width: 1200px; }
-    div[data-testid="stSidebar"] div.stButton > button { background-color: #27ae60; color: white; border-radius: 8px; height: 3.5rem; font-size: 18px; font-weight: bold; transition: all 0.3s ease; border: none; box-shadow: 0 4px 6px rgba(39,174,96,0.3); }
-    div[data-testid="stSidebar"] div.stButton > button:hover { background-color: #219653; box-shadow: 0 6px 12px rgba(39,174,96,0.4); transform: translateY(-2px); }
-    div.stDownloadButton > button { border-radius: 8px; font-weight: bold; border: 1px solid #bdc3c7; transition: all 0.2s ease; }
+    div[data-testid="stSidebar"] div.stButton > button { background-color: #2980b9; color: white; border-radius: 8px; height: 3.5rem; font-size: 18px; font-weight: bold; border: none; }
+    div[data-testid="stSidebar"] div.stButton > button:hover { background-color: #2471a3; }
+    div.stDownloadButton > button { border-radius: 8px; font-weight: bold; border: 1px solid #bdc3c7; }
     div.stDownloadButton > button:hover { border-color: #3498db; color: #3498db; }
-    .main-header { background: linear-gradient(135deg, #2980b9, #2c3e50); padding: 2rem; border-radius: 15px; color: white; margin-bottom: 2rem; box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
-    .main-header h1 { margin: 0; font-size: 2.8rem; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
-    .main-header p { margin: 10px 0 0 0; font-size: 1.2rem; opacity: 0.9; }
+    .main-header { background: linear-gradient(135deg, #27ae60, #2ecc71); padding: 2rem; border-radius: 15px; color: white; margin-bottom: 2rem; }
+    .main-header h1 { margin: 0; font-size: 2.5rem; font-weight: 800; }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("""
 <div class="main-header">
-    <h1>🚀 Math Worksheet Pro <span style="font-size: 20px; background: #f39c12; padding: 5px 15px; border-radius: 20px; vertical-align: middle;">Ultimate Edition</span></h1>
-    <p>ระบบสร้างสื่อการสอนคณิตศาสตร์ พร้อมข้อสอบแข่งขัน TMC + ภาพอธิบายเฉลย (Visual Models) ขั้นเทพ!</p>
+    <h1>📚 Math Worksheet: Standard</h1>
+    <p>ระบบสร้างสื่อการสอนคณิตศาสตร์ หลักสูตรปกติ ป.1 - ป.6 พร้อมเฉลยละเอียด</p>
 </div>
 """, unsafe_allow_html=True)
-
-# ==========================================
-# 1. ฐานข้อมูลหลักสูตร (Master Database)
-# ==========================================
-
-# จัดกลุ่มหัวข้อแข่งขันตามระดับชั้น (ตรวจสอบแล้วว่าไม่เกินเนื้อหาเด็ก)
-comp_topics_p1_p2 = [
-    "ตรรกะตาชั่งสมดุล", "การนับหน้าหนังสือ", "ปัญหาผลรวม-ผลต่าง", 
-    "โปรโมชั่นแลกของ", "หยิบของในที่มืด", "การคิดย้อนกลับ", "แถวคอยแบบซ้อนทับ"
-]
-
-comp_topics_p3_p4 = [
-    "ปริศนาตัวเลขซ่อนแอบ", "การปักเสาและปลูกต้นไม้", "สัตว์ปีนบ่อ", 
-    "ตรรกะการจับมือ (ทักทาย)", "แผนภาพความชอบ", "คิววงกลมมรณะ", "อายุข้ามเวลาขั้นสูง"
-]
-
-comp_topics_p5_p6 = [
-    "ลำดับแบบวนลูป", "เส้นทางที่เป็นไปได้", "นาฬิกาเดินเพี้ยน", 
-    "จัดของใส่กล่อง", "คะแนนยิงเป้า", "การตัดเชือกพับทบ"
-]
 
 curriculum_db = {
     "ป.1": {
@@ -61,36 +37,31 @@ curriculum_db = {
         "จำนวนนับไม่เกิน 1,000 และ 0": ["การนับทีละ 2 ทีละ 5 ทีละ 10 และทีละ 100", "การอ่านและการเขียนตัวเลข", "จำนวนคู่ จำนวนคี่", "หลัก ค่าของเลขโดด และรูปกระจาย", "การเปรียบเทียบจำนวน (> <)", "การเรียงลำดับจำนวน (น้อยไปมาก)", "การเรียงลำดับจำนวน (มากไปน้อย)"],
         "เวลาและการวัด": ["การบอกเวลาเป็นนาฬิกาและนาที", "การอ่านน้ำหนักจากเครื่องชั่งสปริง"],
         "การบวก ลบ คูณ หาร": ["การบวก (แบบตั้งหลัก)", "การลบ (แบบตั้งหลัก)", "การคูณ (แบบตั้งหลัก)", "การหารพื้นฐาน"],
-        "แผนภูมิรูปภาพ": ["การอ่านแผนภูมิรูปภาพ"],
-        "🌟 โจทย์แข่งขัน (แนว TMC)": comp_topics_p1_p2
+        "แผนภูมิรูปภาพ": ["การอ่านแผนภูมิรูปภาพ"]
     },
     "ป.3": {
         "จำนวนนับและเศษส่วน": ["การอ่าน การเขียนตัวเลข", "หลัก ค่าของเลขโดด และรูปกระจาย", "การเปรียบเทียบจำนวน (> <)", "การเรียงลำดับจำนวน (น้อยไปมาก)", "การเรียงลำดับจำนวน (มากไปน้อย)", "การอ่านและเขียนเศษส่วน", "การบวกลบเศษส่วน (ตัวส่วนเท่ากัน)"],
         "เวลา เงิน และการวัด": ["การบอกเวลาเป็นนาฬิกาและนาที", "การบอกจำนวนเงินทั้งหมด", "การอ่านน้ำหนักจากเครื่องชั่งสปริง"],
         "การบวก ลบ คูณ หาร": ["การบวก (แบบตั้งหลัก)", "การลบ (แบบตั้งหลัก)", "การคูณ (แบบตั้งหลัก)", "การหารยาว"],
-        "แผนภูมิรูปภาพ": ["การอ่านแผนภูมิรูปภาพ"],
-        "🌟 โจทย์แข่งขัน (แนว TMC)": comp_topics_p1_p2 + comp_topics_p3_p4
+        "แผนภูมิรูปภาพ": ["การอ่านแผนภูมิรูปภาพ"]
     },
     "ป.4": {
         "จำนวนนับที่มากกว่า 100,000": ["การอ่านและการเขียนตัวเลข", "หลัก ค่าประจำหลัก และรูปกระจาย", "การเปรียบเทียบและเรียงลำดับ", "ค่าประมาณเป็นจำนวนเต็มสิบ เต็มร้อย เต็มพัน"],
         "การบวก ลบ คูณ หาร": ["การบวก (แบบตั้งหลัก)", "การลบ (แบบตั้งหลัก)", "การคูณ (แบบตั้งหลัก)", "การหารยาว"],
         "เศษส่วนและทศนิยม": ["แปลงเศษเกินเป็นจำนวนคละ", "การอ่านและการเขียนทศนิยม"],
         "เรขาคณิตและการวัด": ["การบอกชนิดของมุม", "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)", "การหาความยาวรอบรูปสี่เหลี่ยมมุมฉาก", "การหาพื้นที่รูปสี่เหลี่ยมมุมฉาก"],
-        "สมการ": ["การแก้สมการ (บวก/ลบ)"],
-        "🌟 โจทย์แข่งขัน (แนว TMC)": comp_topics_p1_p2 + comp_topics_p3_p4
+        "สมการ": ["การแก้สมการ (บวก/ลบ)"]
     },
     "ป.5": {
         "เศษส่วน": ["การบวกเศษส่วน", "การลบเศษส่วน", "การคูณเศษส่วน", "การหารเศษส่วน"],
         "ทศนิยม": ["การบวกและการลบทศนิยม", "การคูณทศนิยม"],
         "ร้อยละและเปอร์เซ็นต์": ["การเขียนเศษส่วนในรูปร้อยละ"],
-        "สมการ": ["การแก้สมการ (คูณ/หาร)"],
-        "🌟 โจทย์แข่งขัน (แนว TMC)": comp_topics_p1_p2 + comp_topics_p3_p4 + comp_topics_p5_p6
+        "สมการ": ["การแก้สมการ (คูณ/หาร)"]
     },
     "ป.6": {
         "ตัวประกอบของจำนวนนับ": ["การหา ห.ร.ม.", "การหา ค.ร.น."],
         "อัตราส่วนและร้อยละ": ["การหาอัตราส่วนที่เท่ากัน", "โจทย์ปัญหาอัตราส่วน", "โจทย์ปัญหาร้อยละ"],
-        "สมการ": ["การแก้สมการ (สองขั้นตอน)"],
-        "🌟 โจทย์แข่งขัน (แนว TMC)": comp_topics_p1_p2 + comp_topics_p3_p4 + comp_topics_p5_p6
+        "สมการ": ["การแก้สมการ (สองขั้นตอน)"]
     }
 }
 
@@ -113,7 +84,8 @@ def generate_vertical_table_html(a, b, op, result=None, is_key=False):
                 carry = s // 10
                 if carry > 0 and i > 0: top_marks[i-1] = str(carry)
         elif op == '-':
-            a_chars, b_chars = list(str_a), list(str_b)
+            a_chars = list(str_a)
+            b_chars = list(str_b)
             a_digits = [int(c) if c.strip() else 0 for c in a_chars]
             b_digits = [int(c) if c.strip() else 0 for c in b_chars]
             for i in range(num_len - 1, -1, -1):
@@ -132,25 +104,29 @@ def generate_vertical_table_html(a, b, op, result=None, is_key=False):
                             top_marks[i] = str(a_digits[i])
                             break
         elif op == '×':
-            b_val, carry = b, 0
+            b_val = b
+            carry = 0
             a_digits = [int(c) if c.strip() else 0 for c in str_a]
             for i in range(num_len - 1, -1, -1):
                 if str_a[i].strip() == "": 
-                    if carry > 0: top_marks[i] = str(carry); carry = 0
+                    if carry > 0:
+                        top_marks[i] = str(carry)
+                        carry = 0
                     continue
                 prod = a_digits[i] * b_val + carry
                 carry = prod // 10
-                if carry > 0 and i > 0: top_marks[i-1] = str(carry)
-                
+                if carry > 0 and i > 0:
+                    top_marks[i-1] = str(carry)
+
     a_tds = ""
     for i in range(num_len):
         val = str_a[i].strip()
         td_content = val
         if val:
             mark = top_marks[i]
-            if strike[i] and is_key: 
+            if strike[i] and is_key:
                 td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span style="text-decoration: line-through; text-decoration-color: red; text-decoration-thickness: 2px;">{val}</span></div>'
-            elif mark and is_key: 
+            elif mark and is_key:
                 td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span>{val}</span></div>'
         a_tds += f'<td style="width: 35px; text-align: center; height: 50px; vertical-align: bottom;">{td_content}</td>'
         
@@ -159,7 +135,7 @@ def generate_vertical_table_html(a, b, op, result=None, is_key=False):
     if is_key and result is not None:
         str_r = str(result).rjust(num_len, " ")
         res_tds = "".join([f'<td style="width: 35px; text-align: center; color: red; font-weight: bold; height: 45px; vertical-align: bottom;">{str_r[i].strip()}</td>' for i in range(num_len)])
-    else: 
+    else:
         res_tds = "".join([f'<td style="width: 35px; height: 45px;"></td>' for _ in range(num_len)])
         
     return f"""<div style="display: block; text-align: center; margin-top: 10px;"><div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 38px; line-height: 1.1; margin: 10px 20px;"><table style="border-collapse: collapse; margin-left: auto; margin-right: auto;"><tr><td style="width: 20px;"></td>{a_tds}<td style="width: 50px; text-align: center; vertical-align: middle;" rowspan="2">{op}</td></tr><tr><td></td>{b_tds}</tr><tr><td></td>{res_tds}<td></td></tr><tr><td></td><td colspan="{num_len}" style="border-bottom: 6px double #000; height: 10px;"></td><td></td></tr></table></div></div>"""
@@ -174,29 +150,29 @@ def get_fraction_solution_steps(num, den):
     g = math.gcd(num, den)
     if num == 0: return "เศษส่วนที่มีตัวเศษเป็น 0 จะมีค่าเท่ากับ 0 เสมอ", "<span style='font-size: 24px; font-weight: bold; color: red;'>0</span>"
     if num == den: return "เศษส่วนที่มีตัวเศษและตัวส่วนเท่ากัน (หารกันลงตัวพอดี) จะมีค่าเท่ากับ 1 เสมอ", "<span style='font-size: 24px; font-weight: bold; color: red;'>1</span>"
-    
-    sim_num, sim_den = num // g, den // g
-    extra_steps, final_html = "", ""
-    
+    sim_num = num // g
+    sim_den = den // g
+    extra_steps = ""
+    final_html = ""
     if sim_den == 1:
         final_html = f"<span style='font-size: 24px; font-weight: bold; color: red;'>{sim_num}</span>"
-        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำ (นำ {g} มาหารทั้งเศษและส่วน) จะได้ผลลัพธ์เป็นจำนวนเต็ม"
+        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำ (นำ {g} มาหารทั้งตัวเศษและตัวส่วน) จะได้ผลลัพธ์เป็นจำนวนเต็ม"
     elif sim_num > sim_den:
-        w, r = sim_num // sim_den, sim_num % sim_den
+        w = sim_num // sim_den
+        r = sim_num % sim_den
         final_html = generate_mixed_number_html(w, r, sim_den)
-        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำ (นำ {g} มาหารทั้งเศษและส่วน) และแปลงเศษเกินให้อยู่ในรูปจำนวนคละ"
-        else: extra_steps = f"แปลงเศษเกินให้อยู่ในรูปจำนวนคละ"
+        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำ (นำ {g} มาหารทั้งตัวเศษและตัวส่วน) และนำไปตั้งหารเพื่อแปลงเศษเกินให้อยู่ในรูปจำนวนคละ"
+        else: extra_steps = f"นำไปตั้งหารเพื่อแปลงเศษเกินให้อยู่ในรูปจำนวนคละ"
     else:
         final_html = f"""<div style="display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 5px; font-family: 'Sarabun', sans-serif;"><span style="font-size: 20px; font-weight: bold; border-bottom: 2px solid red; padding: 0 4px; line-height: 1.1; color: red;">{sim_num}</span><span style="font-size: 20px; font-weight: bold; padding: 0 4px; line-height: 1.1; color: red;">{sim_den}</span></div>"""
-        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำโดยนำ {g} มาหารทั้งเศษและส่วน"
-        
+        if g > 1: extra_steps = f"ทอนเป็นเศษส่วนอย่างต่ำโดยนำ {g} มาหารทั้งตัวเศษและตัวส่วน"
     return extra_steps, final_html
 
 def generate_short_division_html(a, b, mode="ห.ร.ม."):
     factors = []
-    ca, cb = a, b
+    ca = a
+    cb = b
     steps_html = ""
-    
     while True:
         found = False
         for i in range(2, min(ca, cb) + 1):
@@ -208,40 +184,32 @@ def generate_short_division_html(a, b, mode="ห.ร.ม."):
                 found = True
                 break
         if not found: break
-        
-    if not factors: 
-        if mode == "ห.ร.ม.":
-            return f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ลองหาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน<br>2) พบว่าไม่มีตัวเลขใดเลยที่หารทั้งคู่ลงตัว (นอกจาก 1)<br><b>ดังนั้น ห.ร.ม. = 1</b></span>"
-        else:
-            return f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ลองหาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน<br>2) พบว่าไม่มีตัวเลขใดเลยที่หารทั้งคู่ลงตัว<br>3) การหา ค.ร.น. ในกรณีนี้ ให้นำตัวเลขทั้งสองตัวมาคูณกันได้เลย<br><b>ดังนั้น ค.ร.น. = {a} × {b} = {a*b}</b></span>"
-            
+    if not factors:
+        if mode == "ห.ร.ม.": return f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ลองหาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน<br>2) พบว่าไม่มีตัวเลขใดเลยที่หารทั้งคู่ลงตัว (นอกจากเลข 1)<br><b>ดังนั้น ห.ร.ม. = 1</b></span>"
+        else: return f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ลองหาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน<br>2) พบว่าไม่มีตัวเลขใดเลยที่หารทั้งคู่ลงตัว<br>3) การหา ค.ร.น. ในกรณีนี้ ให้นำตัวเลขทั้งสองตัวมาคูณกันได้เลย<br><b>ดังนั้น ค.ร.น. = {a} × {b} = {a*b}</b></span>"
     steps_html += f"<tr><td></td><td style='padding: 5px 15px; text-align: center;'>{ca}</td><td style='padding: 5px 15px; text-align: center;'>{cb}</td></tr>"
     table = f"<table style='margin: 10px 0; font-size: 20px; border-collapse: collapse; color: #333;'>{steps_html}</table>"
-    
     if mode == "ห.ร.ม.":
         ans = math.prod(factors)
         calc_str = " × ".join(map(str, factors))
-        sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การตั้งหารสั้น):</b><br>1) หาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน แล้วนำมาเป็นตัวหารด้านหน้า<br>2) หารไปเรื่อยๆ จนกว่าจะไม่มีตัวเลขใดหารลงตัวทั้งคู่แล้ว<br>{table}<br>3) <b>การหา ห.ร.ม.</b> ให้นำเฉพาะ <b>ตัวเลขด้านหน้าเครื่องหมายหารสั้น</b> มาคูณกัน<br><b>ดังนั้น ห.ร.ม. = {calc_str} = {ans}</b></span>"
+        sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การตั้งหารสั้น):</b><br>1) หาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน แล้วนำมาใส่เป็นตัวหารด้านหน้า<br>2) หารไปเรื่อยๆ จนกว่าจะไม่มีตัวเลขใดหารลงตัวทั้งคู่แล้ว<br>{table}<br>3) <b>การหา ห.ร.ม.</b> ให้นำเฉพาะ <b>ตัวเลขด้านหน้าเครื่องหมายหารสั้น</b> มาคูณกัน<br><b>ดังนั้น ห.ร.ม. = {calc_str} = {ans}</b></span>"
     else:
         ans = math.prod(factors) * ca * cb
         calc_str = " × ".join(map(str, factors + [ca, cb]))
-        sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การตั้งหารสั้น):</b><br>1) หาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน แล้วนำมาเป็นตัวหารด้านหน้า<br>2) หารไปเรื่อยๆ จนกว่าจะไม่มีตัวเลขใดหารลงตัวทั้งคู่แล้ว<br>{table}<br>3) <b>การหา ค.ร.น.</b> ให้นำ <b>ตัวเลขด้านหน้า และ เศษที่เหลือด้านล่างสุดทั้งหมด (เป็นรูปตัว L)</b> มาคูณกัน<br><b>ดังนั้น ค.ร.น. = {calc_str} = {ans}</b></span>"
-        
+        sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การตั้งหารสั้น):</b><br>1) หาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน แล้วนำมาใส่เป็นตัวหารด้านหน้า<br>2) หารไปเรื่อยๆ จนกว่าจะไม่มีตัวเลขใดหารลงตัวทั้งคู่แล้ว<br>{table}<br>3) <b>การหา ค.ร.น.</b> ให้นำ <b>ตัวเลขด้านหน้าทั้งหมด และ เศษที่เหลือด้านล่างสุดทั้งหมด (มองเป็นรูปตัว L)</b> มาคูณกัน<br><b>ดังนั้น ค.ร.น. = {calc_str} = {ans}</b></span>"
     return sol
 
 def generate_decimal_vertical_html(a, b, op, is_key=False):
-    str_a, str_b = f"{a:.2f}", f"{b:.2f}"
+    str_a = f"{a:.2f}"
+    str_b = f"{b:.2f}"
     ans = a + b if op == '+' else round(a - b, 2)
     str_ans = f"{ans:.2f}"
     max_len = max(len(str_a), len(str_b), len(str_ans)) + 1 
-    
     str_a = str_a.rjust(max_len, " ")
     str_b = str_b.rjust(max_len, " ")
     str_ans = str_ans.rjust(max_len, " ")
-    
     strike = [False] * max_len
     top_marks = [""] * max_len
-    
     if is_key:
         if op == '+':
             carry = 0
@@ -256,7 +224,8 @@ def generate_decimal_vertical_html(a, b, op, is_key=False):
                     if str_a[next_i] == '.': next_i -= 1
                     if next_i >= 0: top_marks[next_i] = str(carry)
         elif op == '-':
-            a_chars, b_chars = list(str_a), list(str_b)
+            a_chars = list(str_a)
+            b_chars = list(str_b)
             a_digits = [int(c) if c.strip() and c != '.' else 0 for c in a_chars]
             b_digits = [int(c) if c.strip() and c != '.' else 0 for c in b_chars]
             for i in range(max_len - 1, -1, -1):
@@ -277,7 +246,6 @@ def generate_decimal_vertical_html(a, b, op, is_key=False):
                             a_digits[i] += 10
                             top_marks[i] = str(a_digits[i])
                             break
-                            
     a_tds = ""
     for i in range(max_len):
         val = str_a[i].strip() if str_a[i].strip() else ""
@@ -290,65 +258,51 @@ def generate_decimal_vertical_html(a, b, op, is_key=False):
             elif mark and is_key: 
                 td_content = f'<div style="position: relative;"><span style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 20px; color: red; font-weight: bold;">{mark}</span><span>{val}</span></div>'
         a_tds += f"<td style='width: 35px; text-align: center; height: 50px; vertical-align: bottom;'>{td_content}</td>"
-        
     b_tds = "".join([f"<td style='width: 35px; text-align: center; border-bottom: 2px solid #000; height: 40px; vertical-align: bottom;'>{c.strip() if c.strip() else ('.' if c=='.' else '')}</td>" for c in str_b])
-    
-    if is_key: 
-        ans_tds = "".join([f"<td style='width: 35px; text-align: center; color: red; font-weight: bold; height: 45px; vertical-align: bottom;'>{c.strip() if c.strip() else ('.' if c=='.' else '')}</td>" for c in str_ans])
-    else: 
-        ans_tds = "".join([f"<td style='width: 35px; height: 45px;'></td>" for _ in str_ans])
-        
+    if is_key: ans_tds = "".join([f"<td style='width: 35px; text-align: center; color: red; font-weight: bold; height: 45px; vertical-align: bottom;'>{c.strip() if c.strip() else ('.' if c=='.' else '')}</td>" for c in str_ans])
+    else: ans_tds = "".join([f"<td style='width: 35px; height: 45px;'></td>" for _ in str_ans])
     return f"""<div style="display: block; text-align: center; margin-top: 10px;"><div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 38px; line-height: 1.2; margin: 10px 20px;"><table style="border-collapse: collapse; margin-left: auto; margin-right: auto;"><tr><td style="width: 20px;"></td>{a_tds}<td style="width: 50px; text-align: center; vertical-align: middle;" rowspan="2">{op}</td></tr><tr><td></td>{b_tds}</tr><tr><td></td>{ans_tds}<td></td></tr><tr><td></td><td colspan="{max_len}" style="border-bottom: 6px double #000; height: 10px;"></td><td></td></tr></table></div></div>"""
 
 def generate_long_division_step_by_step_html(divisor, dividend, equation_html, is_key=False):
-    div_str = str(dividend); div_len = len(div_str)
-    
+    div_str = str(dividend)
+    div_len = len(div_str)
     if not is_key:
         ans_tds_list = [f'<td style="width: 35px; height: 45px;"></td>' for _ in div_str]
         ans_tds_list.append('<td style="width: 35px;"></td>')
-        
         div_tds_list = []
         for i, c in enumerate(div_str):
             left_border = "border-left: 3px solid #000;" if i == 0 else ""
             div_tds_list.append(f'<td style="width: 35px; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px; height: 50px; vertical-align: bottom;">{c}</td>')
         div_tds_list.append('<td style="width: 35px;"></td>')
-        
         empty_rows = ""
         for _ in range(div_len + 1): 
             empty_rows += f"<tr><td style='border: none;'></td>"
             for _ in range(div_len + 1):
                 empty_rows += f"<td style='width: 35px; height: 45px;'></td>"
             empty_rows += "</tr>"
-            
         return f"{equation_html}<div style=\"display: block; text-align: center; margin-top: 10px;\"><div style=\"display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2; margin: 10px 20px;\"><table style=\"border-collapse: collapse;\"><tr><td style=\"border: none;\"></td>{''.join(ans_tds_list)}</tr><tr><td style=\"border: none; text-align: right; padding-right: 12px; vertical-align: bottom; font-size: 38px;\">{divisor}</td>{''.join(div_tds_list)}</tr>{empty_rows}</table></div></div>"
     
     steps = []
     current_val_str = ""
     ans_str = ""
     has_started = False
-    
     for i, digit in enumerate(div_str):
         current_val_str += digit
         current_val = int(current_val_str)
         q = current_val // divisor
         mul_res = q * divisor
         rem = current_val - mul_res
-        
         if not has_started and q == 0 and i < len(div_str) - 1:
              current_val_str = str(rem) if rem != 0 else ""
              continue
-             
         has_started = True
         ans_str += str(q)
-        
         cur_chars = list(str(current_val))
         m_chars = list(str(mul_res).zfill(len(str(current_val))))
         c_dig = [int(c) for c in cur_chars]
         m_dig = [int(c) for c in m_chars]
-        
         top_m = [""] * len(c_dig)
         strik = [False] * len(c_dig)
-        
         for idx_b in range(len(c_dig) - 1, -1, -1):
             if c_dig[idx_b] < m_dig[idx_b]:
                 for j in range(idx_b-1, -1, -1):
@@ -364,24 +318,15 @@ def generate_long_division_step_by_step_html(divisor, dividend, equation_html, i
                         c_dig[idx_b] += 10
                         top_m[idx_b] = str(c_dig[idx_b])
                         break
-                        
-        steps.append({
-            'mul_res': mul_res, 
-            'rem': rem, 
-            'col_index': i, 
-            'top_m': top_m, 
-            'strik': strik
-        })
+        steps.append({'mul_res': mul_res, 'rem': rem, 'col_index': i, 'top_m': top_m, 'strik': strik})
         current_val_str = str(rem) if rem != 0 else ""
         
     ans_padded = ans_str.rjust(div_len, " ")
     ans_tds_list = [f'<td style="width: 35px; text-align: center; color: red; font-weight: bold; font-size: 38px;">{c.strip()}</td>' for c in ans_padded]
     ans_tds_list.append('<td style="width: 35px;"></td>') 
-    
     div_tds_list = []
     s0 = steps[0] if len(steps) > 0 else None
     s0_start = s0['col_index'] + 1 - len(s0['top_m']) if s0 else 0
-    
     for i, c in enumerate(div_str):
         left_border = "border-left: 3px solid #000;" if i == 0 else ""
         td_content = c
@@ -445,12 +390,8 @@ def generate_long_division_step_by_step_html(divisor, dividend, equation_html, i
             else: 
                 rem_tds += '<td style="width: 35px;"></td>'
         html += f"<tr><td style='border: none;'></td>{rem_tds}</tr>"
-        
     html += "</table></div></div>"
-    
-    # เพิ่มคำอธิบายการหารยาว
-    html += f"<div style='margin-top: 15px; color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) นำตัวหาร ({divisor}) ไปหารตัวตั้ง ({dividend}) ทีละหลักจากซ้ายไปขวา<br>2) ท่องสูตรคูณแม่ {divisor} ว่าคูณอะไรแล้วได้ใกล้เคียงหรือเท่ากับตัวตั้งในหลักนั้นที่สุด (แต่ห้ามเกิน)<br>3) ใส่ผลลัพธ์ไว้ด้านบน และนำผลคูณมาลบกันด้านล่าง<br>4) ดึงตัวเลขในหลักถัดไปลงมา แล้วทำซ้ำขั้นตอนเดิมจนหมดทุกหลัก</div>"
-    
+    html += f"<div style='margin-top: 15px; color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) นำตัวหาร ({divisor}) ไปหารตัวตั้งทีละหลักจากซ้ายไปขวา<br>2) ท่องสูตรคูณแม่ {divisor} ว่าคูณอะไรแล้วได้ใกล้เคียงหรือเท่ากับตัวตั้งในหลักนั้นที่สุด (แต่ห้ามเกิน)<br>3) ใส่ผลลัพธ์ไว้ด้านบน และนำผลคูณมาลบกันด้านล่าง<br>4) ดึงตัวเลขในหลักถัดไปลงมา แล้วทำซ้ำขั้นตอนเดิมจนหมดทุกหลัก</div>"
     return html
 
 def generate_thai_number_text(num_str):
@@ -459,7 +400,6 @@ def generate_thai_number_text(num_str):
     parts = str(num_str).replace(",", "").split(".")
     int_part = parts[0]
     dec_part = parts[1] if len(parts) > 1 else ""
-    
     def read_int(s):
         if s == "0" or s == "": return "ศูนย์"
         res = ""
@@ -473,7 +413,6 @@ def generate_thai_number_text(num_str):
             elif pos == 0 and d == 1 and length > 1: res += "เอ็ด"
             else: res += thai_nums[d] + positions[pos]
         return res
-        
     int_text = read_int(int_part)
     dec_text = ("จุด" + "".join([thai_nums[int(d)] for d in dec_part])) if dec_part else ""
     return int_text + dec_text
@@ -489,12 +428,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
     limit_map = {"ป.1": 100, "ป.2": 1000, "ป.3": 100000, "ป.4": 1000000, "ป.5": 9000000, "ป.6": 9000000}
     limit = limit_map.get(grade, 100)
 
-    NAMES_LIST = ["อคิณ", "นาวิน", "ภูผา", "สายฟ้า", "เจ้านาย", "ข้าวหอม", "ใบบัว", "มะลิ", "น้ำใส", "ญาญ่า", "ปลื้ม", "พายุ", "ไออุ่น", "กะทิ", "เวลา", "ของขวัญ", "มังกร", "ฉลาม", "ปลาวาฬ", "มาคิน"]
-    LOCATIONS_LIST = ["โรงเรียน", "สวนสัตว์", "สวนสนุก", "ห้างสรรพสินค้า", "ห้องสมุด", "สวนสาธารณะ", "ร้านของเล่น", "ร้านเบเกอรี่", "ค่ายลูกเสือ", "พิพิธภัณฑ์"]
-    ITEMS_LIST = ["ลูกแก้ว", "สติกเกอร์", "การ์ดโปเกมอน", "โมเดลรถ", "ตุ๊กตาหมี", "สมุดระบายสี", "ดินสอสี", "ลูกโป่ง", "ยางลบ", "ตัวต่อเลโก้", "หนังสือการ์ตูน", "ลูกบอล"]
-    SNACKS_LIST = ["ช็อกโกแลต", "คุกกี้", "โดนัท", "เยลลี่", "ขนมปัง", "ไอศกรีม", "น้ำผลไม้", "นมเย็น", "ลูกอม", "เค้ก"]
-    ANIMALS_LIST = ["แมงมุม", "มดแดง", "กบ", "จิ้งจก", "ตั๊กแตน", "เต่า"]
-
     for _ in range(num_q):
         q = ""
         sol = ""
@@ -506,427 +439,317 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 all_mains = [m for m in curriculum_db[grade].keys() if m != "🌟 โหมดพิเศษ (สุ่มทุกเรื่อง)"]
                 rand_main = random.choice(all_mains)
                 actual_sub_t = random.choice(curriculum_db[grade][rand_main])
-            elif sub_t == "🌟 สุ่มรวมทุกแนว":
-                # เลือกลิสต์โจทย์แข่งขันตามช่วงชั้นที่สุ่มมา
-                if grade in ["ป.1", "ป.2"]:
-                    actual_sub_t = random.choice(comp_topics_p1_p2)
-                elif grade in ["ป.3", "ป.4"]:
-                    actual_sub_t = random.choice(comp_topics_p1_p2 + comp_topics_p3_p4)
-                else:
-                    actual_sub_t = random.choice(comp_topics_p1_p2 + comp_topics_p3_p4 + comp_topics_p5_p6)
-
+                
             prefix = get_prefix(grade)
-
-            # =========================================================
-            # 🌟 โหมดข้อสอบแข่งขัน (TMC) - อธิบายละเอียดยิบแบบ Step-by-Step
-            # =========================================================
-            if actual_sub_t == "ปริศนาตัวเลขซ่อนแอบ":
-                a = random.randint(1, 4)
-                b = random.randint(a + 2, 9)
-                diff = b - a
-                k = diff * 9
-                sum_val = a + b
-                q = f"ให้ A และ B เป็นเลขโดดที่ต่างกัน โดยที่จำนวนสองหลัก <b>AB</b> เมื่อนำมาบวกกับ <b>{k}</b> จะได้ผลลัพธ์เป็นจำนวนสลับหลักคือ <b>BA</b> (นั่นคือ AB + {k} = BA) และโจทย์กำหนดให้ <b>A + B = {sum_val}</b> <br>จงหาว่าจำนวนสองหลัก <b>AB</b> คือจำนวนใด?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                1) จากประโยค "AB + {k} = BA" ถ้านำ AB ไปลบออกทั้งสองข้าง จะได้ <b>BA - AB = {k}</b><br>
-                2) ความลับของตัวเลขสลับหลักคือ: ผลต่างของ BA และ AB จะมีค่าเท่ากับ <b>(B - A) × 9 เสมอ!</b><br>
-                ดังนั้น เราหาผลต่างของเลขโดดได้โดย: B - A = {k} ÷ 9 = <b>{diff}</b><br>
-                3) ตอนนี้เรารู้ข้อมูล 2 อย่างคือ:<br>
-                &nbsp;&nbsp;&nbsp;ผลบวก: A + B = <b>{sum_val}</b> (จากที่โจทย์กำหนด)<br>
-                &nbsp;&nbsp;&nbsp;ผลต่าง: B - A = <b>{diff}</b><br>
-                4) ลองหาเลขโดด 2 ตัวที่บวกกันได้ {sum_val} และลบกันได้ {diff}:<br>
-                &nbsp;&nbsp;&nbsp;นำผลบวกและผลต่างมารวมกัน: {sum_val} + {diff} = {sum_val + diff}<br>
-                &nbsp;&nbsp;&nbsp;แบ่งครึ่งเพื่อหาค่า B: {sum_val + diff} ÷ 2 = <b>{b}</b><br>
-                &nbsp;&nbsp;&nbsp;เมื่อ B คือ {b} ดังนั้น A คือ {sum_val} - {b} = <b>{a}</b><br>
-                ตรวจคำตอบ: {a}{b} + {k} = {b}{a} (ถูกต้อง!)<br>
-                <b>ตอบ: จำนวน AB คือ {a}{b}</b></span>"""
-
-            elif actual_sub_t == "การนับหน้าหนังสือ":
-                pages = random.randint(40, 150)
-                item = random.choice(ITEMS_LIST)
-                q = f"โรงพิมพ์กำลังจัดพิมพ์หนังสือแคตตาล็อกแนะนำ<b>{item}</b> ซึ่งมีความหนาทั้งหมด <b>{pages}</b> หน้า หากต้องการพิมพ์ตัวเลขหน้าทั้งหมดตั้งแต่หน้า 1 ถึงหน้า {pages} จะต้องพิมพ์ตัวเลขโดด (0-9) รวมทั้งหมดกี่ตัว?"
-                if pages > 99:
-                    ans = 9 + 180 + ((pages - 99) * 3)
-                    sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                    เราจะแบ่งการนับตัวเลขหน้าออกเป็นกลุ่มตามจำนวนหลัก ดังนี้ครับ:<br>
-                    1) <b>กลุ่มเลข 1 หลัก (หน้า 1 ถึง 9):</b> มีทั้งหมด 9 หน้า<br>
-                    &nbsp;&nbsp;&nbsp;ใช้ตัวเลขหน้าละ 1 ตัว = 9 × 1 = <b>9 ตัว</b><br>
-                    2) <b>กลุ่มเลข 2 หลัก (หน้า 10 ถึง 99):</b> มีทั้งหมด 90 หน้า (คิดจาก 99 - 9 หน้าแรก)<br>
-                    &nbsp;&nbsp;&nbsp;ใช้ตัวเลขหน้าละ 2 ตัว = 90 × 2 = <b>180 ตัว</b><br>
-                    3) <b>กลุ่มเลข 3 หลัก (หน้า 100 ถึง {pages}):</b> มีทั้งหมด {pages} - 99 = {pages - 99} หน้า<br>
-                    &nbsp;&nbsp;&nbsp;ใช้ตัวเลขหน้าละ 3 ตัว = {pages - 99} × 3 = <b>{(pages - 99) * 3} ตัว</b><br>
-                    นำจำนวนตัวเลขที่ใช้ของทุกกลุ่มมาบวกกัน:<br>
-                    9 + 180 + {(pages - 99) * 3} = <b>{ans} ตัว</b><br>
-                    <b>ตอบ: ต้องใช้ตัวเลขโดดทั้งหมด {ans} ตัว</b></span>"""
-                else:
-                    ans = 9 + ((pages - 9) * 2)
-                    sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                    เราจะแบ่งการนับตัวเลขหน้าออกเป็นกลุ่มตามจำนวนหลัก ดังนี้ครับ:<br>
-                    1) <b>กลุ่มเลข 1 หลัก (หน้า 1 ถึง 9):</b> มีทั้งหมด 9 หน้า<br>
-                    &nbsp;&nbsp;&nbsp;ใช้ตัวเลขหน้าละ 1 ตัว = 9 × 1 = <b>9 ตัว</b><br>
-                    2) <b>กลุ่มเลข 2 หลัก (หน้า 10 ถึง {pages}):</b> มีทั้งหมด {pages} - 9 (หน้าแรก) = {pages - 9} หน้า<br>
-                    &nbsp;&nbsp;&nbsp;ใช้ตัวเลขหน้าละ 2 ตัว = {pages - 9} × 2 = <b>{(pages - 9) * 2} ตัว</b><br>
-                    นำจำนวนตัวเลขที่ใช้ของทุกกลุ่มมาบวกกัน:<br>
-                    9 + {(pages - 9) * 2} = <b>{ans} ตัว</b><br>
-                    <b>ตอบ: ต้องใช้ตัวเลขโดดทั้งหมด {ans} ตัว</b></span>"""
-
-            elif actual_sub_t == "การปักเสาและปลูกต้นไม้":
-                d = random.choice([2, 4, 5, 10, 15])
-                trees = random.randint(12, 35)
-                length = (trees - 1) * d
-                loc = random.choice(LOCATIONS_LIST)
-                q = f"เทศบาลต้องการปลูกต้นไม้ริมถนนทางเข้า<b>{loc}</b> โดยให้ต้นไม้แต่ละต้นอยู่ห่างกันระยะทาง <b>{d}</b> เมตร และมีเงื่อนไขว่า <b>ต้องปลูกต้นไม้ที่จุดเริ่มต้นและจุดสิ้นสุดของถนนพอดี</b> หากปลูกเสร็จแล้วนับต้นไม้ได้ทั้งหมด <b>{trees}</b> ต้น ถนนเส้นนี้ยาวกี่เมตร?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                1) ลองนึกภาพตามนะครับ ถ้าเราปลูกต้นไม้ 3 ต้น จะเกิดช่องว่างระหว่างต้นไม้แค่ 2 ช่อง, ถ้าปลูก 4 ต้น จะเกิดช่องว่าง 3 ช่อง<br>
-                2) สรุปได้ว่า <b>จำนวนช่องว่าง จะน้อยกว่าจำนวนต้นไม้อยู่ 1 เสมอ</b> (เพราะปลูกปิดหัวท้าย)<br>
-                3) ในโจทย์นี้ มีต้นไม้ทั้งหมด {trees} ต้น <br>
-                &nbsp;&nbsp;&nbsp;ดังนั้น จะมีช่องว่างทั้งหมด = {trees} - 1 = <b>{trees - 1} ช่องว่าง</b><br>
-                4) โจทย์บอกว่า 1 ช่องว่าง มีระยะห่าง {d} เมตร<br>
-                &nbsp;&nbsp;&nbsp;นำจำนวนช่องว่างไปคูณกับระยะห่าง: {trees - 1} ช่อง × {d} เมตร = <b>{length} เมตร</b><br>
-                <b>ตอบ: ถนนเส้นนี้มีความยาว {length} เมตร</b></span>"""
-
-            elif actual_sub_t == "สัตว์ปีนบ่อ":
-                u = random.randint(3, 7)
-                d = random.randint(1, u - 1)
-                net = u - d
-                h = random.randint(15, 30)
-                days = math.ceil((h - u) / net) + 1
-                animal = random.choice(ANIMALS_LIST)
-                q = f"<b>{animal}</b>ตัวหนึ่งตกลงไปในบ่อดินที่ลึก <b>{h}</b> เมตร ในช่วงเวลากลางวันมีความพยายามปีนขึ้นมาได้ <b>{u}</b> เมตร แต่เมื่อถึงเวลากลางคืนต้องนอนหลับ ทำให้ลื่นไถลตกลงไป <b>{d}</b> เมตร <b>{animal}</b>ตัวนี้จะต้องใช้เวลาอย่างน้อยที่สุดกี่วันจึงจะปีนพ้นปากบ่อ?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                1) ใน 1 วัน (24 ชม. ทั้งขึ้นและลง) จะปีนได้ระยะทางสุทธิคือ: {u} (ขึ้น) - {d} (ลง) = <b>{net} เมตร</b><br>
-                2) <i>จุดหลอกที่ต้องระวัง:</i> ในวันสุดท้ายเมื่อปีนพ้นขอบบ่อไปแล้ว จะไม่ต้องลื่นตกลงมาอีก! เราจึงต้องแยกคิดวันสุดท้ายออกมาก่อน<br>
-                3) หาระยะทางก่อนจะถึงการปีนในวันสุดท้าย:<br>
-                &nbsp;&nbsp;&nbsp;ความลึกทั้งหมด {h} - ระยะปีนวันสุดท้าย {u} = <b>{h - u} เมตร</b><br>
-                4) หาเวลาที่ใช้ปีนระยะทางช่วงแรก:<br>
-                &nbsp;&nbsp;&nbsp;{h - u} เมตร ÷ {net} เมตร/วัน = <b>{math.ceil((h - u) / net)} วัน</b><br>
-                5) นำเวลาช่วงแรกไปบวกกับวันสุดท้ายอีก 1 วัน:<br>
-                &nbsp;&nbsp;&nbsp;{math.ceil((h - u) / net)} + 1 = <b>{days} วัน</b><br>
-                <b>ตอบ: ต้องใช้เวลาทั้งหมด {days} วัน</b></span>"""
-
-            elif actual_sub_t == "ตรรกะตาชั่งสมดุล":
-                items_pair = [("รถคันใหญ่", "รถคันเล็ก", "ลูกบอล"), ("หนังสือหนา", "สมุดบาง", "ดินสอ"), ("แตงโม", "ส้ม", "มะนาว")]
-                i1, i2, i3 = random.choice(items_pair)
-                m1 = random.randint(2, 5)
-                m2 = random.randint(2, 5)
-                q = f"จากการเล่นตาชั่งสมดุล พบข้อมูลดังนี้:<br>- <b>{i1} 1 ชิ้น</b> หนักเท่ากับ <b>{i2} {m1} ชิ้น</b><br>- <b>{i2} 1 ชิ้น</b> หนักเท่ากับ <b>{i3} {m2} ชิ้น</b><br><br>อยากทราบว่า <b>{i1} จำนวน 2 ชิ้น</b> จะมีน้ำหนักเท่ากับ <b>{i3}</b> กี่ชิ้น?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                เป้าหมายของเราคือการเปลี่ยนของที่ใหญ่ที่สุด ({i1}) ให้กลายเป็นของที่เล็กที่สุด ({i3}) ทีละขั้นตอนครับ<br>
-                1) จากข้อมูลบรรทัดที่ 2: เรารู้แล้วว่า {i2} 1 ชิ้น สามารถแลกเปลี่ยนเป็น {i3} ได้ <b>{m2} ชิ้น</b><br>
-                2) จากข้อมูลบรรทัดที่ 1: {i1} 1 ชิ้น มีน้ำหนักเท่ากับ {i2} จำนวน {m1} ชิ้น<br>
-                &nbsp;&nbsp;&nbsp;ให้นำความรู้จากข้อ 1 มาแทนค่า: เปลี่ยน {i2} {m1} ชิ้น ให้กลายเป็น {i3}<br>
-                &nbsp;&nbsp;&nbsp;จะได้ว่า {i1} 1 ชิ้น = มีอยู่ {m1} กลุ่ม กลุ่มละ {m2} ชิ้น<br>
-                &nbsp;&nbsp;&nbsp;ดังนั้น {i1} 1 ชิ้น = {m1} × {m2} = <b>{m1 * m2} ชิ้น (ในหน่วย {i3})</b><br>
-                3) แต่โจทย์ไม่ได้ถามหา {i1} แค่ 1 ชิ้น โจทย์ถามหา {i1} <b>2 ชิ้น</b><br>
-                &nbsp;&nbsp;&nbsp;เราจึงต้องนำน้ำหนักไปคูณ 2: {m1 * m2} × 2 = <b>{m1 * m2 * 2} ชิ้น</b><br>
-                <b>ตอบ: หนักเท่ากับ {i3} ทั้งหมด {m1 * m2 * 2} ชิ้น</b></span>"""
-
-            elif actual_sub_t == "ปัญหาผลรวม-ผลต่าง":
-                diff = random.randint(5, 20)
-                small = random.randint(10, 30)
-                large = small + diff
-                total = large + small
-                n1, n2 = random.sample(NAMES_LIST, 2)
-                itm = random.choice(ITEMS_LIST)
-                q = f"<b>{n1}</b> และ <b>{n2}</b> มี<b>{itm}</b>รวมกันทั้งหมด <b>{total}</b> ชิ้น หากทราบว่า <b>{n1}</b> มีมากกว่า <b>{n2}</b> อยู่ <b>{diff}</b> ชิ้น จงหาว่า <b>{n1}</b> มี<b>{itm}</b>กี่ชิ้น?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                1) ลองนึกภาพว่าเรานำของของ {n1} และ {n2} มาวางกองคู่กัน กองของ {n1} จะสูงกว่า {n2} อยู่ {diff} ชิ้น<br>
-                2) ถ้าเราหยิบของที่ "เกินมา" ({diff} ชิ้น) ออกไปจากกองรวมก่อน <br>
-                &nbsp;&nbsp;&nbsp;ของที่เหลือจะคือส่วนที่ <b>{n1} และ {n2} มีเท่าๆ กันพอดี</b><br>
-                &nbsp;&nbsp;&nbsp;เหลือของ: {total} (ทั้งหมด) - {diff} (ส่วนที่เกิน) = <b>{total - diff} ชิ้น</b><br>
-                3) นำของที่เหลือมาแบ่งครึ่งให้ 2 คน คนละเท่าๆ กัน (ซึ่งนี่คือจำนวนของคนที่น้อยกว่า คือ {n2})<br>
-                &nbsp;&nbsp;&nbsp;จำนวนของ {n2}: {total - diff} ÷ 2 = <b>{small} ชิ้น</b><br>
-                4) โจทย์ถามหาจำนวนของ {n1} ซึ่งเป็นคนที่มีมากกว่า<br>
-                &nbsp;&nbsp;&nbsp;จำนวนของ {n1}: {small} (ส่วนที่เท่ากัน) + {diff} (ส่วนที่มากกว่า) = <b>{large} ชิ้น</b><br>
-                <b>ตอบ: {n1} มี{itm}ทั้งหมด {large} ชิ้น</b></span>"""
-
-            elif actual_sub_t == "ตรรกะการจับมือ (ทักทาย)":
-                n = random.randint(5, 10)
-                loc = random.choice(LOCATIONS_LIST)
-                # สร้างข้อความบวกเลขแบบแจกแจงให้ดูยาวๆ
-                sum_str_list = [str(x) for x in range(n-1, 0, -1)]
-                sum_display = " + ".join(sum_str_list)
-                ans = sum(range(1, n))
-                q = f"ในการจัดกิจกรรมที่<b>{loc}</b> มีเด็กมาร่วมกลุ่มทั้งหมด <b>{n}</b> คน หากเด็กทุกคนต้องเดินไปจับมือทำความรู้จักกันให้ครบทุกคน (จับมือกันคนละ 1 ครั้งโดยไม่ซ้ำคนเดิม) จะมีการจับมือเกิดขึ้นทั้งหมดกี่ครั้ง?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                เราจะนับการจับมือทีละคน เพื่อให้เห็นภาพและไม่ให้มีการนับซ้ำซ้อนกันครับ<br>
-                1) <b>คนที่ 1:</b> ต้องเดินไปจับมือกับเพื่อนคนอื่นที่เหลืออีก <b>{n-1} คน</b> (เกิดการจับมือขึ้น {n-1} ครั้ง)<br>
-                2) <b>คนที่ 2:</b> ต้องเดินไปจับมือกับเพื่อนคนอื่น (แต่ไม่ต้องไปจับคนที่ 1 แล้ว เพราะจับกันไปแล้วเมื่อกี้!) จึงเหลือเพื่อนให้จับอีก <b>{n-2} คน</b><br>
-                3) <b>คนที่ 3:</b> เหลือเพื่อนให้จับมืออีก <b>{n-3} คน</b><br>
-                ...ทำแบบนี้ลดหลั่นไปเรื่อยๆ จนถึงคนรองสุดท้าย จะเหลือคนให้จับอีกแค่ 1 คน ส่วนคนสุดท้ายไม่ต้องเดินไปหาใครแล้วเพราะโดนจับครบหมดแล้ว<br>
-                4) นำจำนวนการจับมือของแต่ละคนมาบวกกันทั้งหมดจะได้:<br>
-                &nbsp;&nbsp;&nbsp;{sum_display} = <b>{ans} ครั้ง</b><br>
-                <b>ตอบ: เกิดการจับมือขึ้นทั้งหมด {ans} ครั้ง</b></span>"""
-
-            elif actual_sub_t == "การคิดย้อนกลับ":
-                s_money = random.randint(100, 300)
-                spent = random.randint(20, 80)
-                recv = random.randint(50, 150)
-                f_money = s_money - spent + recv
-                name = random.choice(NAMES_LIST)
-                item = random.choice(ITEMS_LIST)
-                q = f"<b>{name}</b>นำเงินไปซื้อ<b>{item}</b> <b>{spent}</b> บาท จากนั้นคุณแม่ให้ค่าขนมเพิ่มมาอีก <b>{recv}</b> บาท เมื่อกลับถึงบ้าน<b>{name}</b>ลองนับเงินดูพบว่าตอนนี้มีเงินเหลือ <b>{f_money}</b> บาท <br>จงหาว่าตอนแรกก่อนออกจากบ้าน <b>{name}</b>มีเงินอยู่ในกระเป๋ากี่บาท?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (หลักการคิดย้อนกลับ):</b><br>
-                การคิดย้อนกลับ คือการเริ่มจากเหตุการณ์สุดท้าย ย้อนกลับไปหาจุดเริ่มต้น โดยการ "ทำกระบวนการตรงกันข้าม" (บวกให้เปลี่ยนเป็นลบ, ลบให้เปลี่ยนเป็นบวก)<br>
-                1) <b>เหตุการณ์สุดท้าย (ปัจจุบัน):</b> ตอนนี้มีเงินเหลือ <b>{f_money} บาท</b><br>
-                2) <b>ย้อนกลับเหตุการณ์ 'แม่ให้เพิ่ม':</b> แม่ให้มา {recv} บาท (ของจริงเงินเพิ่ม ย้อนกลับคือต้องนำไป <b>ลบออก</b>)<br>
-                &nbsp;&nbsp;&nbsp;ก่อนแม่ให้ จะมีเงิน: {f_money} - {recv} = <b>{f_money - recv} บาท</b><br>
-                3) <b>ย้อนกลับเหตุการณ์ 'ซื้อของ':</b> ซื้อของไป {spent} บาท (ของจริงเงินลดลง ย้อนกลับคือต้องนำไป <b>บวกคืน</b>)<br>
-                &nbsp;&nbsp;&nbsp;ก่อนซื้อของ (ตอนแรกสุด) จะมีเงิน: {f_money - recv} + {spent} = <b>{s_money} บาท</b><br>
-                <b>ตอบ: ตอนแรกมีเงินอยู่ในกระเป๋า {s_money} บาท</b></span>"""
-
-            elif actual_sub_t == "แผนภาพความชอบ":
-                tot = random.randint(30, 50)
-                both = random.randint(5, 12)
-                only_a = random.randint(8, 15)
-                only_b = random.randint(8, 15)
-                l_a = only_a + both
-                l_b = only_b + both
-                neither = tot - (only_a + only_b + both)
-                n1, n2 = random.sample(SNACKS_LIST, 2)
-                q = f"จากการสำรวจนักเรียน <b>{tot}</b> คน พบว่ามีคนชอบกิน<b>{n1}</b> จำนวน <b>{l_a}</b> คน, มีคนชอบกิน<b>{n2}</b> จำนวน <b>{l_b}</b> คน, และมีคนที่ชอบกินทั้งสองอย่าง จำนวน <b>{both}</b> คน <br>อยากทราบว่ามีนักเรียนกี่คนในกลุ่มนี้ ที่<b>ไม่ชอบกินขนมทั้งสองชนิดนี้เลย</b>?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                ข้อนี้เราจะนำตัวเลข <b>{l_a}</b> กับ <b>{l_b}</b> มาบวกกันตรงๆ ไม่ได้ครับ เพราะมันมีคนที่ชอบทั้งสองอย่าง (<b>{both}</b> คน) ถูกนับซ้ำซ้อนไปแล้วในทั้งสองกลุ่ม!<br>
-                1) หาจำนวนคนที่ชอบ <b>{n1} อย่างเดียว</b> (โดยเอาคนที่ชอบทั้งคู่ออกไป):<br>
-                &nbsp;&nbsp;&nbsp;{l_a} - {both} = <b>{only_a} คน</b><br>
-                2) หาจำนวนคนที่ชอบ <b>{n2} อย่างเดียว</b> (โดยเอาคนที่ชอบทั้งคู่ออกไป):<br>
-                &nbsp;&nbsp;&nbsp;{l_b} - {both} = <b>{only_b} คน</b><br>
-                3) หาจำนวนคนที่ <b>ชอบขนมอย่างน้อย 1 ชนิด</b> โดยนำ 3 กลุ่มที่ไม่ซ้ำกันมาบวกกัน (ชอบอย่างแรก + ชอบอย่างหลัง + ชอบทั้งคู่):<br>
-                &nbsp;&nbsp;&nbsp;{only_a} + {only_b} + {both} = <b>{only_a + only_b + both} คน</b><br>
-                4) หาคนที่ <b>ไม่ชอบเลย</b> โดยนำคนทั้งหมดตั้ง ลบด้วยคนที่ชอบขนม:<br>
-                &nbsp;&nbsp;&nbsp;{tot} (ทั้งหมด) - {only_a + only_b + both} (คนที่ชอบ) = <b>{neither} คน</b><br>
-                <b>ตอบ: มีคนที่ไม่ชอบเลยจำนวน {neither} คน</b></span>"""
-
-            elif actual_sub_t == "ผลบวกจำนวนเรียงกัน (Gauss)":
-                n = random.choice([10, 20, 50, 100])
-                ans = (n * (n + 1)) // 2
-                q = f"จงหาผลบวกของตัวเลขเรียงลำดับตั้งแต่ 1 ถึง {n} <br>( 1 + 2 + 3 + ... + {n} = ? )"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (หลักการจับคู่ของเกาส์):</b><br>
-                แทนที่เราจะบวกเรียงไปทีละตัว เราจะใช้วิธีนำ "ตัวหน้าสุด" จับคู่บวกกับ "ตัวหลังสุด" ครับ<br>
-                1) จับคู่ตัวแรกกับตัวสุดท้าย: <b>1 + {n} = {n+1}</b><br>
-                2) จับคู่ตัวที่สองกับตัวรองสุดท้าย: <b>2 + {n-1} = {n+1}</b><br>
-                3) จับคู่ตัวที่สามกับตัวถัดมา: <b>3 + {n-2} = {n+1}</b><br>
-                จะเห็นว่าทุกคู่เมื่อจับมาบวกกันแล้วจะได้ผลลัพธ์เป็น <b>{n+1}</b> เสมอ!<br>
-                4) มีตัวเลขทั้งหมด {n} ตัว เมื่อเรานำมาจับคู่ทีละ 2 ตัว จะได้ทั้งหมด: {n} ÷ 2 = <b>{n//2} คู่</b><br>
-                5) นำผลบวกของ 1 คู่ ไปคูณกับ จำนวนคู่ทั้งหมด:<br>
-                &nbsp;&nbsp;&nbsp;{n+1} (ผลบวกแต่ละคู่) × {n//2} (จำนวนคู่) = <b>{ans:,}</b><br>
-                <b>ตอบ: ผลบวกคือ {ans:,}</b></span>"""
-
-            elif actual_sub_t == "คิววงกลมมรณะ":
-                n_half = random.randint(4, 12)
-                total = n_half * 2
-                pos1 = random.randint(1, n_half)
-                pos2 = pos1 + n_half
-                n1, n2 = random.sample(NAMES_LIST, 2)
-                q = f"เด็กกลุ่มหนึ่งยืนล้อมกันเป็นวงกลมโดยเว้นระยะห่างเท่าๆ กัน และมีการนับหมายเลขเรียงตามลำดับ 1, 2, 3... ไปเรื่อยๆ จนครบทุกคน <br>ถ้า <b>{n1}</b> ยืนอยู่ที่ตำแหน่งหมายเลข <b>{pos1}</b> และมองไปฝั่งตรงข้ามพอดีเป๊ะ พบว่า <b>{n2}</b> ยืนอยู่ที่ตำแหน่งหมายเลข <b>{pos2}</b> <br>จงหาว่าเด็กกลุ่มนี้มีทั้งหมดกี่คน?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                1) ลองจินตนาการถึงหน้าปัดนาฬิกาครับ การที่คนสองคนยืนอยู่ "ฝั่งตรงข้ามกันพอดี" (เช่น เลข 12 ตรงข้ามกับเลข 6) หมายความว่าระยะห่างระหว่างสองคนนี้ คือ "ครึ่งวงกลม" พอดี<br>
-                2) หาจำนวนคนในครึ่งวงกลม โดยนำหมายเลขของทั้งสองคนมาลบกัน:<br>
-                &nbsp;&nbsp;&nbsp;{pos2} - {pos1} = <b>{n_half} คน</b><br>
-                3) เมื่อเรารู้ว่าครึ่งวงกลมมี {n_half} คน การหาจำนวนคนทั้งหมดในวงกลมเต็มวง ก็เพียงแค่นำจำนวนคนในครึ่งวงกลมมาคูณ 2<br>
-                &nbsp;&nbsp;&nbsp;{n_half} × 2 = <b>{total} คน</b><br>
-                <b>ตอบ: เด็กกลุ่มนี้มีทั้งหมด {total} คน</b></span>"""
-
-            elif actual_sub_t == "โปรโมชั่นแลกของ":
-                exch = random.choice([3, 4, 5])
-                start_bottles = exch * random.randint(3, 6)
-                snack = random.choice(SNACKS_LIST)
-                
-                total_drank = start_bottles
-                empties = start_bottles
-                step_count = 1
-                sol_steps = f"1) ตอนแรกซื้อกินไป <b>{start_bottles} ชิ้น</b> (ทำให้เราเก็บซองเปล่าไว้ได้ {start_bottles} ซอง)<br>"
-                
-                while empties >= exch:
-                    step_count += 1
-                    new_b = empties // exch
-                    left_b = empties % exch
-                    total_drank += new_b
-                    sol_steps += f"{step_count}) นำซองเปล่า {new_b * exch} ซอง ไปแลกของใหม่มาได้อีก <b>{new_b} ชิ้น</b> (เราจะเหลือเศษซองที่ยังไม่ได้แลกอีก {left_b} ซอง)<br>"
-                    empties = new_b + left_b
-                    if empties >= exch:
-                         sol_steps += f"&nbsp;&nbsp;&nbsp;<i>-> เมื่อเรากินของที่แลกมาใหม่หมด ตอนนี้เราจะมีซองเปล่ารวม {new_b} + {left_b} = {empties} ซอง นำไปแลกต่อได้อีก!</i><br>"
-                         
-                q = f"โปรโมชั่นพิเศษร้านค้า: นำซอง<b>{snack}</b>เปล่าจำนวน <b>{exch}</b> ซอง มาแลก<b>{snack}</b>ชิ้นใหม่ได้ฟรี 1 ชิ้น <br>หากนักเรียนมีเงินซื้อ<b>{snack}</b>มากินในตอนแรกทั้งหมด <b>{start_bottles}</b> ชิ้น นักเรียนจะสามารถกิน<b>{snack}</b>ได้รวมทั้งหมดกี่ชิ้น (ให้นับรวมกับของที่นำซองไปแลกฟรีมาใหม่ด้วย จนกว่าซองจะแลกไม่ได้อีก)?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                เราจะนำของเปล่าไปแลก แล้วนำเศษของเปล่าที่เหลือมารวมกับของที่แลกมาใหม่เพื่อนำไปแลกต่อเป็นทอดๆ ครับ<br>
-                {sol_steps}<br>
-                เมื่อบวกจำนวนชิ้นที่เราได้กินในทุกๆ รอบเข้าด้วยกัน จะได้:<br>
-                รวมกินไปทั้งหมด = <b>{total_drank} ชิ้น</b> (และเราจะเหลือเศษซองเปล่า {empties} ซอง ซึ่งไม่พอแลกแล้ว)<br>
-                <b>ตอบ: ได้กินรวมทั้งหมด {total_drank} ชิ้น</b></span>"""
-
-            elif actual_sub_t == "หยิบของในที่มืด":
-                c1 = random.randint(5, 12)
-                c2 = random.randint(5, 12)
-                c3 = random.randint(3, 8)
-                item = random.choice(ITEMS_LIST)
-                q = f"ในกล่องทึบใบหนึ่งมี<b>{item}</b>สีแดง <b>{c1}</b> ชิ้น, สีน้ำเงิน <b>{c2}</b> ชิ้น และสีเขียว <b>{c3}</b> ชิ้น ปะปนกันอยู่ <br>หากหลับตาหยิบ<b>{item}</b>ออกมาทีละชิ้น จะต้องหยิบออกมา<b>อย่างน้อยที่สุดกี่ชิ้น</b> จึงจะมั่นใจได้ 100% ว่าจะได้<b>{item}</b><b>สีเขียว</b>อย่างน้อย 1 ชิ้นแน่นอน?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (ใช้หลักการดวงซวยที่สุด หรือ Worst-case scenario):</b><br>
-                เพื่อให้เรามั่นใจแบบ 100% เต็มว่าจะได้สีเขียวแน่ๆ เราต้องคิดคำนวณในกรณีที่เรา 'โชคร้ายที่สุด' ครับ<br>
-                ความโชคร้ายที่สุดคือ: เราหยิบได้สีอื่นที่ไม่ใช่สีเขียวออกมาจนหมดกล่องเลย แล้วถึงจะได้สีเขียวในตอนท้ายสุด!<br>
-                1) สมมติว่าเราโชคร้าย หยิบได้สีแดงออกมาหมดเลย = <b>{c1} ชิ้น</b><br>
-                2) ยังโชคร้ายต่อ หยิบได้สีน้ำเงินออกมาหมดเลยอีก = <b>{c2} ชิ้น</b><br>
-                ตอนนี้เราหยิบของออกไปแล้วรวม {c1} + {c2} = <b>{c1+c2} ชิ้น</b> (แต่ในมือเรายังไม่ได้สีเขียวเลยสักชิ้นเดียว!)<br>
-                3) แต่ไม่ต้องห่วงครับ เพราะตอนนี้ของสีแดงและสีน้ำเงินหมดกล่องแล้ว การหยิบชิ้นต่อไป (บวกเพิ่มอีก 1) ในกล่องจะเหลือแต่สีเขียวล้วนๆ จึงการันตีว่าได้สีเขียว 100%<br>
-                ดังนั้น จำนวนที่เราต้องหยิบอย่างน้อยคือ: {c1+c2} + 1 = <b>{c1+c2+1} ชิ้น</b><br>
-                <b>ตอบ: ต้องหยิบอย่างน้อยที่สุด {c1+c2+1} ชิ้น</b></span>"""
-
-            elif actual_sub_t == "ลำดับแบบวนลูป":
-                word = random.choice(["MATHEMATICS", "THAILAND", "ELEPHANT", "SUPERMAN"])
-                length = len(word)
-                target = random.randint(30, 80)
-                rem = target % length
-                ans_char = word[rem - 1] if rem != 0 else word[-1]
-                q = f"หากเราเขียนตัวอักษรภาษาอังกฤษคำว่า <b>{word}</b> เรียงต่อกันไปเรื่อยๆ ดังนี้:<br><b>{word}{word}{word[:3]}...</b><br><br>อยากทราบว่า ตัวอักษรในตำแหน่งที่ <b>{target}</b> คือตัวอักษรใด?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                นี่คือโจทย์แบบรูปที่วนซ้ำเป็นชุดๆ (Looping Pattern) ครับ<br>
-                1) เริ่มจากนับจำนวนตัวอักษรใน 1 ชุด: คำว่า {word} มีตัวอักษรทั้งหมด <b>{length} ตัว</b><br>
-                2) หาว่าตำแหน่งที่ {target} ที่โจทย์ถามนั้น กินความยาวไปกี่ชุด และเหลือเศษกี่ตัว โดยนำไปตั้งหาร:<br>
-                &nbsp;&nbsp;&nbsp;{target} ÷ {length} = {target // length} ชุด และเหลือเศษ <b>{rem}</b><br>
-                3) ความหมายของเศษ {rem} คือ: ให้เราไปดูตัวอักษร <b>ตัวที่ {rem if rem != 0 else length}</b> ของคำว่า {word}<br>
-                &nbsp;&nbsp;&nbsp;<i>(จำไว้ว่า: ถ้าหารลงตัว หรือเหลือเศษ 0 จะหมายถึง 'ตัวอักษรตัวสุดท้าย' ของชุดนั้นๆ พอดีครับ)</i><br>
-                เมื่อนับดูตัวที่ {rem if rem != 0 else length} ของคำว่า {word} จะพบว่าเป็นตัว <b>{ans_char}</b><br>
-                <b>ตอบ: ตัวอักษรในตำแหน่งที่ {target} คือ {ans_char}</b></span>"""
-
-            elif actual_sub_t == "เส้นทางที่เป็นไปได้":
-                p1 = random.randint(2, 4)
-                p2 = random.randint(2, 4)
-                p3 = random.randint(1, 3)
-                ans = (p1 * p2) + p3
-                q = f"การเดินทางจากเมือง A ไปเมือง B มีถนนเชื่อมต่อกัน <b>{p1}</b> สาย และจากเมือง B ไปเมือง C มีถนนเชื่อมต่อกัน <b>{p2}</b> สาย <br>นอกจากนี้ ยังมีถนนเส้นทางลัดที่เดินทางจากเมือง A ตรงไปยังเมือง C โดยไม่ผ่านเมือง B อีก <b>{p3}</b> สาย<br>ถามว่า มีเส้นทางทั้งหมดกี่แบบในการเดินทางจากเมือง A ไปยังเมือง C ?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                เราต้องแบ่งการเดินทางออกเป็น 2 กรณีที่ไม่เกี่ยวข้องกัน แล้วนำผลลัพธ์มาบวกกันในตอนท้ายครับ<br>
-                <b>กรณีที่ 1: เดินทางตามเส้นทางปกติ (ต้องผ่านเมือง B)</b><br>
-                &nbsp;&nbsp;&nbsp;จาก A ไป B มี {p1} ทาง และ ทุกๆ 1 ทางสามารถแยกไป C ได้อีก {p2} ทาง<br>
-                &nbsp;&nbsp;&nbsp;ใช้หลักการคูณ: เส้นทาง A->B ({p1} สาย) × เส้นทาง B->C ({p2} สาย) = <b>{p1 * p2} รูปแบบเส้นทาง</b><br>
-                <b>กรณีที่ 2: เดินทางโดยใช้ทางลัด (ไม่ผ่านเมือง B)</b><br>
-                &nbsp;&nbsp;&nbsp;โจทย์กำหนดให้มีทางลัดตรงจาก A ไป C เลย = <b>{p3} รูปแบบเส้นทาง</b><br>
-                นำเส้นทางที่เป็นไปได้ของทั้งสองกรณีมารวมกัน:<br>
-                {p1 * p2} (ผ่าน B) + {p3} (ทางลัด) = <b>{ans} รูปแบบเส้นทาง</b><br>
-                <b>ตอบ: มีเส้นทางที่เป็นไปได้ทั้งหมด {ans} แบบ</b></span>"""
-
-            elif actual_sub_t == "พื้นที่แรเงา (เรขาคณิต)":
-                out_w = random.randint(10, 20)
-                out_h = random.randint(10, 20)
-                in_s = random.randint(3, min(out_w, out_h) - 2)
-                q = f"กระดาษรูปสี่เหลี่ยมผืนผ้ากว้าง {out_w} ซม. ยาว {out_h} ซม. ถูกใช้กรรไกรเจาะรูตรงกลางเป็นรูปสี่เหลี่ยมจัตุรัสที่มีความยาวด้านละ {in_s} ซม. แล้วทิ้งไป <br>จงหาว่าพื้นที่กระดาษส่วนที่เหลือ (ไม่ได้ถูกเจาะ) มีขนาดกี่ตารางเซนติเมตร?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                หลักการของการหาพื้นที่ส่วนที่เหลือ คือการนำ <b>"พื้นที่ของรูปแผ่นใหญ่ทั้งหมด"</b> ลบออกด้วย <b>"พื้นที่ของส่วนที่ถูกเจาะทิ้งไป"</b><br>
-                1) <b>หาพื้นที่ของกระดาษแผ่นใหญ่ (สี่เหลี่ยมผืนผ้า):</b><br>
-                &nbsp;&nbsp;&nbsp;สูตรพื้นที่ผืนผ้า = กว้าง × ยาว<br>
-                &nbsp;&nbsp;&nbsp;= {out_w} × {out_h} = <b>{out_w * out_h} ตารางเซนติเมตร</b><br>
-                2) <b>หาพื้นที่ของรูที่เจาะทิ้ง (สี่เหลี่ยมจัตุรัส):</b><br>
-                &nbsp;&nbsp;&nbsp;สูตรพื้นที่จัตุรัส = ด้าน × ด้าน<br>
-                &nbsp;&nbsp;&nbsp;= {in_s} × {in_s} = <b>{in_s**2} ตารางเซนติเมตร</b><br>
-                3) <b>หาพื้นที่ส่วนที่เหลือ:</b><br>
-                &nbsp;&nbsp;&nbsp;พื้นที่รูปใหญ่ - พื้นที่รูปที่เจาะทิ้ง<br>
-                &nbsp;&nbsp;&nbsp;= {out_w * out_h} - {in_s**2} = <b>{(out_w * out_h) - (in_s**2)} ตารางเซนติเมตร</b><br>
-                <b>ตอบ: พื้นที่ส่วนที่เหลือมีขนาด {(out_w * out_h) - (in_s**2)} ตารางเซนติเมตร</b></span>"""
-
-            elif actual_sub_t == "ความเร็ววิ่งสวนทาง":
-                d = random.choice([100, 200, 300])
-                v1 = random.randint(10, 25)
-                v2 = random.randint(10, 25)
-                t = d / (v1 + v2)
-                q = f"รถยนต์สองคันอยู่ห่างกันระยะทาง <b>{d} กิโลเมตร</b> และกำลังวิ่งเข้าหากัน (วิ่งสวนทางกัน) <br>ถ้ารถคันแรกวิ่งด้วยความเร็ว <b>{v1} กิโลเมตร/ชั่วโมง</b> และรถคันที่สองวิ่งด้วยความเร็ว <b>{v2} กิโลเมตร/ชั่วโมง</b> <br>จงหาว่าต้องใช้เวลาอีกกี่ชั่วโมง รถทั้งสองคันจึงจะวิ่งมาเจอกันพอดี?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                เมื่อวัตถุสองสิ่งเคลื่อนที่ <b>วิ่งเข้าหากัน</b> ระยะทางระหว่างกันจะถูกทำให้สั้นลงอย่างรวดเร็วด้วยความเร็วของทั้งสองฝ่ายรวมกันครับ<br>
-                1) <b>หาความเร็วรวมที่ช่วยกันลดระยะทาง:</b><br>
-                &nbsp;&nbsp;&nbsp;นำความเร็วของรถคันแรกบวกความเร็วรถคันที่สอง<br>
-                &nbsp;&nbsp;&nbsp;= {v1} + {v2} = <b>{v1 + v2} กิโลเมตร/ชั่วโมง</b><br>
-                2) <b>หาเวลาที่ใช้ในการพบกัน:</b><br>
-                &nbsp;&nbsp;&nbsp;เวลา = ระยะทางทั้งหมด ÷ ความเร็วรวม<br>
-                &nbsp;&nbsp;&nbsp;= {d} ÷ {v1 + v2} = <b>{t:.1f} ชั่วโมง</b><br>
-                <b>ตอบ: รถทั้งสองจะพบกันในอีก {t:.1f} ชั่วโมง</b></span>"""
-
-            elif actual_sub_t == "งานและเวลา (Work)":
-                w1, w2 = 3, 6
-                ans = (w1 * w2) / (w1 + w2)
-                q = f"ในการทาสีรั้วบ้าน หากให้นาย ก. ทำงานคนเดียว เขาจะทำเสร็จภายในเวลา {w1} วัน แต่ถ้าให้นาย ข. ทำงานคนเดียว เขาจะทำเสร็จในเวลา {w2} วัน <br>จงหาว่าถ้านาย ก. และนาย ข. ช่วยกันทาสีรั้วบ้านนี้พร้อมกัน พวกเขาจะทำงานเสร็จภายในเวลากี่วัน?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                การทำงานร่วมกัน ไม่สามารถนำเวลามาบวกหรือลบกันตรงๆ ได้ แต่เราสามารถใช้สูตรลัดเรื่องงานและเวลาได้ดังนี้:<br>
-                <b>สูตรทำงานพร้อมกัน = (เวลาของคนแรก × เวลาของคนที่สอง) ÷ (เวลาของคนแรก + เวลาของคนที่สอง)</b><br>
-                1) แทนค่าลงในสูตร:<br>
-                &nbsp;&nbsp;&nbsp;= ({w1} × {w2}) ÷ ({w1} + {w2})<br>
-                2) คำนวณผลคูณและผลบวกในวงเล็บ:<br>
-                &nbsp;&nbsp;&nbsp;= (18) ÷ (9)<br>
-                3) นำมาหารกัน:<br>
-                &nbsp;&nbsp;&nbsp;18 ÷ 9 = <b>{ans:.0f} วัน</b><br>
-                <b>ตอบ: ถ้าช่วยกันทำจะเสร็จภายใน {ans:.0f} วัน</b></span>"""
-
-            elif actual_sub_t == "จัดของใส่กล่อง (Modulo)":
-                box_cap = random.randint(4, 9)
-                num_boxes = random.randint(5, 12)
-                rem = random.randint(1, box_cap - 1)
-                total_items = (box_cap * num_boxes) + rem
-                item = random.choice(ITEMS_LIST)
-                name = random.choice(NAMES_LIST)
-                q = f"<b>{name}</b>มี<b>{item}</b>จำนวนทั้งหมด <b>{total_items}</b> ชิ้น ต้องการจัดใส่กล่อง โดยให้แต่ละกล่องมี<b>{item}</b>กล่องละ <b>{box_cap}</b> ชิ้นเท่าๆ กัน <br>จงหาว่า<b>{name}</b>จะจัด<b>{item}</b>ใส่ได้เต็มกล่องกี่ใบ? และจะเหลือ<b>{item}</b>ที่ใส่ไม่เต็มกล่องอีกกี่ชิ้น?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                ข้อนี้คือการหารยาวเพื่อหา "จำนวนเต็ม" และ "เศษที่เหลือ" ครับ<br>
-                1) นำจำนวนของทั้งหมด ({total_items}) ตั้ง แล้วหารด้วยจำนวนของที่จุได้ใน 1 กล่อง ({box_cap})<br>
-                2) ท่องสูตรคูณแม่ {box_cap} เพื่อหาว่าคูณอะไรแล้วได้ใกล้เคียง {total_items} ที่สุด (แต่ห้ามเกิน)<br>
-                &nbsp;&nbsp;&nbsp;จะพบว่า: <b>{box_cap} × {num_boxes} = {box_cap * num_boxes}</b><br>
-                3) แสดงว่าเราสามารถจัดใส่กล่องได้เต็มจำนวน <b>{num_boxes} กล่อง</b><br>
-                4) หาของเศษที่เหลือที่จัดใส่กล่องไม่ลงตัว โดยนำของทั้งหมดมาลบด้วยของที่จัดลงกล่องไปแล้ว:<br>
-                &nbsp;&nbsp;&nbsp;{total_items} - {box_cap * num_boxes} = <b>{rem} ชิ้น</b><br>
-                <b>ตอบ: จัดได้เต็มกล่อง {num_boxes} ใบ และเหลือเศษอีก {rem} ชิ้น</b></span>"""
-
-            elif actual_sub_t == "นาฬิกาเดินเพี้ยน":
-                fast_min = random.randint(2, 5)
-                start_h = 8
-                passed_hours = random.randint(3, 6)
-                end_h = start_h + passed_hours
-                total_fast = fast_min * passed_hours
-                q = f"นาฬิกาเรือนหนึ่งทำงานผิดปกติ โดยจะเดินเร็วไป <b>{fast_min} นาที ในทุกๆ 1 ชั่วโมง</b> <br>ถ้านักเรียนตั้งเวลานาฬิกาเรือนนี้ให้ตรงเป๊ะในเวลา <b>{start_h}:00 น.</b> ตอนเช้า <br>เมื่อเวลาจริงผ่านไปจนถึง <b>{end_h}:00 น.</b> ของวันเดียวกัน นาฬิกาเรือนนี้จะแสดงเวลาใด?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                1) อันดับแรก เราต้องหาว่ามีเวลาผ่านไปทั้งหมดกี่ชั่วโมง นับตั้งแต่ตอนที่ตั้งเวลาตรงเป๊ะ:<br>
-                &nbsp;&nbsp;&nbsp;จาก {start_h}:00 ถึง {end_h}:00 คือเวลาผ่านไป <b>{passed_hours} ชั่วโมง</b><br>
-                2) โจทย์บอกว่า นาฬิกาจะเดินเร็วขึ้น {fast_min} นาที ในทุกๆ 1 ชั่วโมงที่ผ่านไป<br>
-                &nbsp;&nbsp;&nbsp;เราจึงนำเวลาที่ผ่านไปทั้งหมด มาคูณกับ นาทีที่เดินเร็ว<br>
-                &nbsp;&nbsp;&nbsp;จะได้เวลาที่นาฬิกาเดินเร็วเกินไปทั้งหมด = {fast_min} × {passed_hours} = <b>{total_fast} นาที</b><br>
-                3) นำเวลาที่เร็วเกินไป ไปบวกเพิ่มเข้ากับเวลาจริง ({end_h}:00 น.)<br>
-                &nbsp;&nbsp;&nbsp;นาฬิกาจะแสดงเวลา <b>{end_h}:{total_fast:02d} น.</b><br>
-                <b>ตอบ: นาฬิกาจะแสดงเวลา {end_h}:{total_fast:02d} น.</b></span>"""
-
-            elif actual_sub_t == "คะแนนยิงเป้า":
-                s1, s2, s3 = random.choices([10, 5, 1], k=3)
-                total_score = s1 + s2 + s3
-                name = random.choice(NAMES_LIST)
-                q = f"ในงานวัด มีเกมปาลูกดอกลงเป้า โดยเป้ามี 3 วงคะแนนคือ:<br>- วงตรงกลางได้ <b>10</b> คะแนน<br>- วงถัดมาได้ <b>5</b> คะแนน<br>- วงนอกสุดได้ <b>1</b> คะแนน<br><br>ถ้า <b>{name}</b> ปาลูกดอก 3 ครั้ง และลูกดอกเข้าเป้าทั้ง 3 ครั้ง โดยรวมคะแนนทั้งหมดได้ <b>{total_score}</b> คะแนน <br>จงหาว่า <b>{name}</b> ปาลูกดอกเข้าวงใดบ้าง? (เรียงลำดับจากคะแนนมากไปน้อย)"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                เราต้องหาวิธีนำตัวเลขจากกลุ่ม (10, 5, และ 1) จำนวน 3 ตัวมาบวกกัน ให้ได้ผลลัพธ์เท่ากับ <b>{total_score}</b> พอดี<br>
-                <i>(จำไว้ว่า: ลูกดอกสามารถปาซ้ำเข้าวงเดิมได้ ดังนั้นตัวเลขจึงซ้ำกันได้)</i><br>
-                1) ลองพิจารณาตัวเลขที่มากที่สุดก่อนคือ 10 ว่าใส่ได้กี่ครั้งโดยไม่เกิน {total_score}<br>
-                2) กระจายตัวเลขออกมาจะได้ว่า: <b>{s1} + {s2} + {s3} = {total_score}</b> พอดีเป๊ะ!<br>
-                3) นำคะแนนแต่ละวงที่ปาเข้า มาเรียงลำดับจากมากไปน้อย จะได้ <b>{sorted([s1, s2, s3], reverse=True)}</b><br>
-                <b>ตอบ: {name} ปาเข้าเป้าคะแนน {sorted([s1, s2, s3], reverse=True)}</b></span>"""
 
             # =========================================================
             # โหมดหลักสูตรปกติ (เขียนอธิบายละเอียด Step-by-Step เช่นกัน)
             # =========================================================
-            elif actual_sub_t == "การคูณ (แบบตั้งหลัก)":
-                a = random.randint(10, 99) if grade in ["ป.1", "ป.2"] else (random.randint(100, 999) if grade == "ป.3" else random.randint(1000, 9999)) 
-                b = random.randint(2, 9); res = a * b
+            if actual_sub_t == "การคูณ (แบบตั้งหลัก)":
+                if grade in ["ป.1", "ป.2"]: a = random.randint(10, 99) 
+                elif grade == "ป.3": a = random.randint(100, 999) 
+                else: a = random.randint(1000, 9999) 
+                b = random.randint(2, 9)
+                res = a * b
                 q = f"จงหาผลลัพธ์ <span style='display:inline-flex; align-items:center; font-weight: bold; color: #2c3e50; margin-left: 5px;'>{prefix} {a:,} × {b:,} = {box_html}</span>" + generate_vertical_table_html(a, b, '×', is_key=False)
                 sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ตั้งหลักตัวเลขให้ตรงกัน<br>2) นำตัวคูณ ({b}) ไปคูณตัวตั้งด้านบนทีละหลัก โดยเริ่มจากหลักหน่วยทางขวาสุด<br>3) หากผลคูณมีค่าตั้งแต่ 10 ขึ้นไป ให้ใส่เลขตัวหลัง (หลักหน่วย) ไว้ด้านล่าง และนำเลขตัวหน้าไป 'ทด' ไว้บนหัวของหลักถัดไปทางซ้ายมือ<br>4) เมื่อคูณหลักถัดไปเสร็จ อย่าลืมบวกตัวทดที่อยู่ด้านบนด้วย</span><br>" + generate_vertical_table_html(a, b, '×', result=res, is_key=True)
 
             elif actual_sub_t == "การบวก (แบบตั้งหลัก)":
-                a = random.randint(10, limit // 2); b = random.randint(10, limit // 2)
+                if grade == "ป.1":
+                    tens_a = random.randint(1, 9)
+                    units_a = random.randint(0, 8)
+                    b = random.randint(1, 9 - units_a)
+                    a = (tens_a * 10) + units_a
+                elif grade in ["ป.4", "ป.5", "ป.6"]:
+                    a = random.randint(10000, limit // 2)
+                    b = random.randint(10000, limit // 2)
+                else:
+                    a = random.randint(10, limit - 20)
+                    b = random.randint(1, limit - a - 1)
                 res = a + b
                 q = f"จงหาผลลัพธ์ <span style='display:inline-flex; align-items:center; font-weight: bold; color: #2c3e50; margin-left: 5px;'>{prefix} {a:,} + {b:,} = {box_html}</span>" + generate_vertical_table_html(a, b, '+', is_key=False)
                 sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ตั้งหลักตัวเลขให้ตรงกัน (หลักหน่วยตรงหลักหน่วย, หลักสิบตรงหลักสิบ)<br>2) เริ่มบวกตัวเลขจากหลักหน่วย (ขวาสุด) ไปทางซ้ายทีละหลัก<br>3) หากผลบวกในหลักใดมีค่าตั้งแต่ 10 ขึ้นไป ให้ใส่เลขตัวหลังไว้ด้านล่าง และนำเลขตัวหน้าไป 'ทด' ขึ้นไปไว้บนหัวของหลักถัดไปทางซ้ายมือ<br>4) ในการบวกหลักถัดไป ให้นำตัวทดมาบวกเพิ่มด้วย</span><br>" + generate_vertical_table_html(a, b, '+', result=res, is_key=True)
 
             elif actual_sub_t == "การลบ (แบบตั้งหลัก)":
-                a = random.randint(1000, limit - 1); b = random.randint(100, a - 1)
+                if grade == "ป.1":
+                    tens_a = random.randint(1, 9)
+                    units_a = random.randint(1, 9)
+                    b = random.randint(1, units_a)
+                    a = (tens_a * 10) + units_a
+                elif grade in ["ป.4", "ป.5", "ป.6"]:
+                    a = random.randint(100000, limit - 1)
+                    b = random.randint(10000, a - 1)
+                else:
+                    a = random.randint(10, limit - 1)
+                    b = random.randint(1, a - 1)
                 res = a - b
                 q = f"จงหาผลลัพธ์ <span style='display:inline-flex; align-items:center; font-weight: bold; color: #2c3e50; margin-left: 5px;'>{prefix} {a:,} - {b:,} = {box_html}</span>" + generate_vertical_table_html(a, b, '-', is_key=False)
                 sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ตั้งหลักตัวเลขให้ตรงกัน (หลักหน่วยตรงหลักหน่วย, หลักสิบตรงหลักสิบ)<br>2) เริ่มลบตัวเลขจากหลักหน่วย (ขวาสุด) ไปทางซ้ายทีละหลัก<br>3) หากตัวเลขด้านบนน้อยกว่าตัวเลขด้านล่าง (ลบไม่พอ) ให้ทำการ 'ขอยืม' ตัวเลขจากหลักถัดไปทางซ้ายมา 1 (ซึ่งจะมีค่าเท่ากับ 10 ในหลักปัจจุบัน)<br>4) นำ 10 ที่ยืมมาบวกกับตัวเลขเดิม แล้วจึงทำการลบตามปกติ</span><br>" + generate_vertical_table_html(a, b, '-', result=res, is_key=True)
 
             elif "การหารพื้นฐาน" in actual_sub_t:
-                a = random.randint(2, 9); b = random.randint(2, 12); dividend = a * b
+                a = random.randint(2, 9)
+                b = random.randint(2, 12)
+                dividend = a * b
                 q = f"จงหาผลลัพธ์ของ <span style='display:inline-flex; align-items:center; font-weight: bold; color: #2c3e50; margin-left: 5px;'>{prefix} {dividend} ÷ {a} = {box_html}</span>"
                 sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) การหารคือการหาว่า 'ตัวหาร ({a}) ต้องคูณกับเลขอะไรจึงจะได้ผลลัพธ์เท่ากับตัวตั้ง ({dividend})'<br>2) ให้นักเรียนลองท่องสูตรคูณแม่ <b>{a}</b> ดูครับ:<br>&nbsp;&nbsp;&nbsp;{a} × 1 = {a}<br>&nbsp;&nbsp;&nbsp;...<br>&nbsp;&nbsp;&nbsp;<b>{a} × {b} = {dividend}</b> (เจอคำตอบแล้ว!)<br>ดังนั้น {dividend} ÷ {a} มีค่าเท่ากับ <b>{b}</b><br><b>ตอบ: {b}</b></span>"
+
+            elif "ส่วนย่อย-ส่วนรวม" in actual_sub_t:
+                total = random.randint(5, 20)
+                p1 = random.randint(1, total - 1)
+                p2 = total - p1
+                miss = random.choice(['t', 'p1', 'p2'])
+                svg_t = f"""<div style="display: block; text-align: center; margin-top: 10px;"><svg width="200" height="160"><line x1="100" y1="40" x2="50" y2="120" stroke="#333" stroke-width="3"/><line x1="100" y1="40" x2="150" y2="120" stroke="#333" stroke-width="3"/><circle cx="100" cy="40" r="30" fill="#e8f8f5" stroke="#16a085" stroke-width="3"/><circle cx="50" cy="120" r="30" fill="#fdf2e9" stroke="#d35400" stroke-width="3"/><circle cx="150" cy="120" r="30" fill="#fdf2e9" stroke="#d35400" stroke-width="3"/><text x="100" y="47" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='t' else "#16a085"}">{{t}}</text><text x="50" y="127" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='p1' else "#d35400"}">{{p1}}</text><text x="150" y="127" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='p2' else "#d35400"}">{{p2}}</text></svg></div>"""
+                q = f"จงหาตัวเลขที่หายไป (?) จากความสัมพันธ์แบบส่วนย่อย-ส่วนรวม : " + svg_t.format(t="?" if miss=='t' else total, p1="?" if miss=='p1' else p1, p2="?" if miss=='p2' else p2)
+                if miss == 't':
+                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>ในการหา 'ส่วนรวม' (วงกลมด้านบน) เราต้องนำ 'ส่วนย่อย' ทั้งสองส่วน (วงกลมด้านล่าง) มาบวกเข้าด้วยกัน<br>จะได้: {p1} + {p2} = <b>{total}</b><br><b>ตอบ: {total}</b></span><br>" + svg_t.format(t=total, p1=p1, p2=p2)
+                elif miss == 'p1':
+                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>ในการหา 'ส่วนย่อย' ที่หายไป เราต้องนำ 'ส่วนรวม' (วงกลมด้านบน) มาลบด้วย 'ส่วนย่อย' อีกข้างที่เราทราบค่าแล้ว<br>จะได้: {total} - {p2} = <b>{p1}</b><br><b>ตอบ: {p1}</b></span><br>" + svg_t.format(t=total, p1=p1, p2=p2)
+                else:
+                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>ในการหา 'ส่วนย่อย' ที่หายไป เราต้องนำ 'ส่วนรวม' (วงกลมด้านบน) มาลบด้วย 'ส่วนย่อย' อีกข้างที่เราทราบค่าแล้ว<br>จะได้: {total} - {p1} = <b>{p2}</b><br><b>ตอบ: {p2}</b></span><br>" + svg_t.format(t=total, p1=p1, p2=p2)
+
+            elif "หลัก ค่าของเลขโดดในแต่ละหลัก และรูปกระจาย" in actual_sub_t or "หลักและรูปกระจาย" in actual_sub_t:
+                n = random.randint(100, limit - 1 if limit > 10 else 99)
+                parts = [f"{int(d)*(10**(len(str(n))-1-i)):,}" for i,d in enumerate(str(n)) if d != '0']
+                q = f"จงเขียนจำนวน <b>{n:,}</b> ให้อยู่ในรูปกระจาย"
+                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                การเขียนในรูปกระจาย คือการแยกตัวเลขตาม "ค่าประจำหลัก" ของแต่ละตัว แล้วนำมาเขียนในรูปของการบวกกัน<br>
+                1) พิจารณาตัวเลขทีละตัวจากซ้ายไปขวา<br>
+                2) นำค่าของตัวเลขในแต่ละหลักมาเขียนคั่นด้วยเครื่องหมาย + (ถ้าหลักไหนเป็น 0 ไม่ต้องเขียน)<br>
+                จะได้: <b>{' + '.join(parts)}</b><br>
+                <b>ตอบ: {' + '.join(parts)}</b></span>"""
+                
+            elif "จำนวนคู่ จำนวนคี่" in actual_sub_t:
+                n = random.randint(10, limit)
+                q = f"จำนวน <b>{n:,}</b> เป็นจำนวนคู่ หรือ จำนวนคี่?"
+                ans = "จำนวนคู่" if n % 2 == 0 else "จำนวนคี่"
+                reason = "หารด้วย 2 ลงตัวพอดี" if n % 2 == 0 else "หารด้วย 2 ไม่ลงตัว (เหลือเศษ 1)"
+                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                วิธีดูว่าตัวเลขใดเป็นจำนวนคู่หรือจำนวนคี่ เราไม่ต้องสนใจตัวเลขข้างหน้าเลย ให้ดูแค่ <b>"ตัวเลขในหลักหน่วย" (ตัวขวาสุด)</b> เท่านั้นครับ<br>
+                1) ตัวเลขในหลักหน่วยของข้อนี้คือเลข <b>{n%10}</b><br>
+                2) นำ {n%10} ไปพิจารณาว่าหารด้วย 2 ลงตัวหรือไม่<br>
+                &nbsp;&nbsp;&nbsp;พบว่า {reason}<br>
+                <b>ตอบ: {n:,} เป็น{ans}</b></span>"""
+
+            elif "เขียนตัวเลข" in actual_sub_t:
+                n = random.randint(11, limit-1) if grade in ["ป.1", "ป.2", "ป.3"] else random.randint(100000, 999999)
+                if random.choice([True, False]):
+                    q = f"จงเขียนตัวเลขฮินดูอารบิก <b>{n:,}</b> ให้เป็น<b>ตัวเลขไทย</b>"
+                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>แปลงตัวเลขฮินดูอารบิกแต่ละตัวให้เป็นตัวเลขไทยตามลำดับ<br><b>ตอบ: {str(n).translate(str.maketrans('0123456789', '๐๑๒๓๔๕๖๗๘๙'))}</b></span>"
+                else:
+                    q = f"จงเขียนจำนวน <b>{n:,}</b> ให้เป็น<b>ตัวหนังสือ</b>"
+                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>อ่านตัวเลขตามค่าประจำหลักจากซ้ายไปขวา (ถ้ามีหลักหน่วยเป็นเลข 1 เราจะอ่านออกเสียงว่า 'เอ็ด')<br><b>ตอบ: {generate_thai_number_text(str(n))}</b></span>"
+
+            elif "ค่าประมาณ" in actual_sub_t:
+                n = random.randint(1111, 99999)
+                ptype = random.choice(["เต็มสิบ", "เต็มร้อย", "เต็มพัน"])
+                if ptype == "เต็มสิบ":
+                    ans = ((n+5)//10)*10
+                    chk_d = n % 10
+                    chk_p = "หลักหน่วย"
+                elif ptype == "เต็มร้อย":
+                    ans = (((n+50)//100)*100)
+                    chk_d = (n // 10) % 10
+                    chk_p = "หลักสิบ"
+                else:
+                    ans = (((n+500)//1000)*1000)
+                    chk_d = (n // 100) % 10
+                    chk_p = "หลักร้อย"
+                action = "ปัดขึ้น (บวกเพิ่ม 1 ในหลักซ้ายมือและเปลี่ยนตัวมันเองเป็น 0)" if chk_d >= 5 else "ปัดทิ้ง (เปลี่ยนตัวมันเองและหลักทางขวาเป็น 0 ให้หมด)"
+                q = f"จงหาค่าประมาณเป็นจำนวน<b>{ptype}</b> ของ {n:,}"
+                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                เมื่อต้องการประมาณเป็นจำนวน{ptype} กฎคือให้เราถอยไปพิจารณาตัวเลขในหลักที่เล็กกว่า 1 ขั้น นั่นคือ <b>{chk_p}</b><br>
+                1) ตัวเลขใน {chk_p} ของข้อนี้คือเลข <b>{chk_d}</b><br>
+                2) ใช้กฎการปัดเลข: ถ้าเป็นเลข 0-4 ให้ปัดทิ้ง, ถ้าเป็นเลข 5-9 ให้ปัดขึ้น<br>
+                3) ในกรณีนี้เป็นเลข {chk_d} ดังนั้นเราต้องทำการ <b>{action}</b><br>
+                <b>ตอบ: ค่าประมาณคือ {ans:,}</b></span>"""
+
+            elif "การบอกอันดับที่" in actual_sub_t:
+                c_map = {"แดง": "#ff4d4d", "ฟ้า": "#3498db", "เขียว": "#2ecc71", "เหลือง": "#f1c40f"}
+                cols = list(c_map.keys())
+                random.shuffle(cols)
+                idx = random.randint(0, 3)
+                name = cols[idx]
+                q = f"มีรถ 4 คันวิ่งเรียงกันตามลำดับจากซ้ายไปขวา (คันซ้ายสุดคือคันที่ 1) ได้แก่ รถสี{cols[0]}, สี{cols[1]}, สี{cols[2]}, และ สี{cols[3]}<br>รถสี{name} วิ่งอยู่อันดับที่เท่าไร?"
+                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                ให้นับลำดับเรียงจากคันทางซ้ายมือสุดไปหาขวามือทีละคัน<br>
+                อันดับที่ 1 คือ รถสี{cols[0]}<br>
+                อันดับที่ 2 คือ รถสี{cols[1]}<br>
+                อันดับที่ 3 คือ รถสี{cols[2]}<br>
+                อันดับที่ 4 คือ รถสี{cols[3]}<br>
+                เมื่อนำมาเทียบดูแล้วพบว่า รถสี{name} ตรงกับลำดับที่ <b>{idx + 1}</b><br>
+                <b>ตอบ: อยู่อันดับที่ {idx + 1}</b></span>"""
+
+            elif "แบบรูปซ้ำ" in actual_sub_t:
+                shapes = ["🔴", "🟦", "⭐"]
+                pt = [0, 1, 2]
+                seq = [shapes[pt[i%3]] for i in range(7)]
+                ans = shapes[pt[7%3]]
+                q = f"พิจารณาแบบรูปซ้ำต่อไปนี้ รูปที่หายไปในช่องว่างคือรูปใด? <br><br>{' '.join(seq)} &nbsp;&nbsp;&nbsp; <b>____</b>"
+                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                1) ให้เราสังเกตดูว่ารูปภาพเหล่านี้มีการเรียงซ้ำกันเป็นชุดๆ ละกี่รูป<br>
+                2) จะเห็นว่ารูปภาพเรียงซ้ำกันเป็นชุด ชุดละ 3 รูป คือ [ {shapes[0]}, {shapes[1]}, {shapes[2]} ]<br>
+                3) เมื่อเรานับลำดับของแบบรูปวนไปเรื่อยๆ จนถึงตำแหน่งที่หายไป จะพบว่ามันวนกลับมาตกที่รูป <b>{ans}</b> พอดี<br>
+                <b>ตอบ: รูปที่หายไปคือ {ans}</b></span>"""
+
+            elif "การนับทีละ" in actual_sub_t:
+                step = 10 if "10" in actual_sub_t else (1 if "1" in actual_sub_t else random.choice([2, 5, 10, 100]))
+                inc = random.choice([True, False])
+                max_val = limit - (3 * step)
+                if max_val <= 1: max_val = 10
+                st_val = random.randint(1, max_val)
+                seq = [st_val, st_val+step, st_val+2*step, st_val+3*step] if inc else [st_val+3*step, st_val+2*step, st_val+step, st_val]
+                idx = random.randint(0, 3)
+                ans_str = f"{seq[idx]:,}"
+                seq_str = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".join([f"{s:,}" if i != idx else "_____" for i, s in enumerate(seq)])
+                word_inc = "เพิ่มขึ้น" if inc else "ลดลง"
+                q = f"จงพิจารณาแบบรูปและเติมตัวเลขที่หายไปลงในช่องว่าง : <br><br><span style='font-weight: bold; margin-left: 10px;'>{seq_str}</span>"
+                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                1) สังเกตความต่างของตัวเลขสองตัวที่อยู่ติดกัน<br>
+                2) จะพบว่าตัวเลขในแบบรูปนี้มีการ <b>{word_inc}ทีละ {step}</b> อย่างสม่ำเสมอ<br>
+                3) ดังนั้น การหาตัวเลขที่หายไป ก็ให้เราทำการนำเลขที่อยู่ก่อนหน้ามา{word_inc}ไปอีก {step}<br>
+                <b>ตอบ: ตัวเลขที่หายไปคือ {ans_str}</b></span>"""
+
+            elif "เรียงลำดับ" in actual_sub_t:
+                nums = random.sample(range(10, limit), 4)
+                is_asc = "น้อยไปมาก" in actual_sub_t if "น้อยไปมาก" in actual_sub_t else random.choice([True, False])
+                num_str = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".join([f"{x:,}" for x in nums])
+                word_asc = "น้อยไปหามาก" if is_asc else "มากไปหาน้อย"
+                ans_str = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".join([f"{x:,}" for x in sorted(nums, reverse=not is_asc)])
+                q = f"จงเรียงลำดับจำนวนต่อไปนี้จาก <b>{word_asc}</b> : <br><br><span style='font-weight: bold; margin-left: 10px;'>{num_str}</span>"
+                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                เปรียบเทียบค่าของตัวเลขทีละจำนวน โดยเริ่มพิจารณาดูจากหลักที่อยู่ซ้ายมือสุดก่อน แล้วค่อยๆ เรียงลำดับจาก <b>{word_asc}</b> ตามที่โจทย์กำหนด จะได้ดังนี้:<br>
+                <b>ตอบ: {ans_str}</b></span>"""
+
+            elif "เปรียบเทียบ" in actual_sub_t:
+                a = random.randint(10, limit)
+                is_eq = "=" in actual_sub_t
+                b = a if is_eq and random.choice([True, False]) else random.randint(10, limit)
+                while not is_eq and a == b: b = random.randint(10, limit)
+                sign = "=" if a == b else ("≠" if is_eq else (">" if a > b else "<"))
+                sign_word = "เท่ากับ" if a == b else ("มากกว่า" if a > b else "น้อยกว่า")
+                sign_choices = "'=' หรือ '≠'" if is_eq else "'>' หรือ '<'"
+                q = f"จงเติมเครื่องหมาย {sign_choices} ลงในช่องว่างให้ถูกต้อง: <span style='display:inline-flex; align-items:center; font-weight:bold; margin-left: 10px;'>{a:,} _____ {b:,}</span>"
+                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                เปรียบเทียบค่าของตัวเลขทีละหลักโดยเริ่มจากทางซ้ายสุดไปทางขวา จะพบว่า {a:,} มีค่า <b>{sign_word}</b> {b:,}<br>
+                <b>ตอบ: เติมเครื่องหมาย {sign}</b></span>"""
+
+            elif "ชนิดของมุม" in actual_sub_t:
+                angle = random.choice([30, 45, 60, 90, 120, 135, 150, 180])
+                q = f"มุมที่มีขนาด <b>{angle} องศา</b> ตามหลักคณิตศาสตร์เรียกว่ามุมชนิดใด?"
+                if angle < 90:
+                    ans = "มุมแหลม"; reason = "เพราะมีขนาดมากกว่า 0 องศา แต่น้อยกว่า 90 องศา (แคบกว่ามุมฉาก)"
+                elif angle == 90:
+                    ans = "มุมฉาก"; reason = "เพราะมีขนาดเท่ากับ 90 องศาพอดี"
+                elif angle < 180:
+                    ans = "มุมป้าน"; reason = "เพราะมีขนาดมากกว่า 90 องศา แต่น้อยกว่า 180 องศา (กว้างกว่ามุมฉาก)"
+                else:
+                    ans = "มุมตรง"; reason = "เพราะมีขนาดเท่ากับ 180 องศาพอดี (กางออกเป็นเส้นตรง)"
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>พิจารณาจากขนาดขององศา มุมนี้คือ <b>{ans}</b><br>{reason}<br><b>ตอบ: {ans}</b></span>"
+
+            elif "ความยาวรอบรูป" in actual_sub_t or ("พื้นที่" in actual_sub_t and "สี่เหลี่ยม" in actual_sub_t):
+                s = random.randint(5, 30)
+                is_peri = 'รอบรูป' in actual_sub_t
+                word = 'ความยาวรอบรูป' if is_peri else 'พื้นที่'
+                unit = 'ซม.' if is_peri else 'ตาราง ซม.'
+                ans = 4 * s if is_peri else s * s
+                q = f"จงหา<b>{word}</b>ของ<b>รูปสี่เหลี่ยมจัตุรัส</b>ที่มีความยาวด้านละ {s} เซนติเมตร"
+                if is_peri:
+                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>สูตรการหาความยาวรอบรูปสี่เหลี่ยมจัตุรัส คือการนำความยาวของทั้ง 4 ด้านมาบวกกัน (หรือนำความยาว 1 ด้านมาคูณด้วย 4)<br>จะได้ = 4 × ด้าน = 4 × {s} = <b>{ans} {unit}</b><br><b>ตอบ: {ans} {unit}</b></span>"
+                else:
+                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>สูตรการหาพื้นที่สี่เหลี่ยมจัตุรัส คือการนำความยาวด้าน มาคูณกับ ความยาวด้าน<br>จะได้ = ด้าน × ด้าน = {s} × {s} = <b>{ans} {unit}</b><br><b>ตอบ: {ans} {unit}</b></span>"
+
+            elif "ไม้โปรแทรกเตอร์" in actual_sub_t:
+                angle = random.randint(15, 165)
+                q = f"สมมติว่าเมื่อนำไม้โปรแทรกเตอร์ไปทาบที่มุมๆ หนึ่ง แล้วเส้นแขนของมุมชี้ตรงกับสเกลตัวเลข <b>{angle}</b> พอดีเป๊ะ มุมนี้จะมีขนาดกี่องศา?"
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>การวัดมุมด้วยไม้โปรแทรกเตอร์ เมื่อเราวางจุดกึ่งกลางทาบตรงจุดยอดมุม และแขนข้างหนึ่งทาบตรงเส้น 0 องศาแล้ว แขนอีกข้างชี้ไปที่ตัวเลขใดบนสเกล มุมนั้นก็จะมีขนาดเท่ากับตัวเลขนั้นเลยครับ<br><b>ตอบ: มีขนาด {angle} องศา</b></span>"
+                
+            elif "อ่านและเขียนเศษส่วน" in actual_sub_t:
+                den = random.randint(3, 8)
+                num = random.randint(1, den - 1)
+                frac_html = generate_fraction_html(num, den)
+                q = f"มีช่องสี่เหลี่ยมที่ถูกแบ่งออกเป็นส่วนเท่าๆ กันทั้งหมด {den} ช่อง มีการระบายสีไปทั้งหมด {num} ช่อง จะสามารถเขียนแทนด้วยเศษส่วนได้อย่างไร?"
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ให้นำจำนวนช่องทั้งหมดที่แบ่งไว้ ไปเขียนไว้ที่ตัวส่วน (ด้านล่าง) คือเลข <b>{den}</b><br>2) ให้นำจำนวนช่องที่ถูกระบายสี ไปเขียนไว้ที่ตัวเศษ (ด้านบน) คือเลข <b>{num}</b><br>เขียนเป็นเศษส่วนได้คือ:</span> <br><br>{frac_html} <br><br><span style='color:#2c3e50;'>(อ่านว่า เศษ {num} ส่วน {den})</span>"
+
+            elif "เศษเกินเป็นจำนวนคละ" in actual_sub_t:
+                den = random.randint(3, 12)
+                num = random.randint(den + 1, den * 5)
+                while num % den == 0: num = random.randint(den + 1, den * 5)
+                frac_html = generate_fraction_html(num, den)
+                mixed_raw = generate_mixed_number_html(num // den, num % den, den)
+                q = f"จงเขียนเศษเกินต่อไปนี้ ให้อยู่ในรูปของจำนวนคละ : <span style='display:inline-flex; vertical-align: middle; margin-left: 10px;'>{frac_html}</span>"
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>การแปลงเศษเกินเป็นจำนวนคละ ให้เรานำตัวเศษ(ด้านบน) ไปตั้งหารด้วยตัวส่วน(ด้านล่าง) ครับ<br>1) นำ {num} ตั้ง ÷ หารด้วย {den}<br>2) ท่องสูตรคูณแม่ {den} จะพบว่าได้ผลลัพธ์จำนวนเต็มคือ <b>{num // den}</b> และเหลือเศษ <b>{num % den}</b><br>3) นำมาเขียนประกอบร่างเป็นจำนวนคละ (ตัวส่วนยังคงเป็นเลขเดิม) จะได้:</span><br><br>{mixed_raw}"
+
+            elif "บวกลบเศษส่วน" in actual_sub_t or ("เศษส่วน" in actual_sub_t and ("บวก" in actual_sub_t or "ลบ" in actual_sub_t)):
+                den = random.randint(5, 15)
+                num1 = random.randint(1, den-1)
+                num2 = random.randint(1, den-1)
+                op = "+" if "บวก" in actual_sub_t else "-"
+                if op == "-" and num1 < num2: num1, num2 = num2, num1 
+                q = f"จงหาผลลัพธ์: <span style='display:inline-flex; align-items:center; margin-left:5px;'>{generate_fraction_html(num1, den)} <span style='margin: 0 8px; font-weight: bold;'>{op}</span> {generate_fraction_html(num2, den)}</span>"
+                ans_num = num1 + num2 if op == '+' else num1 - num2
+                word_op = "บวก" if op == "+" else "ลบ"
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) สังเกตดูที่ตัวส่วน (ด้านล่าง) จะเห็นว่าตัวส่วนมีค่าเท่ากันคือเลข <b>{den}</b> แล้ว<br>2) เมื่อตัวส่วนเท่ากัน เราสามารถนำตัวเศษ (ด้านบน) มา<b>{word_op}กัน</b>ได้เลยทันที โดยที่ตัวส่วนยังคงเป็นเลขเดิม<br>3) นำ {num1} {op} {num2} = <b>{ans_num}</b><br>จะได้คำตอบคือ:</span> <br><br> {generate_fraction_html(ans_num, den)}"
+
+            elif "คูณหารเศษส่วน" in actual_sub_t or ("เศษส่วน" in actual_sub_t and ("คูณ" in actual_sub_t or "หาร" in actual_sub_t)):
+                n1, d1 = random.randint(1, 5), random.randint(2, 7)
+                n2, d2 = random.randint(1, 5), random.randint(2, 7)
+                op = random.choice(["×", "÷"])
+                q = f"จงหาผลลัพธ์: <span style='display:inline-flex; align-items:center; margin-left:5px;'>{generate_fraction_html(n1, d1)} <span style='margin: 0 8px; font-weight: bold;'>{op}</span> {generate_fraction_html(n2, d2)}</span>"
+                if op == '×':
+                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>การคูณเศษส่วนนั้นง่ายมากครับ ไม่ต้องสนใจว่าตัวส่วนจะเท่ากันหรือไม่<br>1) ให้นำตัวเศษคูณกับตัวเศษ: {n1} × {n2} = <b>{n1*n2}</b><br>2) ให้นำตัวส่วนคูณกับตัวส่วน: {d1} × {d2} = <b>{d1*d2}</b><br>ประกอบร่างคำตอบจะได้:</span> <br><br> {generate_fraction_html(n1*n2, d1*d2)}"
+                else:
+                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>การหารเศษส่วนมีกฎอยู่ว่า 'เปลี่ยนหารเป็นคูณ กลับเศษเป็นส่วน (เฉพาะตัวหลัง)'<br>1) ตัวหน้าคงเดิม เปลี่ยนเครื่องหมาย ÷ เป็น ×<br>2) กลับตัวหลังให้สลับบนล่าง จากเศษ {n2} ส่วน {d2} เป็นเศษ {d2} ส่วน {n2}<br>3) จากนั้นใช้หลักการคูณคือ เศษคูณเศษ และ ส่วนคูณส่วน<br>&nbsp;&nbsp;&nbsp;ตัวเศษ: {n1} × {d2} = <b>{n1*d2}</b><br>&nbsp;&nbsp;&nbsp;ตัวส่วน: {d1} × {n2} = <b>{d1*n2}</b><br>ประกอบร่างคำตอบจะได้:</span> <br><br> {generate_fraction_html(n1*d2, d1*n2)}"
+
+            elif "ร้อยละเศษส่วน" in actual_sub_t or ("ร้อยละ" in actual_sub_t and "เศษส่วน" in actual_sub_t):
+                den = random.choice([2, 4, 5, 10, 20, 25, 50])
+                num = random.randint(1, den-1)
+                q = f"จงแปลงเศษส่วนต่อไปนี้ ให้อยู่ในรูปร้อยละ (เปอร์เซ็นต์) : <span style='display:inline-flex; vertical-align: middle; margin-left: 10px;'>{generate_fraction_html(num, den)}</span>"
+                mul = 100 // den
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>คำว่า 'ร้อยละ' หรือเปอร์เซ็นต์ หมายถึงเศษส่วนที่มีตัวส่วนเป็น 100 เสมอ<br>1) เราต้องหาวิธีแปลงตัวส่วน {den} ให้กลายเป็น 100 โดยการหาตัวเลขมาคูณ<br>2) จะเห็นว่า {den} ต้องคูณกับ <b>{mul}</b> จึงจะได้ 100<br>3) นำ {mul} ไปคูณทั้งตัวเศษและตัวส่วน<br>&nbsp;&nbsp;&nbsp;ตัวเศษใหม่: {num} × {mul} = <b>{num * mul}</b><br>&nbsp;&nbsp;&nbsp;ตัวส่วนใหม่: {den} × {mul} = <b>100</b><br>เมื่อตัวส่วนเป็น 100 แล้ว ตัวเศษด้านบนนั่นแหละครับคือคำตอบของเปอร์เซ็นต์!<br><b>ตอบ: ร้อยละ {int((num/den)*100)} หรือ {int((num/den)*100)}%</b></span>"
+
+            elif "อัตราส่วนที่เท่ากัน" in actual_sub_t:
+                a, b, m = random.randint(2, 9), random.randint(2, 9), random.randint(2, 9)
+                while a == b: b = random.randint(2, 9)
+                is_front = random.choice([True, False])
+                q_str = f"{a}:{b} = {a*m}:{box_html}" if is_front else f"{a}:{b} = {box_html}:{b*m}"
+                q = f"จงหาจำนวนมาเติมใน {box_html} เพื่อทำให้อัตราส่วนเท่ากัน : <span style='display:inline-flex; align-items:center; color: #3498db; font-weight: bold; margin-left: 10px;'>{q_str}</span>"
+                if is_front:
+                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ลองสังเกตความสัมพันธ์ของตัวเลขคู่ที่โจทย์ให้มาครบทั้งสองฝั่ง (คือตัวหน้า)<br>2) จาก {a} กลายไปเป็น {a*m} แสดงว่ามันถูกนำไป <b>คูณด้วย {m}</b><br>3) หลักการของอัตราส่วนที่เท่ากันคือ ถ้าตัวหน้าคูณด้วยอะไร ตัวหลังก็ต้องคูณด้วยสิ่งนั้นด้วย!<br>4) นำตัวหลัง ({b}) ไปคูณด้วย {m} เช่นกัน -> {b} × {m} = <b>{b*m}</b><br><b>ตอบ: ตัวเลขในช่องว่างคือ {b*m}</b></span>"
+                else:
+                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) ลองสังเกตความสัมพันธ์ของตัวเลขคู่ที่โจทย์ให้มาครบทั้งสองฝั่ง (คือตัวหลัง)<br>2) จาก {b} กลายไปเป็น {b*m} แสดงว่ามันถูกนำไป <b>คูณด้วย {m}</b><br>3) หลักการของอัตราส่วนที่เท่ากันคือ ถ้าตัวหลังคูณด้วยอะไร ตัวหน้าก็ต้องคูณด้วยสิ่งนั้นด้วย!<br>4) นำตัวหน้า ({a}) ไปคูณด้วย {m} เช่นกัน -> {a} × {m} = <b>{a*m}</b><br><b>ตอบ: ตัวเลขในช่องว่างคือ {a*m}</b></span>"
+
+            elif "โจทย์ปัญหาอัตราส่วน" in actual_sub_t:
+                a, b, m = random.randint(2, 7), random.randint(2, 7), random.randint(5, 20)
+                while a == b: b = random.randint(2, 7)
+                q = f"อัตราส่วนของจำนวนนักเรียนชาย ต่อ จำนวนนักเรียนหญิง ในห้องเรียนแห่งหนึ่ง คือ <b>{a} : {b}</b><br>ถ้าในห้องนี้มีนักเรียนชายทั้งหมด <b>{a*m}</b> คน อยากทราบว่าจะมีนักเรียนหญิงกี่คน?"
+                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                1) จากอัตราส่วน ชาย : หญิง = {a} : {b} (หมายความว่าถ้าจัดเป็นกลุ่มๆ กลุ่มชายจะมี {a} ส่วน และกลุ่มหญิงจะมี {b} ส่วน)<br>
+                2) โจทย์บอกว่าของจริงมีนักเรียนชายอยู่ {a*m} คน<br>
+                3) เราต้องหาว่า 1 ส่วนมีค่าเท่ากับกี่คน โดยนำจำนวนคนจริงไปหารกับจำนวนส่วน:<br>
+                &nbsp;&nbsp;&nbsp;{a*m} คน ÷ {a} ส่วน = <b>{m} คนต่อ 1 ส่วน</b><br>
+                4) เมื่อรู้ว่า 1 ส่วนคือ {m} คน ให้นำไปคูณกับจำนวนส่วนของนักเรียนหญิง ({b} ส่วน):<br>
+                &nbsp;&nbsp;&nbsp;นักเรียนหญิง = {b} × {m} = <b>{b*m} คน</b><br>
+                <b>ตอบ: มีนักเรียนหญิงทั้งหมด {b*m} คน</b></span>"""
+
+            elif "หารยาว" in actual_sub_t:
+                divisor = random.randint(2, 12); quotient = random.randint(100, 999); dividend = divisor * quotient
+                eq_html = f"จงหาผลลัพธ์การหารยาว <span style='display:inline-flex; align-items:center; font-weight: bold; margin-left: 10px; color: #2c3e50;'>{prefix} {dividend:,} ÷ {divisor} = {box_html}</span>"
+                q = generate_long_division_step_by_step_html(divisor, dividend, eq_html, is_key=False)
+                sol = generate_long_division_step_by_step_html(divisor, dividend, eq_html, is_key=True)
+
+            elif "ทศนิยม" in actual_sub_t and ("บวก" in actual_sub_t or "ลบ" in actual_sub_t):
+                a, b = round(random.uniform(10.0, 99.9), 2), round(random.uniform(1.0, 9.9), 2)
+                op = random.choice(["+", "-"])
+                word_op = "บวก" if op == "+" else "ลบ"
+                q = f"จงหาผลลัพธ์ทศนิยม <span style='display:inline-flex; align-items:center; font-weight: bold; color: #2c3e50; margin-left: 5px;'>{prefix} {a:.2f} {op} {b:.2f} = {box_html}</span>"
+                sol_table = generate_decimal_vertical_html(a, b, op, is_key=True)
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>กฎเหล็กของการบวกลบทศนิยมคือ <b>ต้องตั้งจุดทศนิยมให้ตรงกันเป๊ะๆ</b> เสมอ! จากนั้นให้ทำการตั้งหลักตัวเลขอื่นๆ ให้ตรงกันตามไปด้วย แล้วทำการ{word_op}เลขจากขวาไปซ้ายตามปกติเหมือนการ{word_op}เลขจำนวนเต็มครับ</span><br>{sol_table}"
+
+            elif "คูณทศนิยม" in actual_sub_t:
+                a, b = round(random.uniform(1.0, 12.0), 1), random.randint(2, 9)
+                q = f"จงหาผลลัพธ์การคูณทศนิยม <span style='display:inline-flex; align-items:center; font-weight: bold; color: #2c3e50; margin-left: 5px;'>{prefix} {a:.1f} × {b} = {box_html}</span>"
+                sol_table = generate_vertical_table_html(int(round(a*10)), b, '×', result=int(round(a*10))*b, is_key=True)
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>เทคนิคการคูณทศนิยมคือ ให้แกล้งลืมจุดทศนิยมไปก่อน แล้วนำตัวเลขมาคูณกันแบบจำนวนเต็มปกติเลยครับ!<br>1) นำ {int(round(a*10))} มาตั้งคูณด้วย {b} ได้ผลลัพธ์ดังนี้:<br>{sol_table}<br>2) จากนั้นมาดูว่าตัวตั้งและตัวคูณรวมกันมีทศนิยมกี่ตำแหน่ง<br>&nbsp;&nbsp;&nbsp;ในข้อนี้ {a:.1f} มีทศนิยม 1 ตำแหน่ง และ {b} ไม่มีทศนิยม (0 ตำแหน่ง) รวมเป็น 1 ตำแหน่ง<br>3) ให้นำผลลัพธ์ที่ได้ มาใส่จุดทศนิยม 1 ตำแหน่ง (นับจากหลังมาหน้า)<br><b>ตอบ: {round(a*b, 1):.1f}</b></span>"
 
             elif "การแก้สมการ (+/-)" in actual_sub_t or actual_sub_t == "การแก้สมการ (บวก/ลบ)":
                 x = random.randint(10, 50); a = random.randint(5, 20); op = random.choice(["+", "-"])
@@ -960,7 +783,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     1) จากโจทย์ <b>{a}x</b> หมายความว่าเลข <b>{a}</b> กำลัง 'คูณ' อยู่กับ x เราต้องกำจัดเลข {a} ออกไป<br>
                     2) โดยใช้สมบัติการเท่ากัน: เราจะนำ <b>{a} มาหารทั้งสองข้างของสมการ</b><br>
                     3) เขียนบรรทัดใหม่ได้ว่า: ({a}x) <b style='color:red;'>÷ {a}</b> = {a*x} <b style='color:red;'>÷ {a}</b><br>
-                    4) ทางฝั่งซ้าย {a} หาร {a} มีค่าเท่ากับ 1 จึงเหลือแค่ x ตัวเดียว<br>
+                    4) ทางฝั่งซ้าย {a} หาร {a} ได้ 1 เหลือแค่ x ตัวเดียว<br>
                     &nbsp;&nbsp;&nbsp;ทางฝั่งขวา นำ {a*x} ตั้งหารด้วย {a} จะได้คำตอบคือ <b>{x}</b><br>
                     <b>ตอบ: x = {x}</b></span>"""
                 else:
@@ -1001,11 +824,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 q = f"จงหา ค.ร.น. (คูณร่วมน้อย) ของ <b>{a}</b> และ <b>{b}</b>"
                 sol = generate_short_division_html(a, b, mode="ค.ร.น.")
 
-            # --- ถ้าสุ่มมาโดนหัวข้อที่ไม่ได้ตั้งเงื่อนไขพิเศษไว้ ให้ใช้ Fallback อธิบายละเอียด ---
             else:
+                # Fallback ป้องกัน Error
                 a, b = random.randint(10, 50), random.randint(10, 50)
                 q = f"จงหาผลลัพธ์ <span style='display:inline-flex; align-items:center; font-weight: bold; color: #2c3e50; margin-left: 5px;'>{prefix} {a} + {b} = {box_html}</span>"
-                sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>ให้นำตัวตั้ง <b>{a}</b> ไปบวกเพิ่มกับตัวบวก <b>{b}</b> โดยตั้งหลักให้ตรงกัน แล้วทำการบวกทีละหลักจากขวาไปซ้าย จะได้คำตอบเท่ากับ <b>{a + b}</b><br><b>ตอบ: {a + b}</b></span>"
+                sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b> นำ {a} มาบวกกับ {b} ตามหลักคณิตศาสตร์พื้นฐาน จะได้คำตอบเท่ากับ <b>{a + b}</b><br><b>ตอบ: {a + b}</b></span>"
 
             if q not in seen: 
                 seen.add(q)
@@ -1015,6 +838,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             
     return questions
 
+# ==========================================
+# UI Rendering
+# ==========================================
 def extract_body(html_str):
     try: return html_str.split('<body>')[1].split('</body>')[0]
     except IndexError: return html_str
@@ -1113,7 +939,7 @@ if worksheet_mode == "📚 หลักสูตรปกติ (ป.1 - ป.6)"
 else: 
     selected_grade = st.sidebar.selectbox("🏆 เลือกระดับชั้นแข่งขัน:", ["ป.1-ป.2 (พื้นฐาน)", "ป.3-ป.4 (ประยุกต์)", "ป.5-ป.6 (วิเคราะห์)"]) 
     selected_main = "ข้อสอบแข่งขันระดับชาติ"
-    sub_options = tmc_lower if "ป.1" in selected_grade else (tmc_mid if "ป.3" in selected_grade else tmc_upper)
+    sub_options = tmc_p1_p2 if "ป.1" in selected_grade else (tmc_p3_p4 if "ป.3" in selected_grade else tmc_p5_p6)
     selected_sub = st.sidebar.selectbox("📝 เลือกแนวข้อสอบ (พร้อมภาพอธิบายเฉลย):", sub_options + ["🌟 สุ่มรวมทุกแนว"])
 
 num_input = st.sidebar.number_input("🔢 จำนวนข้อ:", min_value=1, max_value=100, value=10)
