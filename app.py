@@ -48,7 +48,7 @@ LOCS = ["โรงเรียน", "สวนสัตว์", "สวนสน
 ITEMS = ["ลูกแก้ว", "สติกเกอร์", "การ์ดพลัง", "โมเดลรถ", "ตุ๊กตาหมี", "สมุดระบายสี", "ดินสอสี", "ลูกโป่ง"]
 SNACKS = ["ช็อกโกแลต", "คุกกี้", "โดนัท", "เยลลี่", "ขนมปัง", "ไอศกรีม", "น้ำผลไม้", "นมเย็น"]
 ANIMALS = ["แมงมุม", "มดแดง", "กบ", "จิ้งจก", "ตั๊กแตน", "เต่า", "หอยทาก"]
-PUBLISHERS = ["สำนักพิมพ์", "โรงพิมพ์", "ฝ่ายวิชาการ", "ร้านถ่ายเอกสาร", "ทีมงานจัดทำเอกสาร", "บริษัทสิ่งพิมพ์"]
+PUBLISHERS = ["สำพิมพ์", "โรงพิมพ์", "ฝ่ายวิชาการ", "ร้านถ่ายเอกสาร", "ทีมงานจัดทำเอกสาร", "บริษัทสิ่งพิมพ์"]
 DOC_TYPES = ["หนังสือนิทาน", "รายงานการประชุม", "แคตตาล็อกสินค้า", "เอกสารประกอบการเรียน", "สมุดภาพ", "นิตยสารรายเดือน", "พจนานุกรม"]
 BUILDERS = ["บริษัทรับเหมา", "ผู้ใหญ่บ้าน", "เทศบาลตำบล", "เจ้าของโครงการ", "ผู้อำนวยการโรงเรียน", "กรมทางหลวง", "อบต."]
 BUILD_ACTIONS = ["ปักเสาไฟ", "ปลูกต้นไม้", "ตั้งศาลาริมทาง", "ติดป้ายประกาศ", "ตั้งถังขยะ", "ปักธงประดับ", "ติดตั้งกล้องวงจรปิด"]
@@ -58,6 +58,7 @@ FRUIT_EMOJIS = {"แอปเปิล": "🍎", "ส้ม": "🍊", "สตร
 FRUITS = list(FRUIT_EMOJIS.keys())
 MATERIALS = ["แผ่นไม้", "กระดาษสี", "แผ่นพลาสติก", "ผืนผ้าใบ", "แผ่นเหล็ก", "แผ่นกระเบื้อง"]
 VEHICLES = ["รถยนต์", "รถจักรยานยนต์", "รถบรรทุก", "รถไฟ", "รถตู้"]
+WORK_ACTIONS = ["ทาสีบ้าน", "ปลูกต้นไม้", "สร้างกำแพง", "ประกอบหุ่นยนต์", "เก็บขยะ", "จัดหนังสือ"]
 
 box_html = "<span style='display: inline-block; width: 22px; height: 22px; border: 2px solid #333; border-radius: 3px; vertical-align: middle; margin-left: 5px; position: relative; top: -2px;'></span>"
 
@@ -91,7 +92,7 @@ def lcm_multiple(*args):
     return res
 
 # ==========================================
-# 🌟 ฟังก์ชันวาดรูปภาพ SVG เพิ่มความเข้าใจ 🌟
+# 🌟 ฟังก์ชันวาดรูปภาพ SVG (ปรับปรุงสเกลตาชั่งให้ชัดเจน) 🌟
 # ==========================================
 def draw_fraction_svg(num, den):
     width = 250
@@ -177,28 +178,37 @@ def draw_scale_svg(kg, kheed, max_kg=5):
     cx, cy, r = 150, 150, 120
     total_kheed = kg * 10 + kheed
     angle = math.radians(total_kheed * 7.2 - 90)
-    nx, ny = cx + 90 * math.cos(angle), cy + 90 * math.sin(angle)
+    
+    # ดันเข็มให้ชี้ออกไปแตะใกล้ๆ สเกล เพื่อให้มองง่ายขึ้น
+    nx, ny = cx + 100 * math.cos(angle), cy + 100 * math.sin(angle) 
     
     svg = f'<div style="text-align:center;"><svg width="300" height="300">'
     svg += f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="#fdfefe" stroke="#2c3e50" stroke-width="6"/>'
-    svg += f'<circle cx="{cx}" cy="{cy}" r="{r-15}" fill="none" stroke="#bdc3c7" stroke-width="1"/>'
-    svg += f'<text x="{cx}" y="{cy+45}" font-family="sans-serif" font-size="18" font-weight="bold" fill="#7f8c8d" text-anchor="middle">kg</text>'
+    # วงแหวนไกด์ด้านใน ขยับเข้ามาลึกขึ้นเพื่อให้แมตช์กับเส้นสเกลที่ยาวขึ้น
+    svg += f'<circle cx="{cx}" cy="{cy}" r="{r-25}" fill="none" stroke="#bdc3c7" stroke-width="1"/>' 
+    svg += f'<text x="{cx}" y="{cy+45}" font-family="sans-serif" font-size="20" font-weight="bold" fill="#7f8c8d" text-anchor="middle">kg</text>'
     
     for i in range(max_kg * 10):
         tick_angle = math.radians(i * 7.2 - 90)
         is_kg = i % 10 == 0
-        tick_len = 15 if is_kg else (8 if i % 5 == 0 else 4)
+        
+        # ปรับความยาวของเส้นขีดให้ชัดเจนขึ้น
+        tick_len = 25 if is_kg else (15 if i % 5 == 0 else 10) 
         x1, y1 = cx + (r - tick_len) * math.cos(tick_angle), cy + (r - tick_len) * math.sin(tick_angle)
         x2, y2 = cx + r * math.cos(tick_angle), cy + r * math.sin(tick_angle)
-        sw = 3 if is_kg else (2 if i % 5 == 0 else 1)
+        
+        # ปรับความหนาของขีดสเกลให้เข้มขึ้น
+        sw = 4 if is_kg else (3 if i % 5 == 0 else 2) 
         svg += f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#2c3e50" stroke-width="{sw}"/>'
+        
         if is_kg:
             num = i // 10
-            nx_t, ny_t = cx + (r - 32) * math.cos(tick_angle), cy + (r - 32) * math.sin(tick_angle)
-            svg += f'<text x="{nx_t}" y="{ny_t}" font-family="sans-serif" font-size="24" font-weight="bold" fill="#2c3e50" text-anchor="middle" dominant-baseline="central">{num}</text>'
+            # ปรับตำแหน่งตัวเลขถอยเข้ามาด้านใน ไม่ให้ชนกับเส้นสเกลที่ยาวขึ้น
+            nx_t, ny_t = cx + (r - 40) * math.cos(tick_angle), cy + (r - 40) * math.sin(tick_angle)
+            svg += f'<text x="{nx_t}" y="{ny_t}" font-family="sans-serif" font-size="26" font-weight="bold" fill="#2c3e50" text-anchor="middle" dominant-baseline="central">{num}</text>'
             
     svg += f'<line x1="{cx}" y1="{cy}" x2="{nx}" y2="{ny}" stroke="#c0392b" stroke-width="4" stroke-linecap="round"/>'
-    svg += f'<circle cx="{cx}" cy="{cy}" r="8" fill="#c0392b"/>'
+    svg += f'<circle cx="{cx}" cy="{cy}" r="10" fill="#c0392b"/>'
     svg += '</svg></div>'
     return svg
 
@@ -484,7 +494,7 @@ def generate_long_division_step_by_step_html(divisor, dividend, equation_html, i
         html += f"<tr><td style='border: none;'></td>{rem_tds}</tr>"
         
     html += "</table></div></div>"
-    html += f"<div style='margin-top: 15px; color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br><b>ขั้นที่ 1:</b> นำตัวหาร ({divisor}) ไปหารตัวตั้ง ({dividend}) ทีละหลักจากซ้ายไปขวา<br><b>ขั้นที่ 2:</b> ท่องสูตรคูณแม่ {divisor} ว่าคูณอะไรแล้วได้ใกล้เคียงหรือเท่ากับตัวตั้งในหลักนั้นที่สุด (แต่ห้ามเกิน)<br><b>ขั้นที่ 3:</b> ใส่ผลลัพธ์ไว้ด้านบน และนำผลคูณมาลบกันด้านล่าง<br><b>ขั้นที่ 4:</b> ดึงตัวเลขในหลักถัดไปลงมา แล้วทำซ้ำขั้นตอนเดิมจนหมดทุกหลัก</div>"
+    html += f"<div style='margin-top: 15px; color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>1) นำตัวหาร ({divisor}) ไปหารตัวตั้ง ({dividend}) ทีละหลักจากซ้ายไปขวา<br>2) ท่องสูตรคูณแม่ {divisor} ว่าคูณอะไรแล้วได้ใกล้เคียงหรือเท่ากับตัวตั้งในหลักนั้นที่สุด (แต่ห้ามเกิน)<br>3) ใส่ผลลัพธ์ไว้ด้านบน และนำผลคูณมาลบกันด้านล่าง<br>4) ดึงตัวเลขในหลักถัดไปลงมา แล้วทำซ้ำขั้นตอนเดิมจนหมดทุกหลัก</div>"
     return html
 
 def generate_thai_number_text(num_str):
@@ -518,7 +528,7 @@ def get_prefix(grade):
     return ""
 
 # ==========================================
-# 2. ฐานข้อมูลหลักสูตร (Master Database) เฉพาะหลักสูตรปกติ
+# 2. ฐานข้อมูลหลักสูตร (Master Database) เฉพาะหลักสูตรปกติ ป.1-ป.6
 # ==========================================
 curriculum_db = {
     "ป.1": {
@@ -559,7 +569,7 @@ curriculum_db = {
 }
 
 # ==========================================
-# 3. Logic & Dynamic Difficulty Scaling 
+# 3. Logic & Dynamic Difficulty Scaling
 # ==========================================
 def generate_questions_logic(grade, main_t, sub_t, num_q):
     questions = []
@@ -575,17 +585,15 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
         while attempts < 300:
             actual_sub_t = sub_t
             if sub_t == "แบบทดสอบรวมปลายภาค":
-                all_mains = [m for m in curriculum_db[grade].keys() if m != "🌟 โหมดพิเศษ (สุ่มทุกเรื่อง)"]
+                all_mains = [m for m in curriculum_db[grade].keys()]
                 rand_main = random.choice(all_mains)
                 actual_sub_t = random.choice(curriculum_db[grade][rand_main])
 
             prefix = get_prefix(grade)
 
             # =========================================================
-            # ฐานข้อมูลโจทย์ทั้งหมด 
+            # ภาพกราฟิก (นาฬิกา, เครื่องชั่ง, แผนภูมิ)
             # =========================================================
-            
-            # ---------------- ภาพกราฟิก ----------------
             if actual_sub_t == "การบอกเวลาเป็นนาฬิกาและนาที":
                 h_24 = random.randint(0, 23)
                 m = random.randint(0, 59)
@@ -649,7 +657,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     if counts[d1] < counts[d2]: d1, d2 = d2, d1 
                     diff_counts = counts[d1] - counts[d2]
                     ans = diff_counts * pic_val
-                    word = "มากกว่า" if diff_counts > 0 else ("เท่ากับ" if diff_counts == 0 else "น้อยกว่า")
                     q = pic_html + f"<br>จากแผนภูมิรูปภาพ วัน{days[d1]} ขาย{item}ได้มากกว่าวัน{days[d2]} กี่ผล?"
                     sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
                     <b>ขั้นที่ 1:</b> วัน{days[d1]} มีรูป {emoji} {counts[d1]} รูป ส่วนวัน{days[d2]} มี {counts[d2]} รูป<br>
@@ -657,80 +664,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                     <b>ขั้นที่ 3:</b> นำผลต่างของรูป × {pic_val} ผล ➔ {diff_counts} × {pic_val} = <b>{ans} ผล</b><br>
                     <b>ตอบ: {ans} ผล</b></span>"""
 
-            elif actual_sub_t == "การบอกอันดับที่ (รถแข่ง)":
-                c_map = {"แดง": "#ff4d4d", "ฟ้า": "#3498db", "เขียว": "#2ecc71", "เหลือง": "#f1c40f"}
-                cols_keys = list(c_map.keys())
-                random.shuffle(cols_keys)
-                idx = random.randint(0, 3)
-                col_name = cols_keys[idx]
-                
-                cars_html = draw_cars_svg([c_map[c] for c in cols_keys])
-                
-                q = cars_html + f"<br>มีรถ 4 คันวิ่งเรียงกันตามลำดับจากซ้ายไปขวา (คันซ้ายสุดคือคันที่ 1) <br>รถสี{col_name} วิ่งอยู่อันดับที่เท่าไร?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
-                ให้นับลำดับเรียงจากคันทางซ้ายมือสุดไปหาขวามือทีละคัน<br>
-                👉 อันดับที่ 1 คือ รถสี{cols_keys[0]}<br>
-                👉 อันดับที่ 2 คือ รถสี{cols_keys[1]}<br>
-                👉 อันดับที่ 3 คือ รถสี{cols_keys[2]}<br>
-                👉 อันดับที่ 4 คือ รถสี{cols_keys[3]}<br>
-                เมื่อนำมาเทียบดูแล้วพบว่า รถสี{col_name} ตรงกับลำดับที่ <b>{idx + 1}</b><br>
-                <b>ตอบ: อยู่อันดับที่ {idx + 1}</b></span>"""
-
-            elif actual_sub_t == "การอ่านและเขียนเศษส่วน":
-                den = random.randint(3, 8)
-                num = random.randint(1, den - 1)
-                frac_html = f_html(num, den)
-                svg_graphic = draw_fraction_svg(num, den)
-                
-                q = svg_graphic + f"<br>มีรูปสี่เหลี่ยมที่ถูกแบ่งออกเป็นส่วนเท่าๆ กันทั้งหมด {den} ช่อง มีการระบายสีไปทั้งหมด {num} ช่อง จะสามารถเขียนแทนด้วยเศษส่วนได้อย่างไร?"
-                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
-                <b>ขั้นที่ 1: หาตัวส่วน (จำนวนช่องทั้งหมด)</b><br>
-                👉 นับจำนวนช่องสี่เหลี่ยมทั้งหมดที่ถูกแบ่งไว้เท่าๆ กัน จะได้ <b>{den} ช่อง</b><br>
-                👉 นำตัวเลขนี้ไปเขียนไว้เป็น "ตัวส่วน" (เลขด้านล่าง)<br>
-                <b>ขั้นที่ 2: หาตัวเศษ (จำนวนช่องที่ระบายสี)</b><br>
-                👉 นับจำนวนช่องสีฟ้าที่ถูกระบายสี จะได้ <b>{num} ช่อง</b><br>
-                👉 นำตัวเลขนี้ไปเขียนไว้เป็น "ตัวเศษ" (เลขด้านบน)<br>
-                <b>ขั้นที่ 3: ประกอบร่างเศษส่วน</b><br>
-                👉 เขียนให้อยู่ในรูปเศษส่วน จะได้: <br><br>{frac_html}<br><br>
-                👉 อ่านว่า "เศษ {num} ส่วน {den}"<br>
-                <b>ตอบ: <span style='display:inline-flex; align-items:center;'>{frac_html}</span></b></span>"""
-
-            elif actual_sub_t == "การหาความยาวรอบรูปสี่เหลี่ยมมุมฉาก" or actual_sub_t == "การหาพื้นที่รูปสี่เหลี่ยมมุมฉาก":
-                s = random.randint(5, 30)
-                is_peri = 'รอบรูป' in actual_sub_t
-                word = 'ความยาวรอบรูป' if is_peri else 'พื้นที่'
-                unit = 'ซม.' if is_peri else 'ตาราง ซม.'
-                ans = 4 * s if is_peri else s * s
-                
-                svg_graphic = draw_square_svg(s)
-                
-                q = svg_graphic + f"<br>จงหา<b>{word}</b>ของ<b>รูปสี่เหลี่ยมจัตุรัส</b>ที่มีความยาวด้านละ {s} เซนติเมตร"
-                if is_peri:
-                    sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
-                    <b>ขั้นที่ 1: นึกถึงสูตรการหาความยาวรอบรูปสี่เหลี่ยมจัตุรัส</b><br>
-                    👉 สูตรคือการนำความยาวของทั้ง 4 ด้านมาบวกกัน (หรือนำความยาว 1 ด้านมาคูณด้วย 4)<br>
-                    <b>ขั้นที่ 2: แทนค่าลงในสูตร</b><br>
-                    👉 จะได้ = 4 × ด้าน = 4 × {s} = <b>{ans} {unit}</b><br>
-                    <b>ตอบ: {ans} {unit}</b></span>"""
-                else:
-                    sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
-                    <b>ขั้นที่ 1: นึกถึงสูตรการหาพื้นที่สี่เหลี่ยมจัตุรัส</b><br>
-                    👉 สูตรคือการนำความยาวด้าน มาคูณกับ ความยาวด้าน<br>
-                    <b>ขั้นที่ 2: แทนค่าลงในสูตร</b><br>
-                    👉 จะได้ = ด้าน × ด้าน = {s} × {s} = <b>{ans} {unit}</b><br>
-                    <b>ตอบ: {ans} {unit}</b></span>"""
-
-            elif actual_sub_t == "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)":
-                angle = random.choice([30, 45, 60, 90, 120, 135, 150])
-                svg_graphic = draw_angle_svg(angle)
-                q = svg_graphic + f"<br>เมื่อนำไม้โปรแทรกเตอร์ไปทาบที่มุมนี้ แล้วเส้นแขนของมุมชี้ตรงกับสเกลตัวเลข <b>{angle}</b> พอดีเป๊ะ มุมนี้จะมีขนาดกี่องศา?"
-                sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>การวัดมุมด้วยไม้โปรแทรกเตอร์ เมื่อเราวางจุดกึ่งกลางทาบตรงจุดยอดมุม และแขนข้างหนึ่งทาบตรงเส้น 0 องศาแล้ว แขนอีกข้างชี้ไปที่ตัวเลขใดบนสเกล มุมนั้นก็จะมีขนาดเท่ากับตัวเลขนั้นเลยครับ<br><b>ตอบ: มีขนาด {angle} องศา</b></span>"
-
-            # ---------------- โหมดหลักสูตรปกติอื่นๆ (ครบถ้วนไม่มีตัด) ----------------
+            # =========================================================
+            # โหมดหลักสูตรปกติอื่นๆ
+            # =========================================================
             elif actual_sub_t == "การบอกจำนวนเงินทั้งหมด":
                 b1000 = random.randint(0, 2); b500 = random.randint(0, 2); b100 = random.randint(1, 5); b50 = random.randint(0, 2)
                 b20 = random.randint(1, 5); c10 = random.randint(0, 5); c5 = random.randint(0, 5)
-                
                 money_list = []
                 if b1000 > 0: money_list.append(f"ธนบัตร 1,000 บาท {b1000} ฉบับ")
                 if b500 > 0: money_list.append(f"ธนบัตร 500 บาท {b500} ฉบับ")
@@ -801,27 +740,23 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br><b>ขั้นที่ 1:</b> ตั้งหลักตัวเลขให้ตรงกัน (หลักหน่วยตรงหลักหน่วย, หลักสิบตรงหลักสิบ)<br><b>ขั้นที่ 2:</b> เริ่มลบตัวเลขจากหลักหน่วย (ขวาสุด) ไปทางซ้ายทีละหลัก<br><b>ขั้นที่ 3:</b> หากตัวเลขด้านบนน้อยกว่าตัวเลขด้านล่าง (ลบไม่พอ) ให้ทำการ 'ขอยืม' ตัวเลขจากหลักถัดไปทางซ้ายมา 1 (ซึ่งจะมีค่าเท่ากับ 10 ในหลักปัจจุบัน)<br><b>ขั้นที่ 4:</b> นำ 10 ที่ยืมมาบวกกับตัวเลขเดิม แล้วจึงทำการลบตามปกติ</span><br>" + generate_vertical_table_html(a, b, '-', result=res, is_key=True)
 
             elif actual_sub_t == "การหารพื้นฐาน":
-                a = random.randint(2, 9)
-                b = random.randint(2, 12)
-                dividend = a * b
+                a = random.randint(2, 9); b = random.randint(2, 12); dividend = a * b
                 q = f"จงหาผลลัพธ์ของ <span style='display:inline-flex; align-items:center; font-weight: bold; color: #2c3e50; margin-left: 5px;'>{prefix} {dividend} ÷ {a} = {box_html}</span>"
                 sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br><b>ขั้นที่ 1:</b> การหารคือการหาว่า 'ตัวหาร ({a}) ต้องคูณกับเลขอะไรจึงจะได้ผลลัพธ์เท่ากับตัวตั้ง ({dividend})'<br><b>ขั้นที่ 2:</b> ให้นักเรียนลองท่องสูตรคูณแม่ <b>{a}</b> ดูครับ:<br>&nbsp;&nbsp;&nbsp;👉 {a} × 1 = {a}<br>&nbsp;&nbsp;&nbsp;👉 ...<br>&nbsp;&nbsp;&nbsp;👉 <b>{a} × {b} = {dividend}</b> (เจอคำตอบแล้ว!)<br>ดังนั้น {dividend} ÷ {a} มีค่าเท่ากับ <b>{b}</b><br><b>ตอบ: {b}</b></span>"
 
             elif actual_sub_t == "การแสดงจำนวนในรูปความสัมพันธ์แบบส่วนย่อย-ส่วนรวม":
-                total = random.randint(5, 20)
-                p1 = random.randint(1, total - 1)
-                p2 = total - p1
+                total = random.randint(5, 20); p1 = random.randint(1, total - 1); p2 = total - p1
                 miss = random.choice(['t', 'p1', 'p2'])
                 svg_t = f"""<div style="display: block; text-align: center; margin-top: 10px;"><svg width="200" height="160"><line x1="100" y1="40" x2="50" y2="120" stroke="#333" stroke-width="3"/><line x1="100" y1="40" x2="150" y2="120" stroke="#333" stroke-width="3"/><circle cx="100" cy="40" r="30" fill="#e8f8f5" stroke="#16a085" stroke-width="3"/><circle cx="50" cy="120" r="30" fill="#fdf2e9" stroke="#d35400" stroke-width="3"/><circle cx="150" cy="120" r="30" fill="#fdf2e9" stroke="#d35400" stroke-width="3"/><text x="100" y="47" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='t' else "#16a085"}">{{t}}</text><text x="50" y="127" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='p1' else "#d35400"}">{{p1}}</text><text x="150" y="127" font-size="22" font-weight="bold" text-anchor="middle" fill="{"#e74c3c" if miss=='p2' else "#d35400"}">{{p2}}</text></svg></div>"""
                 q = f"จงหาตัวเลขที่หายไป (?) จากความสัมพันธ์แบบส่วนย่อย-ส่วนรวม : " + svg_t.format(t="?" if miss=='t' else total, p1="?" if miss=='p1' else p1, p2="?" if miss=='p2' else p2)
                 if miss == 't':
                     sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>ในการหา 'ส่วนรวม' (วงกลมด้านบน) เราต้องนำ 'ส่วนย่อย' ทั้งสองส่วน (วงกลมด้านล่าง) มาบวกเข้าด้วยกัน<br>จะได้: {p1} + {p2} = <b>{total}</b><br><b>ตอบ: {total}</b></span><br>" + svg_t.format(t=total, p1=p1, p2=p2)
-                elif miss == 'p1':
-                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>ในการหา 'ส่วนย่อย' ที่หายไป เราต้องนำ 'ส่วนรวม' (วงกลมด้านบน) มาลบด้วย 'ส่วนย่อย' อีกข้างที่เราทราบค่าแล้ว<br>จะได้: {total} - {p2} = <b>{p1}</b><br><b>ตอบ: {p1}</b></span><br>" + svg_t.format(t=total, p1=p1, p2=p2)
                 else:
-                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>ในการหา 'ส่วนย่อย' ที่หายไป เราต้องนำ 'ส่วนรวม' (วงกลมด้านบน) มาลบด้วย 'ส่วนย่อย' อีกข้างที่เราทราบค่าแล้ว<br>จะได้: {total} - {p1} = <b>{p2}</b><br><b>ตอบ: {p2}</b></span><br>" + svg_t.format(t=total, p1=p1, p2=p2)
+                    known = p2 if miss == 'p1' else p1
+                    ans = p1 if miss == 'p1' else p2
+                    sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>ในการหา 'ส่วนย่อย' ที่หายไป เราต้องนำ 'ส่วนรวม' (วงกลมด้านบน) มาลบด้วย 'ส่วนย่อย' อีกข้างที่เราทราบค่าแล้ว<br>จะได้: {total} - {known} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span><br>" + svg_t.format(t=total, p1=p1, p2=p2)
 
-            elif actual_sub_t == "หลัก ค่าของเลขโดดในแต่ละหลัก และรูปกระจาย" or actual_sub_t == "หลัก ค่าของเลขโดด และรูปกระจาย" or actual_sub_t == "หลัก ค่าประจำหลัก และรูปกระจาย":
+            elif actual_sub_t in ["หลัก ค่าของเลขโดดในแต่ละหลัก และรูปกระจาย", "หลัก ค่าของเลขโดด และรูปกระจาย", "หลัก ค่าประจำหลัก และรูปกระจาย"]:
                 n = random.randint(100, limit - 1 if limit > 10 else 99)
                 parts = [f"{int(d)*(10**(len(str(n))-1-i)):,}" for i,d in enumerate(str(n)) if d != '0']
                 q = f"จงเขียนจำนวน <b>{n:,}</b> ให้อยู่ในรูปกระจาย"
@@ -844,12 +779,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 👉 พบว่า {reason}<br>
                 <b>ตอบ: {n:,} เป็น{ans}</b></span>"""
 
-            elif actual_sub_t == "การอ่านและการเขียนตัวเลข" or actual_sub_t == "การอ่าน การเขียนตัวเลข":
-                if grade in ["ป.1", "ป.2", "ป.3"]:
-                    n = random.randint(11, limit-1)
-                else:
-                    n = random.randint(100000, 999999)
-                    
+            elif actual_sub_t in ["การอ่านและการเขียนตัวเลข", "การอ่าน การเขียนตัวเลข"]:
+                n = random.randint(11, limit-1) if grade in ["ป.1", "ป.2", "ป.3"] else random.randint(100000, 999999)
                 if random.choice([True, False]):
                     q = f"จงเขียนตัวเลขฮินดูอารบิก <b>{n:,}</b> ให้เป็น<b>ตัวเลขไทย</b>"
                     sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>แปลงตัวเลขฮินดูอารบิกแต่ละตัวให้เป็นตัวเลขไทยตามลำดับ<br><b>ตอบ: {str(n).translate(str.maketrans('0123456789', '๐๑๒๓๔๕๖๗๘๙'))}</b></span>"
@@ -860,18 +791,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
             elif actual_sub_t == "ค่าประมาณเป็นจำนวนเต็มสิบ เต็มร้อย เต็มพัน":
                 n = random.randint(1111, 99999)
                 ptype = random.choice(["เต็มสิบ", "เต็มร้อย", "เต็มพัน"])
-                if ptype == "เต็มสิบ":
-                    ans = ((n+5)//10)*10
-                    chk_d = n % 10
-                    chk_p = "หลักหน่วย"
-                elif ptype == "เต็มร้อย":
-                    ans = (((n+50)//100)*100)
-                    chk_d = (n // 10) % 10
-                    chk_p = "หลักสิบ"
-                else:
-                    ans = (((n+500)//1000)*1000)
-                    chk_d = (n // 100) % 10
-                    chk_p = "หลักร้อย"
+                if ptype == "เต็มสิบ": ans = ((n+5)//10)*10; chk_d = n % 10; chk_p = "หลักหน่วย"
+                elif ptype == "เต็มร้อย": ans = (((n+50)//100)*100); chk_d = (n // 10) % 10; chk_p = "หลักสิบ"
+                else: ans = (((n+500)//1000)*1000); chk_d = (n // 100) % 10; chk_p = "หลักร้อย"
                 action = "ปัดขึ้น (บวกเพิ่ม 1 ในหลักซ้ายมือและเปลี่ยนตัวมันเองเป็น 0)" if chk_d >= 5 else "ปัดทิ้ง (เปลี่ยนตัวมันเองและหลักทางขวาเป็น 0 ให้หมด)"
                 q = f"จงหาค่าประมาณเป็นจำนวน<b>{ptype}</b> ของ {n:,}"
                 sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
@@ -893,11 +815,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 <b>ขั้นที่ 3:</b> เมื่อเรานับลำดับของแบบรูปวนไปเรื่อยๆ จนถึงตำแหน่งที่หายไป จะพบว่ามันวนกลับมาตกที่รูป <b>{ans}</b> พอดี<br>
                 <b>ตอบ: รูปที่หายไปคือ {ans}</b></span>"""
 
-            elif actual_sub_t == "การนับทีละ 1" or actual_sub_t == "การนับทีละ 10" or actual_sub_t == "การนับทีละ 2 ทีละ 5 ทีละ 10 และทีละ 100":
+            elif actual_sub_t in ["การนับทีละ 1", "การนับทีละ 10", "การนับทีละ 2 ทีละ 5 ทีละ 10 และทีละ 100"]:
                 step = 10 if actual_sub_t == "การนับทีละ 10" else (1 if actual_sub_t == "การนับทีละ 1" else random.choice([2, 5, 10, 100]))
                 inc = random.choice([True, False])
-                max_val = limit - (3 * step)
-                if max_val <= 1: max_val = 10
+                max_val = limit - (3 * step); max_val = max(max_val, 10)
                 st_val = random.randint(1, max_val)
                 seq = [st_val, st_val+step, st_val+2*step, st_val+3*step] if inc else [st_val+3*step, st_val+2*step, st_val+step, st_val]
                 idx = random.randint(0, 3)
@@ -911,7 +832,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 <b>ขั้นที่ 3:</b> ดังนั้น การหาตัวเลขที่หายไป ก็ให้เราทำการนำเลขที่อยู่ก่อนหน้ามา{word_inc}ไปอีก {step}<br>
                 <b>ตอบ: ตัวเลขที่หายไปคือ {ans_str}</b></span>"""
 
-            elif actual_sub_t == "การเรียงลำดับจำนวน (น้อยไปมาก)" or actual_sub_t == "การเรียงลำดับจำนวน (มากไปน้อย)" or actual_sub_t == "การเปรียบเทียบและเรียงลำดับ":
+            elif actual_sub_t in ["การเรียงลำดับจำนวน (น้อยไปมาก)", "การเรียงลำดับจำนวน (มากไปน้อย)", "การเปรียบเทียบและเรียงลำดับ"]:
                 nums = random.sample(range(10, limit), 4)
                 is_asc = "น้อยไปมาก" in actual_sub_t if "น้อยไปมาก" in actual_sub_t else random.choice([True, False])
                 num_str = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".join([f"{x:,}" for x in nums])
@@ -922,9 +843,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 เปรียบเทียบค่าของตัวเลขทีละจำนวน โดยเริ่มพิจารณาดูจากหลักที่อยู่ซ้ายมือสุดก่อน แล้วค่อยๆ เรียงลำดับจาก <b>{word_asc}</b> ตามที่โจทย์กำหนด จะได้ดังนี้:<br>
                 <b>ตอบ: {ans_str}</b></span>"""
 
-            elif actual_sub_t == "การเปรียบเทียบจำนวน (> <)" or actual_sub_t == "การเปรียบเทียบจำนวน (= ≠)":
-                a = random.randint(10, limit)
-                is_eq = "=" in actual_sub_t
+            elif actual_sub_t in ["การเปรียบเทียบจำนวน (> <)", "การเปรียบเทียบจำนวน (= ≠)"]:
+                a = random.randint(10, limit); is_eq = "=" in actual_sub_t
                 b = a if is_eq and random.choice([True, False]) else random.randint(10, limit)
                 while not is_eq and a == b: b = random.randint(10, limit)
                 sign = "=" if a == b else ("≠" if is_eq else (">" if a > b else "<"))
@@ -935,147 +855,91 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 เปรียบเทียบค่าของตัวเลขทีละหลักโดยเริ่มจากทางซ้ายสุดไปทางขวา จะพบว่า {a:,} มีค่า <b>{sign_word}</b> {b:,}<br>
                 <b>ตอบ: เติมเครื่องหมาย {sign}</b></span>"""
 
-            elif actual_sub_t == "การบอกชนิดของมุม":
-                angle = random.choice([30, 45, 60, 90, 120, 135, 150, 180])
-                q = f"มุมที่มีขนาด <b>{angle} องศา</b> ตามหลักคณิตศาสตร์เรียกว่ามุมชนิดใด?"
-                if angle < 90:
-                    ans = "มุมแหลม"; reason = "เพราะมีขนาดมากกว่า 0 องศา แต่น้อยกว่า 90 องศา (แคบกว่ามุมฉาก)"
-                elif angle == 90:
-                    ans = "มุมฉาก"; reason = "เพราะมีขนาดเท่ากับ 90 องศาพอดี"
-                elif angle < 180:
-                    ans = "มุมป้าน"; reason = "เพราะมีขนาดมากกว่า 90 องศา แต่น้อยกว่า 180 องศา (กว้างกว่ามุมฉาก)"
-                else:
-                    ans = "มุมตรง"; reason = "เพราะมีขนาดเท่ากับ 180 องศาพอดี (กางออกเป็นเส้นตรง)"
-                sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>พิจารณาจากขนาดขององศา มุมนี้คือ <b>{ans}</b><br>👉 {reason}<br><b>ตอบ: {ans}</b></span>"
+            elif actual_sub_t == "การอ่านและเขียนเศษส่วน":
+                den = random.randint(3, 8); num = random.randint(1, den - 1); frac_html = f_html(num, den); svg_graphic = draw_fraction_svg(num, den)
+                q = svg_graphic + f"<br>มีรูปสี่เหลี่ยมที่ถูกแบ่งออกเป็นส่วนเท่าๆ กันทั้งหมด {den} ช่อง มีการระบายสีไปทั้งหมด {num} ช่อง จะสามารถเขียนแทนด้วยเศษส่วนได้อย่างไร?"
+                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
+                <b>ขั้นที่ 1: หาตัวส่วน (จำนวนช่องทั้งหมด)</b><br>👉 นับจำนวนช่องสี่เหลี่ยมทั้งหมดที่ถูกแบ่งไว้เท่าๆ กัน จะได้ <b>{den} ช่อง</b><br>👉 นำตัวเลขนี้ไปเขียนไว้เป็น "ตัวส่วน" (เลขด้านล่าง)<br>
+                <b>ขั้นที่ 2: หาตัวเศษ (จำนวนช่องที่ระบายสี)</b><br>👉 นับจำนวนช่องสีฟ้าที่ถูกระบายสี จะได้ <b>{num} ช่อง</b><br>👉 นำตัวเลขนี้ไปเขียนไว้เป็น "ตัวเศษ" (เลขด้านบน)<br>
+                <b>ขั้นที่ 3: ประกอบร่างเศษส่วน</b><br>👉 เขียนให้อยู่ในรูปเศษส่วน จะได้: <br><br>{frac_html}<br><br>👉 อ่านว่า "เศษ {num} ส่วน {den}"<br>
+                <b>ตอบ: <span style='display:inline-flex; align-items:center;'>{frac_html}</span></b></span>"""
 
             elif actual_sub_t == "แปลงเศษเกินเป็นจำนวนคละ":
-                den = random.randint(3, 12)
-                num = random.randint(den + 1, den * 5)
+                den = random.randint(3, 12); num = random.randint(den + 1, den * 5)
                 while num % den == 0: num = random.randint(den + 1, den * 5)
-                f_h = f_html(num, den)
-                mix = generate_mixed_number_html(num // den, num % den, den)
+                f_h = f_html(num, den); mix = generate_mixed_number_html(num // den, num % den, den)
                 q = f"จงเขียนเศษเกินต่อไปนี้ ให้อยู่ในรูปของจำนวนคละ : <span style='display:inline-flex; vertical-align: middle; margin-left: 10px;'>{f_h}</span>"
                 sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
                 การแปลงเศษเกินให้เป็นจำนวนคละ ทำได้โดยการนำตัวเศษ(เลขด้านบน) ไปตั้งหารด้วยตัวส่วน(เลขด้านล่าง)<br>
-                <b>ขั้นที่ 1: ตั้งหาร</b><br>
-                👉 นำตัวเศษ <b>{num}</b> ตั้ง หารด้วย <b>{den}</b> ({num} ÷ {den})<br>
-                <b>ขั้นที่ 2: หาผลหารและเศษ</b><br>
-                👉 ท่องสูตรคูณแม่ {den} ว่า {den} คูณอะไรได้ใกล้เคียง {num} มากที่สุดโดยไม่เกิน<br>
-                👉 จะได้ {den} × {num // den} = {den * (num // den)}<br>
-                👉 ดังนั้นจะได้ผลลัพธ์จำนวนเต็มคือ <b>{num // den}</b><br>
-                👉 นำ {num} ลบ {den * (num // den)} จะเหลือเศษ <b>{num % den}</b><br>
-                <b>ขั้นที่ 3: ประกอบร่างเป็นจำนวนคละ</b><br>
-                👉 นำ "จำนวนเต็ม" มาเขียนไว้ด้านหน้าสุด<br>
-                👉 นำ "เศษ" มาเขียนเป็นตัวเศษด้านบน (ส่วนตัวส่วนยังคงเป็นเลข {den} เหมือนเดิม)<br>
-                👉 จะได้ผลลัพธ์คือ:<br><br>{mix}<br>
+                <b>ขั้นที่ 1: ตั้งหาร</b><br>👉 นำตัวเศษ <b>{num}</b> ตั้ง หารด้วย <b>{den}</b> ({num} ÷ {den})<br>
+                <b>ขั้นที่ 2: หาผลหารและเศษ</b><br>👉 ท่องสูตรคูณแม่ {den} ว่า {den} คูณอะไรได้ใกล้เคียง {num} มากที่สุดโดยไม่เกิน<br>👉 จะได้ {den} × {num // den} = {den * (num // den)}<br>👉 ดังนั้นจะได้ผลลัพธ์จำนวนเต็มคือ <b>{num // den}</b><br>👉 นำ {num} ลบ {den * (num // den)} จะเหลือเศษ <b>{num % den}</b><br>
+                <b>ขั้นที่ 3: ประกอบร่างเป็นจำนวนคละ</b><br>👉 นำ "จำนวนเต็ม" มาเขียนไว้ด้านหน้าสุด<br>👉 นำ "เศษ" มาเขียนเป็นตัวเศษด้านบน (ส่วนตัวส่วนยังคงเป็นเลข {den} เหมือนเดิม)<br>👉 จะได้ผลลัพธ์คือ:<br><br>{mix}<br>
                 <b>ตอบ: <span style='display:inline-flex; align-items:center;'>{mix}</span></b></span>"""
 
-            elif actual_sub_t == "การบวกลบเศษส่วน (ตัวส่วนเท่ากัน)" or actual_sub_t == "การบวกเศษส่วน" or actual_sub_t == "การลบเศษส่วน":
-                den = random.randint(5, 15)
-                num1 = random.randint(1, den-1)
-                num2 = random.randint(1, den-1)
+            elif actual_sub_t in ["การบวกลบเศษส่วน (ตัวส่วนเท่ากัน)", "การบวกเศษส่วน", "การลบเศษส่วน"]:
+                den = random.randint(5, 15); num1 = random.randint(1, den-1); num2 = random.randint(1, den-1)
                 op = "+" if "บวก" in actual_sub_t else "-"
-                if actual_sub_t == "การบวกลบเศษส่วน (ตัวส่วนเท่ากัน)":
-                    op = random.choice(["+", "-"])
-                    
+                if actual_sub_t == "การบวกลบเศษส่วน (ตัวส่วนเท่ากัน)": op = random.choice(["+", "-"])
                 if op == "-" and num1 < num2: num1, num2 = num2, num1 
                 
-                # ป.5 ขึ้นไปและหัวข้อคือ บวก/ลบ เศษส่วน (ที่ส่วนอาจจะไม่เท่ากัน)
                 if grade == "ป.5" and actual_sub_t in ["การบวกเศษส่วน", "การลบเศษส่วน"]:
                     d1 = random.randint(2, 10); d2 = random.randint(2, 10)
                     while d1 == d2: d2 = random.randint(2, 10) 
                     n1 = random.randint(1, d1 - 1); n2 = random.randint(1, d2 - 1)
                     if op == "-" and (n1/d1) < (n2/d2): n1, n2 = n2, n1; d1, d2 = d2, d1
                     lcm_d = (d1 * d2) // math.gcd(d1, d2); m1 = lcm_d // d1; m2 = lcm_d // d2
-                    ans_num = (n1 * m1) + (n2 * m2) if op == "+" else (n1 * m1) - (n2 * m2)
-                    word_op = "บวก" if op == "+" else "ลบ"
+                    ans_num = (n1 * m1) + (n2 * m2) if op == "+" else (n1 * m1) - (n2 * m2); word_op = "บวก" if op == "+" else "ลบ"
                     
                     f1 = f_html(n1, d1); f2 = f_html(n2, d2)
                     q = f"จงหาผลลัพธ์ <span style='display:inline-flex; align-items:center; margin-left:5px;'>{prefix}{f1} <span style='margin: 0 8px; font-weight: bold;'>{op}</span> {f2}</span>"
-                    f1_mul = f_html(f"{n1} × {m1}", f"{d1} × {m1}", is_bold=False)
-                    f2_mul = f_html(f"{n2} × {m2}", f"{d2} × {m2}", is_bold=False)
-                    f1_new = f_html(n1 * m1, lcm_d); f2_new = f_html(n2 * m2, lcm_d)
-                    s_ans = f_html(ans_num, lcm_d)
+                    f1_mul = f_html(f"{n1} × {m1}", f"{d1} × {m1}", is_bold=False); f2_mul = f_html(f"{n2} × {m2}", f"{d2} × {m2}", is_bold=False)
+                    f1_new = f_html(n1 * m1, lcm_d); f2_new = f_html(n2 * m2, lcm_d); s_ans = f_html(ans_num, lcm_d)
                     
                     sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
-                    <b>ขั้นที่ 1: ตรวจสอบและหา ค.ร.น. ของตัวส่วน</b><br>
-                    👉 สังเกตว่าตัวส่วน {d1} และ {d2} ยังไม่เท่ากัน จึงไม่สามารถ{word_op}กันได้ทันที<br>
-                    👉 ต้องหา ค.ร.น. ของ {d1} และ {d2} ซึ่งคำนวณได้เท่ากับ <b>{lcm_d}</b><br>
-                    <b>ขั้นที่ 2: แปลงเศษส่วนให้มีตัวส่วนเท่ากับ {lcm_d}</b><br>
-                    👉 ตัวแรก: นำ {m1} มาคูณทั้งเศษและส่วน ➔ <span style='display:inline-flex; align-items:center;'>{f1_mul}</span> = <span style='display:inline-flex; align-items:center;'>{f1_new}</span><br>
-                    👉 ตัวที่สอง: นำ {m2} มาคูณทั้งเศษและส่วน ➔ <span style='display:inline-flex; align-items:center;'>{f2_mul}</span> = <span style='display:inline-flex; align-items:center;'>{f2_new}</span><br>
-                    <b>ขั้นที่ 3: ดำเนินการ{word_op}ตัวเศษ</b><br>
-                    👉 เมื่อตัวส่วนเป็น {lcm_d} เท่ากันแล้ว ให้นำตัวเศษมา{word_op}กัน: {n1*m1} {op} {n2*m2} = <b>{ans_num}</b><br>
-                    👉 ประกอบร่างเป็นเศษส่วนผลลัพธ์ จะได้: <br><br>{s_ans}<br>
+                    <b>ขั้นที่ 1: ตรวจสอบและหา ค.ร.น. ของตัวส่วน</b><br>👉 สังเกตว่าตัวส่วน {d1} และ {d2} ยังไม่เท่ากัน จึงไม่สามารถ{word_op}กันได้ทันที<br>👉 ต้องหา ค.ร.น. ของ {d1} และ {d2} ซึ่งคำนวณได้เท่ากับ <b>{lcm_d}</b><br>
+                    <b>ขั้นที่ 2: แปลงเศษส่วนให้มีตัวส่วนเท่ากับ {lcm_d}</b><br>👉 ตัวแรก: นำ {m1} มาคูณทั้งเศษและส่วน ➔ <span style='display:inline-flex; align-items:center;'>{f1_mul}</span> = <span style='display:inline-flex; align-items:center;'>{f1_new}</span><br>👉 ตัวที่สอง: นำ {m2} มาคูณทั้งเศษและส่วน ➔ <span style='display:inline-flex; align-items:center;'>{f2_mul}</span> = <span style='display:inline-flex; align-items:center;'>{f2_new}</span><br>
+                    <b>ขั้นที่ 3: ดำเนินการ{word_op}ตัวเศษ</b><br>👉 เมื่อตัวส่วนเป็น {lcm_d} เท่ากันแล้ว ให้นำตัวเศษมา{word_op}กัน: {n1*m1} {op} {n2*m2} = <b>{ans_num}</b><br>👉 ประกอบร่างเป็นเศษส่วนผลลัพธ์ จะได้: <br><br>{s_ans}<br>
                     <b>ตอบ: <span style='display:inline-flex; align-items:center;'>{s_ans}</span></b></span>"""
                 else:
-                    ans_num = num1 + num2 if op == '+' else num1 - num2
-                    word_op = "บวก" if op == "+" else "ลบ"
+                    ans_num = num1 + num2 if op == '+' else num1 - num2; word_op = "บวก" if op == "+" else "ลบ"
                     f1 = f_html(num1, den); f2 = f_html(num2, den); s_ans = f_html(ans_num, den)
                     q = f"จงหาผลลัพธ์: <span style='display:inline-flex; align-items:center; margin-left:5px;'>{f1} <span style='margin: 0 8px; font-weight: bold;'>{op}</span> {f2}</span>"
                     sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
-                    <b>ขั้นที่ 1: ตรวจสอบตัวส่วน</b><br>
-                    👉 สังเกตที่ตัวส่วน (เลขด้านล่าง) จะพบว่าทั้งสองจำนวนมีตัวส่วนเป็น <b>{den}</b> เท่ากันแล้ว<br>
-                    <b>ขั้นที่ 2: ดำเนินการคำนวณ</b><br>
-                    👉 เมื่อตัวส่วนเท่ากัน เราสามารถนำตัวเศษ (เลขด้านบน) มา<b>{word_op}</b>กันได้ทันที โดยที่ตัวส่วนยังคงเดิม<br>
-                    👉 นำ {num1} {op} {num2} = <b>{ans_num}</b><br>
-                    <b>ขั้นที่ 3: สรุปผลลัพธ์</b><br>
-                    👉 จะได้คำตอบคือ: <br><br>{s_ans}<br>
+                    <b>ขั้นที่ 1: ตรวจสอบตัวส่วน</b><br>👉 สังเกตที่ตัวส่วน (เลขด้านล่าง) จะพบว่าทั้งสองจำนวนมีตัวส่วนเป็น <b>{den}</b> เท่ากันแล้ว<br>
+                    <b>ขั้นที่ 2: ดำเนินการคำนวณ</b><br>👉 เมื่อตัวส่วนเท่ากัน เราสามารถนำตัวเศษ (เลขด้านบน) มา<b>{word_op}</b>กันได้ทันที โดยที่ตัวส่วนยังคงเดิม<br>👉 นำ {num1} {op} {num2} = <b>{ans_num}</b><br>
+                    <b>ขั้นที่ 3: สรุปผลลัพธ์</b><br>👉 จะได้คำตอบคือ: <br><br>{s_ans}<br>
                     <b>ตอบ: <span style='display:inline-flex; align-items:center;'>{s_ans}</span></b></span>"""
 
-            elif actual_sub_t == "การคูณเศษส่วน" or actual_sub_t == "การหารเศษส่วน":
-                n1, d1 = random.randint(1, 5), random.randint(2, 7)
-                n2, d2 = random.randint(1, 5), random.randint(2, 7)
+            elif actual_sub_t in ["การคูณเศษส่วน", "การหารเศษส่วน"]:
+                n1, d1 = random.randint(1, 5), random.randint(2, 7); n2, d2 = random.randint(1, 5), random.randint(2, 7)
                 op = "×" if actual_sub_t == "การคูณเศษส่วน" else "÷"
-                
                 f1 = f_html(n1, d1); f2 = f_html(n2, d2)
                 q = f"จงหาผลลัพธ์: <span style='display:inline-flex; align-items:center; margin-left:5px;'>{f1} <span style='margin: 0 8px; font-weight: bold;'>{op}</span> {f2}</span>"
                 if op == '×':
                     ans_f = f_html(n1*n2, d1*d2)
                     sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
-                    <b>ขั้นที่ 1: เข้าใจหลักการคูณเศษส่วน</b><br>
-                    👉 การคูณเศษส่วนไม่ต้องทำตัวส่วนให้เท่ากัน สามารถจับคู่คูณได้เลย คือ "เศษคูณเศษ" และ "ส่วนคูณส่วน"<br>
-                    <b>ขั้นที่ 2: นำตัวเศษ (เลขด้านบน) มาคูณกัน</b><br>
-                    👉 {n1} × {n2} = <b>{n1*n2}</b><br>
-                    <b>ขั้นที่ 3: นำตัวส่วน (เลขด้านล่าง) มาคูณกัน</b><br>
-                    👉 {d1} × {d2} = <b>{d1*d2}</b><br>
-                    <b>ขั้นที่ 4: ประกอบร่างเป็นเศษส่วนผลลัพธ์</b><br>
-                    👉 นำผลคูณที่ได้มาเขียนเป็นเศษส่วน จะได้: <br><br>{ans_f}<br>
+                    <b>ขั้นที่ 1: เข้าใจหลักการคูณเศษส่วน</b><br>👉 การคูณเศษส่วนไม่ต้องทำตัวส่วนให้เท่ากัน สามารถจับคู่คูณได้เลย คือ "เศษคูณเศษ" และ "ส่วนคูณส่วน"<br>
+                    <b>ขั้นที่ 2: นำตัวเศษ (เลขด้านบน) มาคูณกัน</b><br>👉 {n1} × {n2} = <b>{n1*n2}</b><br>
+                    <b>ขั้นที่ 3: นำตัวส่วน (เลขด้านล่าง) มาคูณกัน</b><br>👉 {d1} × {d2} = <b>{d1*d2}</b><br>
+                    <b>ขั้นที่ 4: ประกอบร่างเป็นเศษส่วนผลลัพธ์</b><br>👉 นำผลคูณที่ได้มาเขียนเป็นเศษส่วน จะได้: <br><br>{ans_f}<br>
                     <b>ตอบ: <span style='display:inline-flex; align-items:center;'>{ans_f}</span></b></span>"""
                 else:
-                    ans_f = f_html(n1*d2, d1*n2)
-                    f2_rev = f_html(d2, n2)
+                    ans_f = f_html(n1*d2, d1*n2); f2_rev = f_html(d2, n2)
                     sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
-                    <b>ขั้นที่ 1: ใช้กฎของการหารเศษส่วน</b><br>
-                    👉 กฎคือ "ตัวหน้าคงเดิม เปลี่ยนเครื่องหมายหารเป็นคูณ และสลับบนล่างเฉพาะเศษส่วนตัวหลัง"<br>
-                    👉 เปลี่ยนจาก <span style='display:inline-flex; align-items:center;'>{f2}</span> เป็น <span style='display:inline-flex; align-items:center;'>{f2_rev}</span><br>
-                    <b>ขั้นที่ 2: ดำเนินการคูณเศษส่วนตามปกติ</b><br>
-                    👉 นำตัวเศษคูณตัวเศษ: {n1} × {d2} = <b>{n1*d2}</b><br>
-                    👉 นำตัวส่วนคูณตัวส่วน: {d1} × {n2} = <b>{d1*n2}</b><br>
-                    <b>ขั้นที่ 3: ประกอบร่างผลลัพธ์</b><br>
-                    👉 นำมาเขียนเป็นเศษส่วน จะได้: <br><br>{ans_f}<br>
+                    <b>ขั้นที่ 1: ใช้กฎของการหารเศษส่วน</b><br>👉 กฎคือ "ตัวหน้าคงเดิม เปลี่ยนเครื่องหมายหารเป็นคูณ และสลับบนล่างเฉพาะเศษส่วนตัวหลัง"<br>👉 เปลี่ยนจาก <span style='display:inline-flex; align-items:center;'>{f2}</span> เป็น <span style='display:inline-flex; align-items:center;'>{f2_rev}</span><br>
+                    <b>ขั้นที่ 2: ดำเนินการคูณเศษส่วนตามปกติ</b><br>👉 นำตัวเศษคูณตัวเศษ: {n1} × {d2} = <b>{n1*d2}</b><br>👉 นำตัวส่วนคูณตัวส่วน: {d1} × {n2} = <b>{d1*n2}</b><br>
+                    <b>ขั้นที่ 3: ประกอบร่างผลลัพธ์</b><br>👉 นำมาเขียนเป็นเศษส่วน จะได้: <br><br>{ans_f}<br>
                     <b>ตอบ: <span style='display:inline-flex; align-items:center;'>{ans_f}</span></b></span>"""
 
             elif actual_sub_t == "การเขียนเศษส่วนในรูปร้อยละ":
-                den = random.choice([2, 4, 5, 10, 20, 25, 50])
-                num = random.randint(1, den-1)
-                f_h = f_html(num, den)
+                den = random.choice([2, 4, 5, 10, 20, 25, 50]); num = random.randint(1, den-1); f_h = f_html(num, den)
                 q = f"จงแปลงเศษส่วนต่อไปนี้ ให้อยู่ในรูปร้อยละ (เปอร์เซ็นต์) : <span style='display:inline-flex; vertical-align: middle; margin-left: 10px;'>{f_h}</span>"
-                mul = 100 // den
-                frac_100 = f_html(num*mul, 100)
+                mul = 100 // den; frac_100 = f_html(num*mul, 100)
                 sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
-                <b>ขั้นที่ 1: ทำความเข้าใจความหมายของร้อยละ</b><br>
-                👉 คำว่า 'ร้อยละ' หรือ 'เปอร์เซ็นต์ (%)' หมายถึง เศษส่วนที่มี <b>ตัวส่วน (เลขด้านล่าง) เป็น 100 เสมอ</b><br>
-                <b>ขั้นที่ 2: หาตัวเลขมาคูณตัวส่วนให้เป็น 100</b><br>
-                👉 จากโจทย์ ตัวส่วนคือ {den} เราต้องคิดว่า {den} คูณอะไรถึงจะได้ 100<br>
-                👉 นำ 100 ÷ {den} = <b>{mul}</b> แสดงว่าต้องนำ {mul} มาคูณ<br>
-                <b>ขั้นที่ 3: ขยายเศษส่วน</b><br>
-                👉 นำ {mul} ไปคูณทั้งตัวเศษและตัวส่วนเพื่อรักษาค่าให้เท่าเดิม<br>
-                👉 ตัวเศษ: {num} × {mul} = <b>{num * mul}</b><br>
-                👉 ตัวส่วน: {den} × {mul} = <b>100</b><br>
-                👉 จะได้เศษส่วนใหม่คือ <span style='display:inline-flex; align-items:center;'>{frac_100}</span><br>
-                <b>ขั้นที่ 4: สรุปคำตอบ</b><br>
-                👉 เมื่อตัวส่วนเป็น 100 แล้ว ตัวเศษด้านบนคือคำตอบของเปอร์เซ็นต์ได้เลย!<br>
+                <b>ขั้นที่ 1: ทำความเข้าใจความหมายของร้อยละ</b><br>👉 คำว่า 'ร้อยละ' หรือ 'เปอร์เซ็นต์ (%)' หมายถึง เศษส่วนที่มี <b>ตัวส่วน (เลขด้านล่าง) เป็น 100 เสมอ</b><br>
+                <b>ขั้นที่ 2: หาตัวเลขมาคูณตัวส่วนให้เป็น 100</b><br>👉 จากโจทย์ ตัวส่วนคือ {den} เราต้องคิดว่า {den} คูณอะไรถึงจะได้ 100<br>👉 นำ 100 ÷ {den} = <b>{mul}</b> แสดงว่าต้องนำ {mul} มาคูณ<br>
+                <b>ขั้นที่ 3: ขยายเศษส่วน</b><br>👉 นำ {mul} ไปคูณทั้งตัวเศษและตัวส่วนเพื่อรักษาค่าให้เท่าเดิม<br>👉 ตัวเศษ: {num} × {mul} = <b>{num * mul}</b><br>👉 ตัวส่วน: {den} × {mul} = <b>100</b><br>👉 จะได้เศษส่วนใหม่คือ <span style='display:inline-flex; align-items:center;'>{frac_100}</span><br>
+                <b>ขั้นที่ 4: สรุปคำตอบ</b><br>👉 เมื่อตัวส่วนเป็น 100 แล้ว ตัวเศษด้านบนคือคำตอบของเปอร์เซ็นต์ได้เลย!<br>
                 <b>ตอบ: ร้อยละ {num * mul} หรือ {num * mul}%</b></span>"""
 
             elif actual_sub_t == "การหารยาว":
@@ -1086,8 +950,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
 
             elif actual_sub_t == "การบวกและการลบทศนิยม":
                 a, b = round(random.uniform(10.0, 99.9), 2), round(random.uniform(1.0, 9.9), 2)
-                op = random.choice(["+", "-"])
-                word_op = "บวก" if op == "+" else "ลบ"
+                op = random.choice(["+", "-"]); word_op = "บวก" if op == "+" else "ลบ"
                 q = f"จงหาผลลัพธ์ทศนิยม <span style='display:inline-flex; align-items:center; font-weight: bold; color: #2c3e50; margin-left: 5px;'>{prefix} {a:.2f} {op} {b:.2f} = {box_html}</span>"
                 sol_table = generate_decimal_vertical_html(a, b, op, is_key=True)
                 sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (Step-by-step):</b><br>
@@ -1189,10 +1052,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q):
                 while a == b: b = random.randint(4, 24) 
                 q = f"จงหา ค.ร.น. (คูณร่วมน้อย) ของ <b>{a}</b> และ <b>{b}</b>"
                 sol = generate_short_division_html(a, b, mode="ค.ร.น.")
-
-            else:
-                q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
-                sol = "Error"
 
             if q not in seen: 
                 seen.add(q)
@@ -1322,7 +1181,7 @@ theme_map = {"ฟ้าคลาสสิก (Blue)": {"border": "#3498db", "bad
 if st.sidebar.button("🚀 สั่งสร้างใบงานเดี๋ยวนี้", type="primary", use_container_width=True):
     with st.spinner("กำลังออกแบบรูปภาพและสร้างเฉลยแบบ Step-by-Step..."):
         
-        # 🔥 แก้ไข Error เด็ดขาด: ส่งเฉพาะตัวแปรที่ฟังก์ชันต้องการรับจริงๆ เท่านั้น (4 ตัว)
+        # ⚠️ แก้ไข Error ตรงนี้ครับ ส่งตัวแปรเข้าไปแค่ 4 ตัวให้พอดีกับฟังก์ชัน generate_questions_logic
         qs = generate_questions_logic(selected_grade, selected_main, selected_sub, num_input)
         
         html_w = create_page(selected_grade, selected_sub, qs, is_key=False, q_margin=q_margin, ws_height=ws_height, brand_name=brand_name)
