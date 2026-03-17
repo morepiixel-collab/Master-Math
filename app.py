@@ -74,7 +74,7 @@ def get_vertical_fraction(num, den, color="#c0392b", is_bold=True):
     weight = "bold" if is_bold else "normal"
     return f"""<span style="display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; line-height:1.4; margin: 0 6px; font-family:'Sarabun', sans-serif; white-space: nowrap;"><span style="border-bottom: 2px solid {color}; padding: 2px 6px; font-weight:{weight}; color:{color};">{num}</span><span style="padding: 2px 6px; font-weight:{weight}; color:{color};">{den}</span></span>"""
 
-# 🌟 ปรับปรุง: การตั้งค่าตำแหน่งเครื่องหมายแบบตั้งหลักให้อยู่กึ่งกลางขวา
+# 🌟 ปรับปรุง: การตั้งค่าตำแหน่งเครื่องหมายแบบตั้งหลักให้อยู่กึ่งกลางขวา และขึ้นบรรทัดใหม่
 def generate_vertical_table_html(a, b, op, result="", is_key=False):
     a_str = f"{a:,}" if isinstance(a, int) else str(a)
     b_str = f"{b:,}" if isinstance(b, int) else str(b)
@@ -84,11 +84,11 @@ def generate_vertical_table_html(a, b, op, result="", is_key=False):
     border_ans = "border-bottom: 4px double #000;" if is_key else ""
     
     return f"""
-    <div style='margin-left: 30px; display: inline-block; font-family: monospace; font-size: 26px;'>
-        <table style='border-collapse: collapse; text-align: right; margin: 10px 0;'>
+    <div style='margin-left: 60px; display: block; font-family: "Sarabun", sans-serif; font-variant-numeric: tabular-nums; font-size: 26px; margin-top: 15px; margin-bottom: 15px;'>
+        <table style='border-collapse: collapse; text-align: right;'>
             <tr>
                 <td style='padding: 0 10px 0 0; border: none;'>{a_str}</td>
-                <td rowspan='2' style='vertical-align: middle; text-align: center; font-family: "Sarabun", sans-serif; padding: 0 0 0 10px; font-size: 28px; font-weight: bold; border: none; color: #333;'>{op}</td>
+                <td rowspan='2' style='vertical-align: middle; text-align: left; padding: 0 0 0 15px; font-size: 28px; font-weight: bold; border: none; color: #333;'>{op}</td>
             </tr>
             <tr>
                 <td style='padding: 5px 10px 5px 0; border: none; border-bottom: 2px solid #000;'>{b_str}</td>
@@ -327,7 +327,6 @@ def generate_short_division_html(a, b, mode="ห.ร.ม."):
         sol = f"<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การตั้งหารสั้น):</b><br><b>ขั้นที่ 1:</b> หาตัวเลขที่สามารถหารทั้ง {a} และ {b} ลงตัวพร้อมกัน นำมาใส่เป็นตัวหารด้านหน้า<br><b>ขั้นที่ 2:</b> หารไปเรื่อยๆ จนกว่าจะไม่มีตัวเลขใดหารลงตัวทั้งคู่แล้ว<br>{table}<br><b>ขั้นที่ 3:</b> การหา ค.ร.น. ให้นำ <b>ตัวเลขด้านหน้าทั้งหมด และ เศษที่เหลือด้านล่างสุดทั้งหมด (นำมาเป็นรูปตัว L)</b> มาคูณกัน<br><b>ดังนั้น ค.ร.น. = {calc_str} = {ans}</b></span>"
     return sol
 
-# ทศนิยมบวกลบ มีการตั้งค่า rowspan=2 ให้เครื่องหมายอยู่ขวาแล้ว จึงไม่ต้องแก้ในฟังก์ชันนี้
 def generate_decimal_vertical_html(a, b, op, is_key=False):
     str_a = f"{a:.2f}"
     str_b = f"{b:.2f}"
@@ -397,7 +396,8 @@ def generate_decimal_vertical_html(a, b, op, is_key=False):
     else: 
         ans_tds = "".join([f"<td style='width: 35px; height: 45px;'></td>" for _ in str_ans])
         
-    return f"""<div style="display: block; text-align: center; margin-top: 10px;"><div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 38px; line-height: 1.2; margin: 10px 20px;"><table style="border-collapse: collapse; margin-left: auto; margin-right: auto;"><tr><td style="width: 20px;"></td>{a_tds}<td style="width: 50px; text-align: center; vertical-align: middle;" rowspan="2">{op}</td></tr><tr><td></td>{b_tds}</tr><tr><td></td>{ans_tds}<td></td></tr><tr><td></td><td colspan="{max_len}" style="border-bottom: 6px double #000; height: 10px;"></td><td></td></tr></table></div></div>"""
+    # ปรับใช้ display: block ย้ายตำแหน่งมาทางซ้าย
+    return f"""<div style="display: block; margin-left: 60px; margin-top: 15px; margin-bottom: 15px;"><div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 32px; line-height: 1.2;"><table style="border-collapse: collapse;"><tr><td style="width: 20px;"></td>{a_tds}<td style="width: 50px; text-align: left; padding-left: 15px; vertical-align: middle;" rowspan="2">{op}</td></tr><tr><td></td>{b_tds}</tr><tr><td></td>{ans_tds}<td></td></tr><tr><td></td><td colspan="{max_len}" style="border-bottom: 6px double #000; height: 10px;"></td><td></td></tr></table></div></div>"""
 
 def generate_long_division_step_by_step_html(divisor, dividend, equation_html, is_key=False):
     div_str = str(dividend)
@@ -417,7 +417,7 @@ def generate_long_division_step_by_step_html(divisor, dividend, equation_html, i
             for _ in range(div_len + 1):
                 empty_rows += f"<td style='width: 35px; height: 45px;'></td>"
             empty_rows += "</tr>"
-        return f"{equation_html}<div style=\"display: block; text-align: center; margin-top: 10px;\"><div style=\"display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2; margin: 10px 20px;\"><table style=\"border-collapse: collapse;\"><tr><td style=\"border: none;\"></td>{''.join(ans_tds_list)}</tr><tr><td style=\"border: none; text-align: right; padding-right: 12px; vertical-align: bottom; font-size: 38px;\">{divisor}</td>{''.join(div_tds_list)}</tr>{empty_rows}</table></div></div>"
+        return f"{equation_html}<div style=\"display: block; margin-left: 60px; margin-top: 15px; margin-bottom: 15px;\"><div style=\"display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2;\"><table style=\"border-collapse: collapse;\"><tr><td style=\"border: none;\"></td>{''.join(ans_tds_list)}</tr><tr><td style=\"border: none; text-align: right; padding-right: 12px; vertical-align: bottom; font-size: 38px;\">{divisor}</td>{''.join(div_tds_list)}</tr>{empty_rows}</table></div></div>"
     
     steps = []
     current_val_str = ""
@@ -480,7 +480,7 @@ def generate_long_division_step_by_step_html(divisor, dividend, equation_html, i
         div_tds_list.append(f'<td style="width: 35px; height: 50px; vertical-align: bottom; text-align: center; border-top: 3px solid #000; {left_border} font-size: 38px;">{td_content}</td>')
     div_tds_list.append('<td style="width: 35px;"></td>') 
     
-    html = f"{equation_html}<div style=\"display: block; text-align: center; margin-top: 10px;\"><div style=\"display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2; margin: 10px 20px;\"><table style=\"border-collapse: collapse;\"><tr><td style=\"border: none;\"></td>{''.join(ans_tds_list)}</tr><tr><td style=\"border: none; text-align: right; padding-right: 12px; vertical-align: bottom; font-size: 38px;\">{divisor}</td>{''.join(div_tds_list)}</tr>"
+    html = f"{equation_html}<div style=\"display: block; margin-left: 60px; margin-top: 15px; margin-bottom: 15px;\"><div style=\"display: inline-block; font-family: 'Sarabun', sans-serif; line-height: 1.2;\"><table style=\"border-collapse: collapse;\"><tr><td style=\"border: none;\"></td>{''.join(ans_tds_list)}</tr><tr><td style=\"border: none; text-align: right; padding-right: 12px; vertical-align: bottom; font-size: 38px;\">{divisor}</td>{''.join(div_tds_list)}</tr>"
     
     for idx, step in enumerate(steps):
         mul_res_str = str(step['mul_res'])
@@ -1055,7 +1055,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 👉 ผลรวม = <b>{tot:,} บาท</b><br>
                 <b>ตอบ: {tot:,} บาท</b></span>"""
 
-            # 🌟 จุดที่มีการใช้งานฟังก์ชันใหม่สำหรับตั้งหลัก: การคูณ การบวก การลบ
             elif actual_sub_t == "การคูณ (แบบตั้งหลัก)":
                 if grade in ["ป.1", "ป.2"]: a = random.randint(10, limit-1) 
                 elif grade == "ป.3": a = random.randint(100, min(limit-1, 999)) 
@@ -1542,7 +1541,7 @@ if st.sidebar.button("🚀 สั่งสร้างใบงานเดี�
         st.session_state['zip_data'] = zip_buffer.getvalue()
 
 if 'ebook_html' in st.session_state:
-    st.success(f"✅ โค้ดอัปเดตเรียบร้อยครับ! ปรับตำแหน่งเครื่องหมายแบบตั้งหลักมาไว้ทางขวาเรียบร้อยแล้ว")
+    st.success(f"✅ โค้ดอัปเดตเรียบร้อยครับ! ปรับเลย์เอาท์การบวก ลบ คูณ ทศนิยม ให้อยู่บรรทัดใหม่ และเยื้องซ้ายตรงตามรูปตัวอย่างแล้ว")
     c1, c2 = st.columns(2)
     with c1:
         st.download_button("📄 โหลดเฉพาะโจทย์", data=st.session_state['worksheet_html'], file_name=f"{st.session_state['filename_base']}_Worksheet.html", mime="text/html", use_container_width=True)
