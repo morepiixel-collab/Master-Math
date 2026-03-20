@@ -74,7 +74,6 @@ def get_vertical_fraction(num, den, color="#c0392b", is_bold=True):
     weight = "bold" if is_bold else "normal"
     return f"""<span style="display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; line-height:1.4; margin: 0 6px; font-family:'Sarabun', sans-serif; white-space: nowrap;"><span style="border-bottom: 2px solid {color}; padding: 2px 6px; font-weight:{weight}; color:{color};">{num}</span><span style="padding: 2px 6px; font-weight:{weight}; color:{color};">{den}</span></span>"""
 
-# 🌟 ปรับปรุง: การตั้งค่าตำแหน่งเครื่องหมายแบบตั้งหลักให้อยู่กึ่งกลางขวา และขึ้นบรรทัดใหม่
 def generate_vertical_table_html(a, b, op, result="", is_key=False):
     a_str = f"{a:,}" if isinstance(a, int) else str(a)
     b_str = f"{b:,}" if isinstance(b, int) else str(b)
@@ -396,7 +395,6 @@ def generate_decimal_vertical_html(a, b, op, is_key=False):
     else: 
         ans_tds = "".join([f"<td style='width: 35px; height: 45px;'></td>" for _ in str_ans])
         
-    # ปรับใช้ display: block ย้ายตำแหน่งมาทางซ้าย
     return f"""<div style="display: block; margin-left: 60px; margin-top: 15px; margin-bottom: 15px;"><div style="display: inline-block; font-family: 'Sarabun', sans-serif; font-size: 32px; line-height: 1.2;"><table style="border-collapse: collapse;"><tr><td style="width: 20px;"></td>{a_tds}<td style="width: 50px; text-align: left; padding-left: 15px; vertical-align: middle;" rowspan="2">{op}</td></tr><tr><td></td>{b_tds}</tr><tr><td></td>{ans_tds}<td></td></tr><tr><td></td><td colspan="{max_len}" style="border-bottom: 6px double #000; height: 10px;"></td><td></td></tr></table></div></div>"""
 
 def generate_long_division_step_by_step_html(divisor, dividend, equation_html, is_key=False):
@@ -580,7 +578,17 @@ curriculum_db = {
     },
     "ป.3": {
         "จำนวนนับและเศษส่วน": ["การอ่าน การเขียนตัวเลข", "หลัก ค่าของเลขโดด และรูปกระจาย", "การเปรียบเทียบจำนวน (> <)", "การเรียงลำดับจำนวน (น้อยไปมาก)", "การเรียงลำดับจำนวน (มากไปน้อย)", "การอ่านและเขียนเศษส่วน", "การบวกลบเศษส่วน (ตัวส่วนเท่ากัน)"],
-        "เวลา เงิน และการวัด": ["การบอกเวลาเป็นนาฬิกาและนาที", "การบอกจำนวนเงินทั้งหมด", "การอ่านน้ำหนักจากเครื่องชั่งสปริง", "การอ่านความยาวจากไม้บรรทัด", "ระยะทาง (กิโลเมตรและเมตร)", "โจทย์ปัญหาความยาว (คูณและหาร)"],
+        "เวลา เงิน และการวัด": [
+            "การบอกเวลาเป็นนาฬิกาและนาที", 
+            "การบอกจำนวนเงินทั้งหมด", 
+            "การอ่านน้ำหนักจากเครื่องชั่งสปริง", 
+            "การอ่านความยาวจากไม้บรรทัด", 
+            "ระยะทาง (กิโลเมตรและเมตร)", 
+            "โจทย์ปัญหาความยาว (คูณและหาร)", 
+            "การเปรียบเทียบหน่วยการวัด และการแปลงหน่วย (มิลลิเมตร เซนติเมตร เมตร)",
+            "การเปรียบเทียบหน่วยระยะทาง และการแปลงหน่วย (เมตร กิโลเมตร)",
+            "การเปรียบเทียบหน่วยน้ำหนัก และการแปลงหน่วย (กรัม กิโลกรัม ตัน)"
+        ],
         "การบวก ลบ คูณ หาร": ["การบวก (แบบตั้งหลัก)", "การลบ (แบบตั้งหลัก)", "การคูณ (แบบตั้งหลัก)", "การหารยาว"],
         "แผนภูมิรูปภาพ": ["การอ่านแผนภูมิรูปภาพ"]
     },
@@ -629,7 +637,165 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
             prefix = get_prefix(grade)
 
-            if actual_sub_t == "โจทย์ปัญหาความยาว (คูณและหาร)":
+            if actual_sub_t == "การเปรียบเทียบหน่วยการวัด และการแปลงหน่วย (มิลลิเมตร เซนติเมตร เมตร)":
+                selected_type = random.choice(["cm_mm", "m_cm"])
+                if selected_type == "cm_mm":
+                    u1_major, u1_minor = "เซนติเมตร", "มิลลิเมตร"
+                    multiplier = 10
+                    val_major = random.randint(10, 99) if is_challenge else random.randint(2, 20)
+                    val_minor = random.randint(1, 9)
+                else: # m_cm
+                    u1_major, u1_minor = "เมตร", "เซนติเมตร"
+                    multiplier = 100
+                    val_major = random.randint(5, 50) if is_challenge else random.randint(2, 15)
+                    val_minor = random.randint(5, 99)
+                
+                total_minor_1 = (val_major * multiplier) + val_minor
+                case = random.choice(["greater", "less", "equal"])
+                if case == "equal":
+                    total_minor_2 = total_minor_1
+                elif case == "greater":
+                    total_minor_2 = total_minor_1 - random.randint(1, multiplier - 1)
+                else:
+                    total_minor_2 = total_minor_1 + random.randint(1, multiplier - 1)
+
+                str_val_1 = f"{val_major} {u1_major} {val_minor} {u1_minor}"
+                str_val_2 = f"{total_minor_2:,} {u1_minor}"
+
+                if random.choice([True, False]):
+                    item_A, item_B = str_val_1, str_val_2
+                    val_A, val_B = total_minor_1, total_minor_2
+                else:
+                    item_A, item_B = str_val_2, str_val_1
+                    val_A, val_B = total_minor_2, total_minor_1
+
+                if total_minor_1 == total_minor_2:
+                    final_ans = "ยาวเท่ากัน"
+                else:
+                    final_ans = "ยาวกว่า" if val_A > val_B else "สั้นกว่า"
+                    
+                q = f"จงเติมคำว่า <b>ยาวกว่า, สั้นกว่า</b> หรือ <b>เท่ากับ</b> ลงในช่องว่างให้ถูกต้อง<br><br><span style='font-size:22px; font-weight:bold; margin-left: 20px;'>{item_A} &nbsp;&nbsp; ____________________ &nbsp;&nbsp; {item_B}</span>"
+
+                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การเปรียบเทียบความยาว):</b><br>
+                <b>ขั้นที่ 1: สร้างสมการแปลงหน่วยให้เหมือนกัน</b><br>
+                👉 แปลง <b>{str_val_1}</b> ให้เป็น <b>{u1_minor}</b> ทั้งหมด<br>
+                👉 เนื่องจาก 1 {u1_major} = {multiplier:,} {u1_minor}<br>
+                👉 <b>สมการล่าสุด:</b> ({val_major} × {multiplier:,}) + {val_minor} = {val_major * multiplier:,} + {val_minor} = <b>{total_minor_1:,} {u1_minor}</b><br>
+                <b>ขั้นที่ 2: เปรียบเทียบความยาว</b><br>"""
+
+                if val_A == val_B:
+                    sol += f"👉 จะเห็นว่า {total_minor_1:,} {u1_minor} <b>เท่ากับ</b> {total_minor_2:,} {u1_minor} พอดี!<br>"
+                else:
+                    comp_sign = "น้อยกว่า" if val_A < val_B else "มากกว่า"
+                    sol += f"👉 เปรียบเทียบ {val_A:,} {u1_minor} กับ {val_B:,} {u1_minor}<br>"
+                    sol += f"👉 จะเห็นว่า {val_A:,} <b>{comp_sign}</b> {val_B:,}<br>"
+
+                sol += f"<b>ตอบ: {final_ans}</b></span>"
+
+            elif actual_sub_t == "การเปรียบเทียบหน่วยระยะทาง และการแปลงหน่วย (เมตร กิโลเมตร)":
+                u1_major, u1_minor = "กิโลเมตร", "เมตร"
+                multiplier = 1000
+                val_major = random.randint(2, 20) if is_challenge else random.randint(1, 9)
+                val_minor = random.randint(50, 950)
+                
+                total_minor_1 = (val_major * multiplier) + val_minor
+                case = random.choice(["greater", "less", "equal"])
+                if case == "equal":
+                    total_minor_2 = total_minor_1
+                elif case == "greater":
+                    total_minor_2 = total_minor_1 - random.randint(1, multiplier - 1)
+                else:
+                    total_minor_2 = total_minor_1 + random.randint(1, multiplier - 1)
+
+                str_val_1 = f"{val_major} {u1_major} {val_minor} {u1_minor}"
+                str_val_2 = f"{total_minor_2:,} {u1_minor}"
+
+                if random.choice([True, False]):
+                    item_A, item_B = str_val_1, str_val_2
+                    val_A, val_B = total_minor_1, total_minor_2
+                else:
+                    item_A, item_B = str_val_2, str_val_1
+                    val_A, val_B = total_minor_2, total_minor_1
+
+                if total_minor_1 == total_minor_2:
+                    final_ans = "ไกลเท่ากัน"
+                else:
+                    final_ans = "ไกลกว่า" if val_A > val_B else "ใกล้กว่า"
+                    
+                q = f"จงเติมคำว่า <b>ไกลกว่า, ใกล้กว่า</b> หรือ <b>เท่ากับ</b> ลงในช่องว่างให้ถูกต้อง<br><br><span style='font-size:22px; font-weight:bold; margin-left: 20px;'>{item_A} &nbsp;&nbsp; ____________________ &nbsp;&nbsp; {item_B}</span>"
+
+                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การเปรียบเทียบระยะทาง):</b><br>
+                <b>ขั้นที่ 1: สร้างสมการแปลงหน่วยให้เหมือนกัน</b><br>
+                👉 แปลง <b>{str_val_1}</b> ให้เป็น <b>{u1_minor}</b> ทั้งหมด<br>
+                👉 เนื่องจาก 1 {u1_major} = {multiplier:,} {u1_minor}<br>
+                👉 <b>สมการล่าสุด:</b> ({val_major} × {multiplier:,}) + {val_minor} = {val_major * multiplier:,} + {val_minor} = <b>{total_minor_1:,} {u1_minor}</b><br>
+                <b>ขั้นที่ 2: เปรียบเทียบระยะทาง</b><br>"""
+
+                if val_A == val_B:
+                    sol += f"👉 จะเห็นว่า {total_minor_1:,} {u1_minor} <b>เท่ากับ</b> {total_minor_2:,} {u1_minor} พอดี!<br>"
+                else:
+                    comp_sign = "น้อยกว่า" if val_A < val_B else "มากกว่า"
+                    sol += f"👉 เปรียบเทียบ {val_A:,} {u1_minor} กับ {val_B:,} {u1_minor}<br>"
+                    sol += f"👉 จะเห็นว่า {val_A:,} <b>{comp_sign}</b> {val_B:,}<br>"
+
+                sol += f"<b>ตอบ: {final_ans}</b></span>"
+
+            elif actual_sub_t == "การเปรียบเทียบหน่วยน้ำหนัก และการแปลงหน่วย (กรัม กิโลกรัม ตัน)":
+                selected_type = random.choice(["kg_g", "ton_kg"])
+                if selected_type == "kg_g":
+                    u1_major, u1_minor = "กิโลกรัม", "กรัม"
+                    multiplier = 1000
+                    val_major = random.randint(5, 50) if is_challenge else random.randint(1, 15)
+                    val_minor = random.randint(50, 950)
+                else: # ton_kg
+                    u1_major, u1_minor = "ตัน", "กิโลกรัม"
+                    multiplier = 1000
+                    val_major = random.randint(2, 20) if is_challenge else random.randint(1, 9)
+                    val_minor = random.randint(100, 900)
+                
+                total_minor_1 = (val_major * multiplier) + val_minor
+                case = random.choice(["greater", "less", "equal"])
+                if case == "equal":
+                    total_minor_2 = total_minor_1
+                elif case == "greater":
+                    total_minor_2 = total_minor_1 - random.randint(1, multiplier - 1)
+                else:
+                    total_minor_2 = total_minor_1 + random.randint(1, multiplier - 1)
+
+                str_val_1 = f"{val_major} {u1_major} {val_minor} {u1_minor}"
+                str_val_2 = f"{total_minor_2:,} {u1_minor}"
+
+                if random.choice([True, False]):
+                    item_A, item_B = str_val_1, str_val_2
+                    val_A, val_B = total_minor_1, total_minor_2
+                else:
+                    item_A, item_B = str_val_2, str_val_1
+                    val_A, val_B = total_minor_2, total_minor_1
+
+                if total_minor_1 == total_minor_2:
+                    final_ans = "หนักเท่ากัน"
+                else:
+                    final_ans = "หนักกว่า" if val_A > val_B else "เบากว่า"
+                    
+                q = f"จงเติมคำว่า <b>หนักกว่า, เบากว่า</b> หรือ <b>เท่ากับ</b> ลงในช่องว่างให้ถูกต้อง<br><br><span style='font-size:22px; font-weight:bold; margin-left: 20px;'>{item_A} &nbsp;&nbsp; ____________________ &nbsp;&nbsp; {item_B}</span>"
+
+                sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การเปรียบเทียบน้ำหนัก):</b><br>
+                <b>ขั้นที่ 1: สร้างสมการแปลงหน่วยให้เหมือนกัน</b><br>
+                👉 แปลง <b>{str_val_1}</b> ให้เป็น <b>{u1_minor}</b> ทั้งหมด<br>
+                👉 เนื่องจาก 1 {u1_major} = {multiplier:,} {u1_minor}<br>
+                👉 <b>สมการล่าสุด:</b> ({val_major} × {multiplier:,}) + {val_minor} = {val_major * multiplier:,} + {val_minor} = <b>{total_minor_1:,} {u1_minor}</b><br>
+                <b>ขั้นที่ 2: เปรียบเทียบน้ำหนัก</b><br>"""
+
+                if val_A == val_B:
+                    sol += f"👉 จะเห็นว่า {total_minor_1:,} {u1_minor} <b>เท่ากับ</b> {total_minor_2:,} {u1_minor} พอดี!<br>"
+                else:
+                    comp_sign = "น้อยกว่า" if val_A < val_B else "มากกว่า"
+                    sol += f"👉 เปรียบเทียบ {val_A:,} {u1_minor} กับ {val_B:,} {u1_minor}<br>"
+                    sol += f"👉 จะเห็นว่า {val_A:,} <b>{comp_sign}</b> {val_B:,}<br>"
+
+                sol += f"<b>ตอบ: {final_ans}</b></span>"
+
+            elif actual_sub_t == "โจทย์ปัญหาความยาว (คูณและหาร)":
                 q_type = random.choice(["fit_objects", "equal_parts", "multiply_length"])
                 
                 if q_type == "fit_objects":
@@ -1447,10 +1613,10 @@ def create_page(grade, sub_t, questions, is_key=False, q_margin="20px", ws_heigh
         @page {{ size: A4; margin: 15mm; }}
         body {{ font-family: 'Sarabun', sans-serif; padding: 20px; line-height: 1.6; color: #333; }}
         .header {{ text-align: center; border-bottom: 2px solid #333; margin-bottom: 10px; padding-bottom: 10px; }}
-        .q-box {{ margin-bottom: {q_margin}; padding: 10px 15px; page-break-inside: avoid; font-size: 20px; }}
+        .q-box {{ margin-bottom: {q_margin}; padding: 10px 15px; page-break-inside: avoid; font-size: 20px; line-height: 1.6; }}
         .workspace {{ height: {ws_height}; border: 2px dashed #bdc3c7; border-radius: 8px; margin: 15px 0; padding: 10px; color: #95a5a6; font-size: 16px; background-color: #fafbfc; }}
         .ans-line {{ margin-top: 10px; border-bottom: 1px dotted #999; width: 80%; height: 30px; font-weight: bold; font-size: 20px; display: flex; align-items: flex-end; padding-bottom: 5px; }}
-        .sol-text {{ color: #333; font-size: 18px; display: block; margin-top: 15px; padding: 15px; background-color: #f1f8ff; border-left: 4px solid #3498db; border-radius: 4px; }}
+        .sol-text {{ color: #333; font-size: 18px; display: block; margin-top: 15px; padding: 15px; background-color: #f1f8ff; border-left: 4px solid #3498db; border-radius: 4px; line-height: 1.6; }}
         .page-footer {{ text-align: right; font-size: 14px; color: #95a5a6; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }}
     </style></head><body>
     <div class="header"><h2>{title} - {grade}</h2><p><b>หมวดหมู่:</b> {sub_t}</p></div>
@@ -1527,7 +1693,7 @@ if st.sidebar.button("🚀 สั่งสร้างใบงานเดี�
         
         ebook_body = f'\n<div class="a4-wrapper">{extract_body(html_w)}</div>\n<div class="a4-wrapper">{extract_body(html_k)}</div>\n'
         
-        full_ebook_html = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet"><style>@page {{ size: A4; margin: 15mm; }} @media screen {{ body {{ font-family: 'Sarabun', sans-serif; background-color: #525659; display: flex; flex-direction: column; align-items: center; padding: 40px 0; margin: 0; }} .a4-wrapper {{ width: 210mm; min-height: 297mm; background: white; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); padding: 15mm; box-sizing: border-box; }} }} @media print {{ body {{ font-family: 'Sarabun', sans-serif; background: transparent; padding: 0; display: block; margin: 0; }} .a4-wrapper {{ width: 100%; min-height: auto; margin: 0; padding: 0; box-shadow: none; page-break-after: always; }} }} .header {{ text-align: center; border-bottom: 2px solid #333; margin-bottom: 10px; padding-bottom: 10px; }} .q-box {{ margin-bottom: {q_margin}; padding: 10px 15px; page-break-inside: avoid; font-size: 20px; }} .workspace {{ height: {ws_height}; border: 2px dashed #bdc3c7; border-radius: 8px; margin: 15px 0; padding: 10px; color: #95a5a6; font-size: 16px; background-color: #fafbfc; }} .ans-line {{ margin-top: 10px; border-bottom: 1px dotted #999; width: 80%; height: 30px; font-weight: bold; font-size: 20px; display: flex; align-items: flex-end; padding-bottom: 5px; }} .sol-text {{ color: #333; font-size: 18px; display: block; margin-top: 15px; padding: 15px; background-color: #f1f8ff; border-left: 4px solid #3498db; border-radius: 4px; }} .page-footer {{ text-align: right; font-size: 14px; color: #95a5a6; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }} </style></head><body>{ebook_body}</body></html>"""
+        full_ebook_html = f"""<!DOCTYPE html><html><head><meta charset="utf-8"><link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet"><style>@page {{ size: A4; margin: 15mm; }} @media screen {{ body {{ font-family: 'Sarabun', sans-serif; background-color: #525659; display: flex; flex-direction: column; align-items: center; padding: 40px 0; margin: 0; }} .a4-wrapper {{ width: 210mm; min-height: 297mm; background: white; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); padding: 15mm; box-sizing: border-box; }} }} @media print {{ body {{ font-family: 'Sarabun', sans-serif; background: transparent; padding: 0; display: block; margin: 0; }} .a4-wrapper {{ width: 100%; min-height: auto; margin: 0; padding: 0; box-shadow: none; page-break-after: always; }} }} .header {{ text-align: center; border-bottom: 2px solid #333; margin-bottom: 10px; padding-bottom: 10px; }} .q-box {{ margin-bottom: {q_margin}; padding: 10px 15px; page-break-inside: avoid; font-size: 20px; line-height: 1.6; }} .workspace {{ height: {ws_height}; border: 2px dashed #bdc3c7; border-radius: 8px; margin: 15px 0; padding: 10px; color: #95a5a6; font-size: 16px; background-color: #fafbfc; }} .ans-line {{ margin-top: 10px; border-bottom: 1px dotted #999; width: 80%; height: 30px; font-weight: bold; font-size: 20px; display: flex; align-items: flex-end; padding-bottom: 5px; }} .sol-text {{ color: #333; font-size: 18px; display: block; margin-top: 15px; padding: 15px; background-color: #f1f8ff; border-left: 4px solid #3498db; border-radius: 4px; line-height: 1.6; }} .page-footer {{ text-align: right; font-size: 14px; color: #95a5a6; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px; }} </style></head><body>{ebook_body}</body></html>"""
 
         filename_base = f"Std_{selected_grade}_{selected_sub}"
         st.session_state['ebook_html'] = full_ebook_html
@@ -1541,7 +1707,7 @@ if st.sidebar.button("🚀 สั่งสร้างใบงานเดี�
         st.session_state['zip_data'] = zip_buffer.getvalue()
 
 if 'ebook_html' in st.session_state:
-    st.success(f"✅ โค้ดอัปเดตเรียบร้อยครับ! ปรับเลย์เอาท์การบวก ลบ คูณ ทศนิยม ให้อยู่บรรทัดใหม่ และเยื้องซ้ายตรงตามรูปตัวอย่างแล้ว")
+    st.success(f"✅ โค้ดอัปเดตเรียบร้อยครับ! เพิ่มหัวข้อการเปรียบเทียบระยะทาง/น้ำหนัก และการแปลงหน่วยใน ป.3 ให้ครบถ้วนตรงตามที่ต้องการแล้ว")
     c1, c2 = st.columns(2)
     with c1:
         st.download_button("📄 โหลดเฉพาะโจทย์", data=st.session_state['worksheet_html'], file_name=f"{st.session_state['filename_base']}_Worksheet.html", mime="text/html", use_container_width=True)
