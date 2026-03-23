@@ -723,7 +723,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             prefix = get_prefix(grade)
 
             if actual_sub_t == "ปริมาตรและความจุ (มิลลิลิตร ลิตร)":
-                q_cat = random.choice(["compare", "add_sub"])
+                q_cat = random.choice(["compare", "add_sub", "divide"]) # เพิ่มการหารปริมาตร
                 multiplier = 1000
                 u_major, u_minor = "ลิตร", "มิลลิลิตร"
                 
@@ -772,7 +772,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         sol += f"👉 จะเห็นว่า {val_A:,} <b>{comp_sign}</b> {val_B:,}<br>"
 
                     sol += f"<b>ตอบ: {final_ans}</b></span>"
-                else: # add_sub
+
+                elif q_cat == "add_sub":
                     op = random.choice(["+", "-"])
                     v1_maj = random.randint(3, 10)
                     v1_min = random.randint(100, 900)
@@ -796,6 +797,39 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การตั้ง{'บวก' if op=='+' else 'ลบ'}แบบข้ามหน่วย):</b><br>
                     {table_html}
                     <b>ตอบ: {ans_str}</b></span>"""
+
+                else: # divide (การแบ่ง/หารปริมาตร)
+                    items = ["น้ำผลไม้", "นมสด", "น้ำยาซักผ้า", "น้ำแร่", "น้ำเชื่อม"]
+                    containers = ["ขวด", "แก้ว", "เหยือก", "ถ้วย"]
+                    
+                    item = random.choice(items)
+                    container = random.choice(containers)
+                    N = random.randint(3, 9)
+                    
+                    ans_maj = random.randint(0, 2)
+                    ans_min = random.randint(15, 85) * 10
+                    if ans_maj == 0 and ans_min < 200: ans_min += 300
+                    
+                    ans_total_min = ans_maj * multiplier + ans_min
+                    total_min = ans_total_min * N
+                    
+                    tot_maj = total_min // multiplier
+                    tot_rem_min = total_min % multiplier
+                    
+                    str_tot = f"{tot_maj} {u_major} {tot_rem_min} {u_minor}" if tot_rem_min > 0 else f"{tot_maj} {u_major}"
+                    str_ans = f"{ans_maj} {u_major} {ans_min} {u_minor}" if ans_maj > 0 else f"{ans_min} {u_minor}"
+                    
+                    q = f"มี{item}อยู่ <b>{str_tot}</b> ถ้าต้องการแบ่งใส่{container} ทั้งหมด <b>{N} {container}</b> ({container}ละเท่าๆ กัน) <br>จะได้{item}{container}ละเท่าไร?"
+                    
+                    sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์ปัญหาการแบ่งปริมาตร):</b><br>
+                    <b>ขั้นที่ 1: แปลงปริมาตรทั้งหมดให้เป็นหน่วยเล็กสุด ({u_minor}) เพื่อให้คำนวณง่าย</b><br>
+                    👉 ปริมาตรทั้งหมด = {tot_maj} {u_major} {tot_rem_min} {u_minor}<br>
+                    👉 นำมาแปลงเป็น{u_minor}: ({tot_maj} × {multiplier:,}) + {tot_rem_min} = <b>{total_min:,} {u_minor}</b><br>
+                    <b>ขั้นที่ 2: นำปริมาตรทั้งหมดมาหารด้วยจำนวน{container}</b><br>
+                    👉 ต้องการแบ่ง {N} {container} นำไปหาร: {total_min:,} ÷ {N} = <b>{ans_total_min:,} {u_minor}</b><br>
+                    <b>ขั้นที่ 3: แปลงหน่วยกลับเป็น {u_major} และ {u_minor}</b><br>
+                    👉 นำ {ans_total_min:,} ÷ {multiplier:,} จะได้ <b>{ans_maj} {u_major}</b> และเศษ <b>{ans_min} {u_minor}</b><br>
+                    <b>ตอบ: {str_ans}</b></span>"""
 
             elif actual_sub_t == "การเปรียบเทียบหน่วยการวัด และการแปลงหน่วย (มิลลิเมตร เซนติเมตร เมตร)":
                 q_cat = random.choice(["compare", "add_sub"])
