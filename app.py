@@ -3093,7 +3093,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     return arc_svg + lbl_svg
 
                 def draw_angle_svg(mode, val1, val2, val3=""):
-                    # 💡 ขยายกรอบให้ใหญ่ขึ้น ป้องกันภาพล้นขอบ
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="340" height="200">'
                     lbl_style = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
                     
@@ -3110,7 +3109,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#c0392b" stroke-width="3"/>'
                         svg += f'<circle cx="{bx}" cy="{by}" r="3" fill="#c0392b"/>'
                         
-                        # 💡 เพิ่มชื่อเส้นตรง และจุดศูนย์กลาง
                         svg += f'<text x="{ax-15}" y="{ay+5}" {lbl_style}>A</text>'
                         svg += f'<text x="{cx+5}" y="{cy+5}" {lbl_style}>B</text>'
                         svg += f'<text x="{bx-5}" y="{by-10}" {lbl_style}>C</text>'
@@ -3122,7 +3120,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     elif mode == "opposite":
                         vx, vy = 170, 100
                         phi = val1 
-                        L = 85 # 💡 ปรับความยาวแขนให้พอดีกับกรอบ
+                        L = 85
                         
                         tl_x = vx + L*math.cos(math.radians(180-phi))
                         tl_y = vy - L*math.sin(math.radians(180-phi))
@@ -3137,7 +3135,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         svg += f'<line x1="{tl_x}" y1="{tl_y}" x2="{br_x}" y2="{br_y}" stroke="#34495e" stroke-width="4"/>'
                         svg += f'<line x1="{bl_x}" y1="{bl_y}" x2="{tr_x}" y2="{tr_y}" stroke="#34495e" stroke-width="4"/>'
                         
-                        # 💡 จัดตำแหน่งตัวอักษรให้ห่างจากปลายเส้นอย่างสวยงาม (ป้องกันตกขอบ)
                         svg += f'<text x="{tl_x-15}" y="{tl_y-5}" {lbl_style}>A</text>'
                         svg += f'<text x="{br_x+5}" y="{br_y+15}" {lbl_style}>B</text>'
                         svg += f'<text x="{bl_x-15}" y="{bl_y+15}" {lbl_style}>C</text>'
@@ -3148,11 +3145,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         
                     elif mode == "triangle":
                         base_y = 160
-                        L = 160 # ความยาวฐานเริ่มต้น
+                        L = 160
                         rad1 = math.radians(val1)
                         rad2 = math.radians(val2)
                         
-                        # 💡 ระบบ Auto-scale: ถ้าสามเหลี่ยมสูงเกินไป จะย่อขนาดลงอัตโนมัติ
                         raw_h = L / (1/math.tan(rad1) + 1/math.tan(rad2))
                         if raw_h > 120:
                             scale = 120 / raw_h
@@ -3168,7 +3164,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         
                         svg += f'<polygon points="{p1x},{base_y} {p2x},{base_y} {top_x},{top_y}" fill="#fef9e7" stroke="#f39c12" stroke-width="3" stroke-linejoin="round"/>'
                         
-                        # 💡 เพิ่มชื่อจุดยอดสามเหลี่ยม
                         svg += f'<text x="{top_x}" y="{top_y-10}" {lbl_style} text-anchor="middle">A</text>'
                         svg += f'<text x="{p1x-15}" y="{base_y+5}" {lbl_style}>B</text>'
                         svg += f'<text x="{p2x+5}" y="{base_y+5}" {lbl_style}>C</text>'
@@ -3199,12 +3194,206 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg = draw_angle_svg("triangle", a1, a2, "x")
                     q = f"จากรูป รูปสามเหลี่ยมมีผลรวมมุมภายใน 180°<br>จงหาขนาดของมุม <b>x</b> ?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (มุมภายในรูปสามเหลี่ยม):</b><br>👉 ผลรวมมุมภายในของรูปสามเหลี่ยมทุกชนิด = 180°<br>👉 มุมที่โจทย์กำหนดให้ 2 มุม รวมกัน = {a1}° + {a2}° = {a1+a2}°<br>👉 มุมที่เหลือ x = 180° - {a1+a2}° = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
+
+            elif actual_sub_t == "เส้นขนานและมุมแย้ง":
+                # --- เครื่องยนต์วาดมุมและเส้นโค้งแบบสมบูรณ์ (ประยุกต์ใช้กับเส้นขนาน) ---
+                def draw_angle_feature(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
+                    len_a = math.hypot(ax - vx, ay - vy)
+                    len_b = math.hypot(bx - vx, by - vy)
+                    if len_a == 0 or len_b == 0: return ""
+                    
+                    sx = vx + (ax - vx) * r_arc / len_a
+                    sy = vy + (ay - vy) * r_arc / len_a
+                    ex = vx + (bx - vx) * r_arc / len_b
+                    ey = vy + (by - vy) * r_arc / len_b
+                    
+                    cp = (sx - vx) * (ey - vy) - (sy - vy) * (ex - vx)
+                    sweep = 1 if cp > 0 else 0
+                    
+                    arc_svg = f'<path d="M {sx} {sy} A {r_arc} {r_arc} 0 0 {sweep} {ex} {ey}" fill="none" stroke="{color_arc}" stroke-width="3"/>'
+                    
+                    mid_x = (sx - vx)/r_arc + (ex - vx)/r_arc
+                    mid_y = (sy - vy)/r_arc + (ey - vy)/r_arc
+                    len_mid = math.hypot(mid_x, mid_y)
+                    
+                    if len_mid == 0: 
+                        tx, ty = vx, vy - r_text
+                    else:
+                        tx = vx + (mid_x / len_mid) * r_text
+                        ty = vy + (mid_y / len_mid) * r_text
+                        
+                    ty += 5 
+                    font_size = "16px" if is_x else "14px"
+                    lbl_svg = f'<text x="{tx}" y="{ty}" font-size="{font_size}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
+                    
+                    return arc_svg + lbl_svg
+
+                angle_meta = {
+                    "dir1": { 
+                        "bot": (110, 165), "top": (210, 15),
+                        "V1": (180, 60), "V2": (140, 120),
+                        "acute": ["TR_ext", "BL_int", "TL_int", "BR_ext"],
+                        "obtuse": ["TL_ext", "BR_int", "TR_int", "BL_ext"]
+                    },
+                    "dir2": { 
+                        "bot": (220, 165), "top": (120, 15),
+                        "V1": (150, 60), "V2": (190, 120),
+                        "acute": ["TL_ext", "BR_int", "TR_int", "BL_ext"],
+                        "obtuse": ["TR_ext", "BL_int", "TL_int", "BR_ext"]
+                    }
+                }
+
+                def get_arms(pos, V1, V2, bot, top):
+                    if pos == "TL_ext": return V1, top, (40, V1[1])
+                    if pos == "TR_ext": return V1, (300, V1[1]), top
+                    if pos == "BL_int": return V1, (40, V1[1]), V2
+                    if pos == "BR_int": return V1, V2, (300, V1[1])
+                    if pos == "TL_int": return V2, V1, (40, V2[1])
+                    if pos == "TR_int": return V2, (300, V2[1]), V1
+                    if pos == "BL_ext": return V2, (40, V2[1]), bot
+                    if pos == "BR_ext": return V2, bot, (300, V2[1])
+
+                def draw_parallel_svg(dir_key, pos1, val1, pos2, val2):
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="340" height="200">'
+                    
+                    svg += '<line x1="40" y1="60" x2="300" y2="60" stroke="#2980b9" stroke-width="4"/>'
+                    svg += '<line x1="40" y1="120" x2="300" y2="120" stroke="#2980b9" stroke-width="4"/>'
+                    
+                    svg += '<polygon points="285,55 295,60 285,65" fill="#2980b9"/>'
+                    svg += '<polygon points="285,115 295,120 285,125" fill="#2980b9"/>'
+                    
+                    lbl_style = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
+                    svg += f'<text x="20" y="65" {lbl_style}>A</text>'
+                    svg += f'<text x="310" y="65" {lbl_style}>B</text>'
+                    svg += f'<text x="20" y="125" {lbl_style}>C</text>'
+                    svg += f'<text x="310" y="125" {lbl_style}>D</text>'
+                    
+                    meta = angle_meta[dir_key]
+                    bot, top = meta["bot"], meta["top"]
+                    
+                    svg += f'<line x1="{bot[0]}" y1="{bot[1]}" x2="{top[0]}" y2="{top[1]}" stroke="#3498db" stroke-width="4"/>'
+                    svg += f'<circle cx="{bot[0]}" cy="{bot[1]}" r="4" fill="#3498db" />'
+                    svg += f'<circle cx="{top[0]}" cy="{top[1]}" r="4" fill="#3498db" />'
+                    
+                    V1, V2 = meta["V1"], meta["V2"]
+                    
+                    def draw_pos(pos, val, is_var):
+                        vx, arm1, arm2 = get_arms(pos, V1, V2, bot, top)
+                        color = "#2980b9" if is_var else "#c0392b"
+                        text_label = "x" if is_var else f"{val}°" 
+                        return draw_angle_feature(vx[0], vx[1], arm1[0], arm1[1], arm2[0], arm2[1], 25, 42, text_label, "#2ecc71", color, is_x=is_var)
+
+                    svg += draw_pos(pos1, val1, is_var=False)
+                    svg += draw_pos(pos2, val2, is_var=True)
+
+                    svg += '</svg></div>'
+                    return svg
+
+                direction = random.choice(["dir1", "dir2"])
+                scenario = random.choice(["Z", "C", "F"])
+                
+                pairs = {
+                    "Z": [("BL_int", "TR_int"), ("BR_int", "TL_int")],
+                    "C": [("BL_int", "TL_int"), ("BR_int", "TR_int")],
+                    "F": [("TL_ext", "TL_int"), ("TR_ext", "TR_int"), ("BL_int", "BL_ext"), ("BR_int", "BR_ext")]
+                }
+                
+                pair = random.choice(pairs[scenario])
+                if random.choice([True, False]):
+                    pos1, pos2 = pair
+                else:
+                    pos2, pos1 = pair
+                    
+                is_acute = pos1 in angle_meta[direction]["acute"]
+                
+                if is_acute:
+                    val = random.randint(40, 85)
+                else:
+                    val = random.randint(95, 140)
+                    
+                if scenario == "Z":
+                    ans = val
+                    svg = draw_parallel_svg(direction, pos1, val, pos2, "x")
+                    q = f"จากรูป เส้นตรงสองเส้นขนานกัน<br>จงหาขนาดของมุม <b>x</b> (พิจารณามุมแย้ง)?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เส้นขนาน รูปตัว Z):</b><br>👉 เมื่อเส้นขนานถูกตัดด้วยเส้นตรง <b>มุมแย้ง (ตัว Z) จะมีขนาดเท่ากัน</b>เสมอ<br>👉 จากรูป มุม x เป็นมุมแย้งกับมุม {val}°<br>👉 ดังนั้น x = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
+                elif scenario == "C":
+                    ans = 180 - val
+                    svg = draw_parallel_svg(direction, pos1, val, pos2, "x")
+                    q = f"จากรูป เส้นตรงสองเส้นขนานกัน<br>จงหาขนาดของมุม <b>x</b> (พิจารณามุมภายในข้างเดียวกัน)?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เส้นขนาน รูปตัว C):</b><br>👉 <b>มุมภายในที่อยู่บนข้างเดียวกัน</b>ของเส้นตัด (ตัว C) จะรวมกันได้ <b>180°</b> เสมอ<br>👉 จะได้สมการ: {val}° + x = 180°<br>👉 x = 180° - {val}° = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
+                elif scenario == "F":
+                    ans = val
+                    svg = draw_parallel_svg(direction, pos1, val, pos2, "x")
+                    q = f"จากรูป เส้นตรงสองเส้นขนานกัน<br>จงหาขนาดของมุม <b>x</b> (พิจารณามุมภายนอกและมุมภายใน)?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เส้นขนาน รูปตัว F):</b><br>👉 <b>มุมภายนอกและมุมภายใน</b>ที่อยู่บนข้างเดียวกันของเส้นตัด จะมีขนาด<b>เท่ากัน</b>เสมอ<br>👉 จากรูป มุม x มีตำแหน่งสอดคล้องกับมุม {val}° พอดี<br>👉 ดังนั้น x = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
+
+            elif actual_sub_t == "ปริมาตรและความจุทรงสี่เหลี่ยมมุมฉาก":
+                def draw_prism_svg(w_lbl, l_lbl, h_lbl, is_water=False):
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="250" height="190">'
+                    fill_front = "#aed6f1" if is_water else "#d5f5e3"
+                    fill_top = "#85c1e9" if is_water else "#abebc6"
+                    fill_right = "#5dade2" if is_water else "#82e0aa"
+                    stroke_c = "#2874a6" if is_water else "#27ae60"
+                    
+                    if is_water:
+                        y_offset = 55 
+                        svg += '<line x1="100" y1="10" x2="100" y2="110" stroke="#bdc3c7" stroke-width="2"/>'
+                        svg += '<line x1="100" y1="110" x2="200" y2="110" stroke="#bdc3c7" stroke-width="2"/>'
+                        svg += '<line x1="60" y1="130" x2="100" y2="110" stroke="#bdc3c7" stroke-width="2"/>'
+                        
+                        svg += f'<polygon points="60,{30+y_offset} 100,{10+y_offset} 200,{10+y_offset} 160,{30+y_offset}" fill="{fill_top}" stroke="{stroke_c}" stroke-width="2" opacity="0.85"/>'
+                        svg += f'<rect x="60" y="{30+y_offset}" width="100" height="{100-y_offset}" fill="{fill_front}" stroke="{stroke_c}" stroke-width="2" opacity="0.85"/>'
+                        svg += f'<polygon points="160,{30+y_offset} 200,{10+y_offset} 200,110 160,130" fill="{fill_right}" stroke="{stroke_c}" stroke-width="2" opacity="0.85"/>'
+                        
+                        svg += '<polygon points="60,30 100,10 200,10 160,30" fill="none" stroke="#95a5a6" stroke-width="2"/>'
+                        svg += '<line x1="60" y1="30" x2="60" y2="130" stroke="#95a5a6" stroke-width="2"/>'
+                        svg += '<line x1="160" y1="30" x2="160" y2="130" stroke="#95a5a6" stroke-width="2"/>'
+                        svg += '<line x1="200" y1="10" x2="200" y2="110" stroke="#95a5a6" stroke-width="2"/>'
+                    else:
+                        svg += f'<rect x="60" y="50" width="100" height="80" fill="{fill_front}" stroke="{stroke_c}" stroke-width="3"/>'
+                        svg += f'<polygon points="60,50 100,20 200,20 160,50" fill="{fill_top}" stroke="{stroke_c}" stroke-width="3"/>'
+                        svg += f'<polygon points="160,50 200,20 200,100 160,130" fill="{fill_right}" stroke="{stroke_c}" stroke-width="3"/>'
+                        
+                    svg += f'<text x="110" y="150" font-size="14" fill="#2c3e50" font-weight="bold" text-anchor="middle">{l_lbl}</text>'
+                    svg += f'<text x="190" y="125" font-size="14" fill="#2c3e50" font-weight="bold">{w_lbl}</text>'
+                    
+                    if is_water:
+                        svg += f'<text x="10" y="{80+y_offset/2}" font-size="14" fill="#2980b9" font-weight="bold">{h_lbl}</text>'
+                    else:
+                        svg += f'<text x="20" y="95" font-size="14" fill="#2c3e50" font-weight="bold">{h_lbl}</text>'
+                        
+                    svg += '</svg></div>'
+                    return svg
+
+                scenario = random.choice(["basic", "tank"])
+                if scenario == "basic":
+                    w = random.randint(3, 10)
+                    l = random.randint(5, 15)
+                    while l <= w: l += 1
+                    h = random.randint(4, 12)
+                    vol = w * l * h
+                    svg = draw_prism_svg(f"{w} ซม.", f"{l} ซม.", f"{h} ซม.")
+                    
+                    q = f"กล่องทรงสี่เหลี่ยมมุมฉาก กว้าง <b>{w} ซม.</b> ยาว <b>{l} ซม.</b> และสูง <b>{h} ซม.</b><br>กล่องใบนี้จะมี<b>ปริมาตร</b>ความจุกี่ลูกบาศก์เซนติเมตร?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การหาปริมาตร):</b><br><b>สูตร:</b> ปริมาตรทรงสี่เหลี่ยมมุมฉาก = กว้าง × ยาว × สูง<br>👉 แทนค่า: กว้าง = {w}, ยาว = {l}, สูง = {h}<br>👉 คำนวณ: {w} × {l} × {h} = <b>{vol:,} ลูกบาศก์เซนติเมตร</b><br><b>ตอบ: {vol:,} ลูกบาศก์เซนติเมตร</b></span>"
+                    
+                elif scenario == "tank":
+                    w = random.randint(10, 20)
+                    l = random.randint(20, 40)
+                    h = random.randint(15, 30)
+                    water_h = random.randint(5, h - 5)
+                    vol = w * l * water_h
+                    svg = draw_prism_svg(f"{w} ซม.", f"{l} ซม.", f"น้ำสูง {water_h} ซม.", is_water=True)
+                    
+                    q = f"ตู้ปลาทรงสี่เหลี่ยมมุมฉาก กว้าง <b>{w} ซม.</b> ยาว <b>{l} ซม.</b> สูง <b>{h} ซม.</b><br>ถ้าเติมน้ำลงไปในตู้ปลาให้มีระดับน้ำสูง <b>{water_h} ซม.</b><br>ปริมาตรของน้ำในตู้ปลาจะเป็นกี่ลูกบาศก์เซนติเมตร?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ประยุกต์ปริมาตรน้ำ):</b><br><i>จุดระวัง: โจทย์ถามปริมาตรของ 'น้ำ' ดังนั้นเราต้องใช้ 'ความสูงของน้ำ' ไม่ใช่ความสูงของตู้ปลานะครับ!</i><br><br><b>สูตร:</b> ปริมาตรน้ำ = กว้าง × ยาว × ความสูงของน้ำ<br>👉 แทนค่า: กว้าง = {w}, ยาว = {l}, สูงของน้ำ = {water_h}<br>👉 คำนวณ: {w} × {l} × {water_h} = <b>{vol:,} ลูกบาศก์เซนติเมตร</b><br><b>ตอบ: {vol:,} ลูกบาศก์เซนติเมตร</b></span>"
+
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
                 
             # ==================================================
-            # ระบบเช็คโจทย์ซ้ำ (ยันต์กันค้าง: ถ้าส่วนนี้หาย แอปจะหมุนค้างทันที!)
+            # ระบบเช็คโจทย์ซ้ำ (ยันต์กันค้าง)
             # ==================================================
             if q not in seen: 
                 seen.add(q)
