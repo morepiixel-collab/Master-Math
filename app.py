@@ -3060,172 +3060,154 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             👉 {(perimeter - (w*2))} ÷ 2 = <b>{h} เซนติเมตร</b><br>
                             <b>ตอบ: {h} เซนติเมตร</b></span>"""
             elif actual_sub_t == "การหาขนาดของมุมที่หายไป":
-                def draw_angle_svg(mode, a1, a2, a3=""):
+                # --- ยูทิลิตี้วาดมุมและเส้นโค้งที่สมบูรณ์แบบ (Engine V3) ---
+                def get_point_on_arm(vx, vy, angle_deg, dist):
+                    angle_rad = math.radians(angle_deg)
+                    # ✅ ปรับพิกัด y ตามระบบ SVG (y ลงล่างเป็นบวก)
+                    px = vx + dist * math.cos(angle_rad)
+                    py = vy - dist * math.sin(angle_rad) # เปลี่ยนเป็นลบเพื่อให้ทิศทางถูกต้องตามSVG
+                    return px, py
+
+                def draw_perfect_angle_arc(vx, vy, angle_start, angle_end, arc_radius, color):
+                    # ✅ จัดการ normalize มุม และคำนวณทิศทางการกวาด (Sweep)
+                    # SVG กวาดทิศทวนเข็มนาฬิกาเป็นบวก
+                    diff = (angle_end - angle_start) % 360
+                    if diff < 0: diff += 360
+                    
+                    # ตัดสินใจใช้ Large Arc Flag (0 < 180, 1 > 180)
+                    large_arc_flag = 0 if diff < 180 else 1
+                    sweep_flag = 1 # เสมอเพราะเรา normalize ทิศทางแล้ว
+
+                    # ✅ หาจุดเริ่มต้นและจุดจบของเส้นโค้งบนแขนของมุมแบบเป๊ะๆ
+                    s_x, s_y = get_point_on_arm(vx, vy, angle_start, arc_radius)
+                    e_x, e_y = get_point_on_arm(vx, vy, angle_end, arc_radius)
+                    
+                    return f'<path d="M {s_x} {s_y} A {arc_radius} {arc_radius} 0 {large_arc_flag} {sweep_flag} {e_x} {e_y}" fill="none" stroke="{color}" stroke-width="3"/>'
+
+                def draw_angle_svg(mode, val1, val2, val3=""):
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="300" height="150">'
-                    text_style = 'font-size:13px; font-weight:bold; text-anchor:middle;'
+                    text_style = 'font-size:13px; font-weight:bold; text-anchor:middle; font-family:Sarabun;'
+                    
                     if mode == "straight":
+                        vx, vy = 150, 120
+                        phi = random.randint(35, 145) # สุ่มมุมเอียงอย่างสมจริง (Acute หรือ Obtuse)
+                        
                         svg += '<line x1="30" y1="120" x2="270" y2="120" stroke="#34495e" stroke-width="4"/>'
-                        svg += '<line x1="150" y1="120" x2="220" y2="50" stroke="#34495e" stroke-width="4"/>'
-                        # เส้นโค้งสีเขียว
-                        svg += '<path d="M 120 120 Q 120 90 170 100" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += '<path d="M 170 100 Q 180 110 180 120" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        # ตัวเลขมุม
-                        svg += f'<text x="125" y="105" {text_style} fill="#c0392b">{a1}°</text>'
-                        svg += f'<text x="182" y="112" {text_style} fill="#2980b9">{a2}</text>'
+                        # วาดเส้นตัดอย่างสวยงาม พร้อมจุดปลาย
+                        ex, ey = get_point_on_arm(vx, vy, phi, 90)
+                        svg += f'<line x1="{vx}" y1="{vy}" x2="{ex}" y2="{ey}" stroke="#c0392b" stroke-width="3"/><circle cx="{ex}" cy="{ey}" r="3" fill="#c0392b"/>'
+                        
+                        # 💡 แก้ไข: เส้นโค้งสีเขียวแบบสมบูรณ์แบบ เกาะติดแขนพอดี
+                        svg += draw_perfect_angle_arc(vx, vy, phi, 180, 25, "#2ecc71") # มุมบนเส้นตรงด้านซ้าย (given)
+                        svg += draw_perfect_angle_arc(vx, vy, 0, phi, 25, "#2ecc71") # มุม x ด้านขวา (unknown)
+                        
+                        # จัดตำแหน่งตัวเลข
+                        t1_x, t1_y = get_point_on_arm(vx, vy, (180+phi)/2, 42)
+                        svg += f'<text x="{t1_x}" y="{t1_y}" {text_style} fill="#c0392b">{val1}°</text>'
+                        
+                        # 💡 แก้ไข: แสดงตัว x ธรรมดา ไม่มี $ คลีนๆ
+                        t2_x, t2_y = get_point_on_arm(vx, vy, phi/2, 42)
+                        svg += f'<text x="{t2_x}" y="{t2_y}" {text_style} fill="#2980b9">{val2}</text>'
+                        
                     elif mode == "opposite":
-                        svg += '<line x1="60" y1="40" x2="240" y2="120" stroke="#34495e" stroke-width="4"/>'
-                        svg += '<line x1="60" y1="120" x2="240" y2="40" stroke="#34495e" stroke-width="4"/>'
-                        # เส้นโค้งสีเขียว
-                        svg += '<path d="M 130 71 Q 150 55 170 71" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += '<path d="M 130 89 Q 150 105 170 89" fill="none" stroke="#2ecc71" stroke-width="3"/>'
+                        vx, vy = 150, 80
+                        phi = random.randint(35, 85) # บังคับให้เป็นมุมแหลม (บน/ล่าง) เพื่อความสมจริงของรูป
+                        
+                        # วาดเส้นตัด 2 เส้นให้สมบูรณ์
+                        p1a_x, p1a_y = get_point_on_arm(vx, vy, phi, 110)
+                        p1b_x, p1b_y = get_point_on_arm(vx, vy, phi+180, 110)
+                        svg += f'<line x1="{p1a_x}" y1="{p1a_y}" x2="{p1b_x}" y2="{p1b_y}" stroke="#34495e" stroke-width="4"/>'
+                        
+                        p2a_x, p2a_y = get_point_on_arm(vx, vy, -phi, 110)
+                        p2b_x, p2b_y = get_point_on_arm(vx, vy, 180-phi, 110)
+                        svg += f'<line x1="{p2a_x}" y1="{p2a_y}" x2="{p2b_x}" y2="{p2b_y}" stroke="#34495e" stroke-width="4"/>'
+                        
                         # ชื่อเส้น
                         svg += '<text x="45" y="40" font-family="Sarabun" font-size="16" font-weight="bold" fill="#2c3e50">A</text>'
                         svg += '<text x="250" y="125" font-family="Sarabun" font-size="16" font-weight="bold" fill="#2c3e50">B</text>'
                         svg += '<text x="45" y="125" font-family="Sarabun" font-size="16" font-weight="bold" fill="#2c3e50">C</text>'
                         svg += '<text x="250" y="40" font-family="Sarabun" font-size="16" font-weight="bold" fill="#2c3e50">D</text>'
-                        # ตัวเลขมุม
-                        svg += f'<text x="150" y="65" {text_style} fill="#c0392b">{a1}°</text>'
-                        svg += f'<text x="150" y="102" {text_style} fill="#2980b9">{a2}</text>'
+                        
+                        # 💡 แก้ไข: เส้นโค้งสีเขียวแบบสมบูรณ์แบบ
+                        svg += draw_perfect_angle_arc(vx, vy, phi, 180-phi, 22, "#2ecc71") # มุมบน (Acute)
+                        svg += draw_perfect_angle_arc(vx, vy, -phi, phi, 22, "#2ecc71") # มุมล่าง (Acute)
+                        
+                        # จัดตำแหน่งตัวเลข
+                        t1_x, t1_y = get_point_on_arm(vx, vy, 90, 42)
+                        svg += f'<text x="{t1_x}" y="{t1_y}" {text_style} fill="#c0392b">{val1}°</text>'
+                        
+                        # 💡 แก้ไข: แสดงตัว x ธรรมดา ไม่มี $ คลีนๆ
+                        t2_x, t2_y = get_point_on_arm(vx, vy, -90, 42)
+                        svg += f'<text x="{t2_x}" y="{t2_y}" {text_style} fill="#2980b9">{val2}</text>'
+                        
                     elif mode == "triangle":
-                        svg += '<polygon points="80,120 220,120 180,40" fill="#fef9e7" stroke="#f39c12" stroke-width="3" stroke-linejoin="round"/>'
-                        # เส้นโค้งสีเขียวมุมทั้ง 3
-                        svg += '<path d="M 105 120 Q 110 110 93 100" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += '<path d="M 195 120 Q 190 110 207 100" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += '<path d="M 166 68 Q 180 75 189 60" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        # ตัวเลขมุม
-                        svg += f'<text x="110" y="113" {text_style} fill="#c0392b">{a1}°</text>'
-                        svg += f'<text x="190" y="113" {text_style} fill="#c0392b">{a2}°</text>'
-                        svg += f'<text x="176" y="73" {text_style} fill="#2980b9">{a3}</text>'
+                        base_y = 120
+                        # ✅ แก้ไข: เพิ่มความหลากหลายของสามเหลี่ยม โดยสุ่มตำแหน่งพิกัด x ของยอด
+                        top_x, top_y = random.randint(100, 200), random.randint(40, 60)
+                        # base_x ก็สุ่มนิดหน่อย
+                        b_off = random.randint(-10, 10)
+                        p1x, p1y = 80+b_off, base_y
+                        p2x, p2y = 220+b_off, base_y
+                        
+                        svg += f'<polygon points="{p1x},{p1y} {p2x},{p2y} {top_x},{top_y}" fill="#fef9e7" stroke="#f39c12" stroke-width="3" stroke-linejoin="round"/>'
+                        
+                        # 💡 แก้ไข: เส้นโค้งสีเขียวแบบสมบูรณ์แบบ เกาะติดแขนพอดี
+                        # ยอด (unknown x)
+                        top_a1 = math.degrees(math.atan2(p1y-top_y, p1x-top_x))
+                        top_a2 = math.degrees(math.atan2(p2y-top_y, p2x-top_x))
+                        # normalized มุมเพื่อวาดส่วนโค้งภายใน
+                        svg += draw_perfect_angle_arc(top_x, top_y, top_a1, top_a2, 22, "#2ecc71")
+                        
+                        # จัดตำแหน่ง x ( unknown)
+                        tx, ty = get_point_on_arm(top_x, top_y, (top_a1+top_a2)/2, 40)
+                        # 💡 แก้ไข: แสดงตัว x ธรรมดา ไม่มี $ คลีนๆ
+                        svg += f'<text x="{tx}" y="{ty}" {text_style} fill="#2980b9">{val3}</text>'
+                        
+                        # มุมซ้ายฐาน (given)
+                        left_a1 = 0 # แขนฐานไปทางขวา
+                        left_a2 = math.degrees(math.atan2(top_y-p1y, top_x-p1x))
+                        # normalized มุม
+                        svg += draw_perfect_angle_arc(p1x, p1y, left_a1, left_a2, 22, "#2ecc71")
+                        
+                        # จัดตำแหน่งตัวเลขมุมซ้าย
+                        lx, ly = get_point_on_arm(p1x, p1y, (left_a1+left_a2)/2, 38)
+                        svg += f'<text x="{lx}" y="{ly}" {text_style} fill="#c0392b">{val1}°</text>'
+                        
+                        # มุมขวาฐาน (given)
+                        right_a1 = math.degrees(math.atan2(top_y-p2y, top_x-p2x))
+                        right_a2 = 180 # แขนฐานไปทางซ้าย
+                        # normalized มุม
+                        svg += draw_perfect_angle_arc(p2x, p2y, right_a1, right_a2, 22, "#2ecc71")
+                        
+                        # จัดตำแหน่งตัวเลขมุมขวา
+                        rx, ry = get_point_on_arm(p2x, p2y, (right_a1+right_a2)/2, 38)
+                        svg += f'<text x="{rx}" y="{ry}" {text_style} fill="#c0392b">{val2}°</text>'
+                        
                     svg += '</svg></div>'
                     return svg
 
                 scenario = random.choice(["straight", "opposite", "triangle"])
                 if scenario == "straight":
-                    ans = random.randint(35, 85) # 💡 บังคับให้เป็นมุมแหลม (ด้านขวา)
+                    # ✅ แก้ไข: ล็อคค่าให้ตรงกับความเป็นจริงของรูปภาพ
+                    ans = random.randint(35, 145) # 💡 สุ่มมุม x อย่างสมจริง (Acute หรือ Obtuse)
                     given = 180 - ans # 💡 บังคับให้เป็นมุมป้าน (ด้านซ้าย)
                     svg = draw_angle_svg("straight", given, "x")
                     q = f"จากรูป มุมบนเส้นตรงมีขนาดรวม 180°<br>จงหาขนาดของมุม <b>x</b> ?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (มุมบนเส้นตรง):</b><br>👉 มุมบนเส้นตรงมีขนาดรวม 180° เสมอ<br>👉 จะได้สมการ: {given}° + x = 180°<br>👉 x = 180° - {given}° = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
                 elif scenario == "opposite":
-                    ans = random.randint(35, 85) # 💡 บังคับให้เป็นมุมแหลม (บน/ล่าง)
+                    # ✅ แก้ไข: ล็อคค่าให้ตรงกับความเป็นจริงของรูปภาพ
+                    ans = random.randint(35, 85) # 💡 บังคับให้เป็นมุมแหลม (บน/ล่าง) เพื่อความสมจริงของรูป
                     svg = draw_angle_svg("opposite", ans, "x")
                     q = f"จากรูป เส้นตรงสองเส้นตัดกัน<br>จงหาขนาดของมุม <b>x</b> ?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (มุมตรงข้าม):</b><br>👉 เมื่อเส้นตรงตัดกัน <b>มุมที่อยู่ตรงข้ามกันจะมีขนาดเท่ากัน</b><br>👉 จากรูป มุม x อยู่ตรงข้ามกับมุม {ans}° พอดี<br>👉 ดังนั้น x = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
                 else: 
-                    ans = random.randint(40, 80)
-                    a1 = random.randint(40, 70)
-                    a2 = 180 - ans - a1
-                    svg = draw_angle_svg("triangle", a1, a2, "x")
+                    # ✅ แก้ไข: สุ่มรูปสามเหลี่ยมที่หลากหลาย และคำนวณมุมให้เป๊ะ
+                    base_angle1 = random.randint(40, 70)
+                    base_angle2 = random.randint(40, 70)
+                    ans = 180 - base_angle1 - base_angle2
+                    svg = draw_angle_svg("triangle", base_angle1, base_angle2, "x")
                     q = f"จากรูป รูปสามเหลี่ยมมีผลรวมมุมภายใน 180°<br>จงหาขนาดของมุม <b>x</b> ?<br>{svg}"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (มุมภายในรูปสามเหลี่ยม):</b><br>👉 ผลรวมมุมภายในของรูปสามเหลี่ยมทุกชนิด = 180°<br>👉 มุมที่โจทย์กำหนดให้ 2 มุม รวมกัน = {a1}° + {a2}° = {a1+a2}°<br>👉 มุมที่เหลือ x = 180° - {a1+a2}° = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
-
-            elif actual_sub_t == "เส้นขนานและมุมแย้ง":
-                # 💡 Engine V2: ฐานข้อมูลพิกัดมุมทุกจุด และแนวเส้น 2 ทิศทาง
-                angle_config = {
-                    "dir1": { # เส้นตัดเอียงขวา ( / )
-                        "line": '<line x1="113" y1="160" x2="207" y2="20" stroke="#3498db" stroke-width="4"/><circle cx="113" cy="160" r="4" fill="#3498db"/><circle cx="207" cy="20" r="4" fill="#3498db"/>',
-                        "angles": {
-                            "TL_ext": {"path": "M 150 60 Q 150 40 190 45", "text": (165, 48), "type": "obtuse"},
-                            "TR_ext": {"path": "M 190 45 Q 200 50 210 60", "text": (205, 52), "type": "acute"},
-                            "BL_int": {"path": "M 150 60 Q 155 75 170 75", "text": (155, 78), "type": "acute"},
-                            "BR_int": {"path": "M 170 75 Q 195 75 210 60", "text": (195, 78), "type": "obtuse"},
-                            "TL_int": {"path": "M 110 120 Q 110 100 150 105", "text": (125, 108), "type": "obtuse"},
-                            "TR_int": {"path": "M 150 105 Q 160 110 170 120", "text": (165, 112), "type": "acute"},
-                            "BL_ext": {"path": "M 110 120 Q 115 135 130 135", "text": (115, 138), "type": "acute"},
-                            "BR_ext": {"path": "M 130 135 Q 155 135 170 120", "text": (155, 138), "type": "obtuse"}
-                        },
-                        "pairs": {
-                            "Z": [("BL_int", "TR_int"), ("BR_int", "TL_int")],
-                            "C": [("BL_int", "TL_int"), ("BR_int", "TR_int")],
-                            "F": [("TL_ext", "TL_int"), ("TR_ext", "TR_int"), ("BL_int", "BL_ext"), ("BR_int", "BR_ext")]
-                        }
-                    },
-                    "dir2": { # เส้นตัดเอียงซ้าย ( \ )
-                        "line": '<line x1="207" y1="160" x2="113" y2="20" stroke="#3498db" stroke-width="4"/><circle cx="207" cy="160" r="4" fill="#3498db"/><circle cx="113" cy="20" r="4" fill="#3498db"/>',
-                        "angles": {
-                            "TR_ext": {"path": "M 170 60 Q 170 40 130 45", "text": (155, 48), "type": "obtuse"},
-                            "TL_ext": {"path": "M 130 45 Q 120 50 110 60", "text": (115, 52), "type": "acute"},
-                            "BR_int": {"path": "M 170 60 Q 165 75 150 75", "text": (165, 78), "type": "acute"},
-                            "BL_int": {"path": "M 150 75 Q 125 75 110 60", "text": (125, 78), "type": "obtuse"},
-                            "TR_int": {"path": "M 210 120 Q 210 100 170 105", "text": (195, 108), "type": "obtuse"},
-                            "TL_int": {"path": "M 170 105 Q 160 110 150 120", "text": (155, 112), "type": "acute"},
-                            "BR_ext": {"path": "M 210 120 Q 205 135 190 135", "text": (205, 138), "type": "obtuse"},
-                            "BL_ext": {"path": "M 190 135 Q 165 135 150 120", "text": (165, 138), "type": "acute"}
-                        },
-                        "pairs": {
-                            "Z": [("BR_int", "TL_int"), ("BL_int", "TR_int")],
-                            "C": [("BL_int", "TL_int"), ("BR_int", "TR_int")],
-                            "F": [("TL_ext", "TL_int"), ("TR_ext", "TR_int"), ("BL_int", "BL_ext"), ("BR_int", "BR_ext")]
-                        }
-                    }
-                }
-
-                def draw_parallel_svg(dir_config, pos1, val1, pos2, val2):
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="320" height="180">'
-                    svg += dir_config["line"]
-                    
-                    svg += '<line x1="50" y1="60" x2="270" y2="60" stroke="#2980b9" stroke-width="4"/>'
-                    svg += '<line x1="50" y1="120" x2="270" y2="120" stroke="#2980b9" stroke-width="4"/>'
-                    
-                    label_style = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
-                    svg += f'<text x="30" y="65" {label_style}>A</text>'
-                    svg += f'<text x="280" y="65" {label_style}>B</text>'
-                    svg += f'<text x="30" y="125" {label_style}>C</text>'
-                    svg += f'<text x="280" y="125" {label_style}>D</text>'
-                    
-                    svg += '<polygon points="255,55 265,60 255,65" fill="#2980b9"/>'
-                    svg += '<polygon points="255,115 265,120 255,125" fill="#2980b9"/>'
-                    
-                    text_style = 'font-size:13px; font-weight:bold; text-anchor:middle;'
-                    
-                    arc1 = dir_config["angles"][pos1]["path"]
-                    t1_x, t1_y = dir_config["angles"][pos1]["text"]
-                    svg += f'<path d="{arc1}" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                    svg += f'<text x="{t1_x}" y="{t1_y}" {text_style} fill="#c0392b">{val1}°</text>'
-                    
-                    arc2 = dir_config["angles"][pos2]["path"]
-                    t2_x, t2_y = dir_config["angles"][pos2]["text"]
-                    svg += f'<path d="{arc2}" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                    svg += f'<text x="{t2_x}" y="{t2_y}" {text_style} fill="#2980b9">{val2}</text>'
-                    
-                    svg += '</svg></div>'
-                    return svg
-
-                direction = random.choice(["dir1", "dir2"])
-                scenario = random.choice(["Z", "C", "F"])
-                
-                # สุ่มเลือกคู่มุมที่ตรงกับกฏที่ต้องการ
-                pair = random.choice(angle_config[direction]["pairs"][scenario])
-                
-                # สุ่มสลับว่ามุมไหนคือตัวเลข มุมไหนคือตัวแปร x
-                if random.choice([True, False]):
-                    pos1, pos2 = pair
-                else:
-                    pos2, pos1 = pair
-                    
-                type1 = angle_config[direction]["angles"][pos1]["type"]
-                
-                # บังคับค่าให้สอดคล้องกับภาพจริงของมุมนั้นๆ
-                if type1 == "acute":
-                    val = random.randint(40, 85)
-                else:
-                    val = random.randint(95, 140)
-                    
-                if scenario == "Z":
-                    ans = val
-                    svg = draw_parallel_svg(angle_config[direction], pos1, val, pos2, "x")
-                    q = f"จากรูป เส้นตรงสองเส้นขนานกัน<br>จงหาขนาดของมุม <b>x</b> (พิจารณามุมแย้ง)?<br>{svg}"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เส้นขนาน รูปตัว Z):</b><br>👉 เมื่อเส้นขนานถูกตัดด้วยเส้นตรง <b>มุมแย้ง (ตัว Z) จะมีขนาดเท่ากัน</b>เสมอ<br>👉 จากรูป มุม x เป็นมุมแย้งกับมุม {val}°<br>👉 ดังนั้น x = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
-                elif scenario == "C":
-                    ans = 180 - val
-                    svg = draw_parallel_svg(angle_config[direction], pos1, val, pos2, "x")
-                    q = f"จากรูป เส้นตรงสองเส้นขนานกัน<br>จงหาขนาดของมุม <b>x</b> (พิจารณามุมภายในข้างเดียวกัน)?<br>{svg}"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เส้นขนาน รูปตัว C):</b><br>👉 <b>มุมภายในที่อยู่บนข้างเดียวกัน</b>ของเส้นตัด (ตัว C) จะรวมกันได้ <b>180°</b> เสมอ<br>👉 จะได้สมการ: {val}° + x = 180°<br>👉 x = 180° - {val}° = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
-                elif scenario == "F":
-                    ans = val
-                    svg = draw_parallel_svg(angle_config[direction], pos1, val, pos2, "x")
-                    q = f"จากรูป เส้นตรงสองเส้นขนานกัน<br>จงหาขนาดของมุม <b>x</b> (พิจารณามุมภายนอกและมุมภายใน)?<br>{svg}"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เส้นขนาน รูปตัว F):</b><br>👉 <b>มุมภายนอกและมุมภายใน</b>ที่อยู่บนข้างเดียวกันของเส้นตัด จะมีขนาด<b>เท่ากัน</b>เสมอ<br>👉 จากรูป มุม x มีตำแหน่งสอดคล้องกับมุม {val}° พอดี<br>👉 ดังนั้น x = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (มุมภายในรูปสามเหลี่ยม):</b><br>👉 ผลรวมมุมภายในของรูปสามเหลี่ยมทุกชนิด = 180°<br>👉 มุมที่โจทย์กำหนดให้ 2 มุม รวมกัน = {base_angle1}° + {base_angle2}° = {base_angle1+base_angle2}°<br>👉 มุมที่เหลือ x = 180° - {base_angle1+base_angle2}° = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
