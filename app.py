@@ -693,7 +693,7 @@ curriculum_db = {
         "เรขาคณิต 3 มิติ": ["ปริมาตรและความจุทรงสี่เหลี่ยมมุมฉาก"],
         "ร้อยละและเปอร์เซ็นต์": ["การเขียนเศษส่วนในรูปร้อยละ"],
         "สมการ": ["การแก้สมการ (คูณ/หาร)"],
-        "เตรียมสอบเข้า ม.1 (Gifted)": ["โจทย์ปัญหา ห.ร.ม. และ ค.ร.น.", "โจทย์ปัญหา ร้อยละ (กำไร-ขาดทุน)", "โจทย์ปัญหาคลาสสิก (สมการประยุกต์)"]
+        "เตรียมสอบเข้า ม.1 (Gifted)": ["โจทย์ปัญหา ห.ร.ม. และ ค.ร.น.", "โจทย์ปัญหา ร้อยละ (กำไร-ขาดทุน)", "โจทย์ปัญหาคลาสสิก (สมการประยุกต์)", "แบบรูปและอนุกรม (Number Patterns)", "มาตราส่วนและทิศทาง"]
     },
     "ป.6": {
         "ตัวประกอบของจำนวนนับ": ["การหา ห.ร.ม.", "การหา ค.ร.น."],
@@ -3744,14 +3744,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         ans = start + 2 
                         total = start + (start+1) + (start+2)
                         q = f"ผลบวกของ<b>จำนวนเต็มเรียงติดกัน 3 จำนวน</b> เท่ากับ <b>{total}</b><br>จงหาจำนวนที่<b>มากที่สุด</b>?"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (จำนวนเรียงติดกัน):</b><br>👉 กำหนดให้จำนวนที่น้อยที่สุดคือ <b>x</b><br>👉 จำนวนถัดไปคือ <b>x + 1</b> และ <b>x + 2</b><br><br><b>ขั้นที่ 1: สร้างสมการ</b><br>👉 x + (x + 1) + (x + 2) = {total}<br>👉 3x + 3 = {total}<br><br><b>ขั้นที่ 2: แก้สมการ</b><br>👉 3x = {total} - 3<br>👉 3x = {total-3}<br>👉 x = {(total-3)} ÷ 3 = <b>{start}</b><br><br><b>ขั้นที่ 3: สรุปหาจำนวนที่มากที่สุด</b><br>👉 จากขั้นที่ 2 เราหาค่า x ได้ <b>{start}</b> ซึ่งก็คือ 'จำนวนที่น้อยที่สุด' <br>👉 เรามาลองเขียนไล่ลำดับจำนวนทั้ง 3 จำนวน จะได้: <b>{start}</b>, <b>{start+1}</b>, และ <b>{start+2}</b><br>👉 จะเห็นได้ชัดเจนว่า จำนวนที่มากที่สุด (ตัวที่สาม) ก็คือ <b>{ans}</b><br><i>(ทบทวนความถูกต้อง: {start} + {start+1} + {ans} = {total} ตรงตามโจทย์พอดีเป๊ะ!)</i><br><br><b>ตอบ: {ans}</b></span>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (จำนวนเรียงติดกัน):</b><br>👉 กำหนดให้จำนวนที่น้อยที่สุดคือ <b>x</b><br>👉 จำนวนถัดไปคือ <b>x + 1</b> และ <b>x + 2</b><br><br><b>ขั้นที่ 1: สร้างสมการ</b><br>👉 x + (x + 1) + (x + 2) = {total}<br>👉 3x + 3 = {total}<br><br><b>ขั้นที่ 2: แก้สมการ</b><br>👉 3x = {total} - 3<br>👉 3x = {total-3}<br>👉 x = {(total-3)} ÷ 3 = <b>{start}</b><br><br><b>ขั้นที่ 3: สรุปหาจำนวนที่มากที่สุด</b><br>👉 จากขั้นที่ 2 เราหาค่า x ได้ <b>{start}</b> ซึ่งก็คือ 'จำนวนที่น้อยที่สุด' <br>👉 เรามาลองเขียนไล่ลำดับจำนวนทั้ง 3 จำนวน จะได้: <b>{start}</b>, <b>{start+1}</b>, และ <b>{start+2}</b><br>👉 จะเห็นได้ชัดเจนว่า จำนวนที่มากที่สุด (ตัวที่สาม) ก็คือ <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
                     else:
                         start = random.randint(10, 40) * 2
                         if ctype == "คี่": start += 1
                         ans = start + 4
                         total = start + (start+2) + (start+4)
                         q = f"ผลบวกของ<b>จำนวน{ctype}เรียงติดกัน 3 จำนวน</b> เท่ากับ <b>{total}</b><br>จงหาจำนวนที่<b>มากที่สุด</b>?"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (จำนวน{ctype}เรียงติดกัน):</b><br>👉 <i>ข้อควรระวัง: จำนวน{ctype}เรียงติดกัน จะห่างกันทีละ 2</i><br>👉 กำหนดให้จำนวนที่น้อยที่สุดคือ <b>x</b><br>👉 จำนวนถัดไปคือ <b>x + 2</b> และ <b>x + 4</b><br><br><b>ขั้นที่ 1: สร้างสมการ</b><br>👉 x + (x + 2) + (x + 4) = {total}<br>👉 3x + 6 = {total}<br><br><b>ขั้นที่ 2: แก้สมการ</b><br>👉 3x = {total} - 6<br>👉 3x = {total-6}<br>👉 x = {(total-6)} ÷ 3 = <b>{start}</b><br><br><b>ขั้นที่ 3: สรุปหาจำนวนที่มากที่สุด</b><br>👉 จากขั้นที่ 2 เราหาค่า x ได้ <b>{start}</b> ซึ่งก็คือ 'จำนวน{ctype}ที่น้อยที่สุด' <br>👉 เรามาลองเขียนไล่ลำดับจำนวนทั้ง 3 จำนวน จะได้: <b>{start}</b>, <b>{start+2}</b>, และ <b>{start+4}</b><br>👉 จะเห็นได้ชัดเจนว่า จำนวนที่มากที่สุด (ตัวที่สาม) ก็คือ <b>{ans}</b><br><i>(ทบทวนความถูกต้อง: {start} + {start+2} + {ans} = {total} ตรงตามโจทย์พอดีเป๊ะ!)</i><br><br><b>ตอบ: {ans}</b></span>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (จำนวน{ctype}เรียงติดกัน):</b><br>👉 <i>ข้อควรระวัง: จำนวน{ctype}เรียงติดกัน จะห่างกันทีละ 2</i><br>👉 กำหนดให้จำนวนที่น้อยที่สุดคือ <b>x</b><br>👉 จำนวนถัดไปคือ <b>x + 2</b> และ <b>x + 4</b><br><br><b>ขั้นที่ 1: สร้างสมการ</b><br>👉 x + (x + 2) + (x + 4) = {total}<br>👉 3x + 6 = {total}<br><br><b>ขั้นที่ 2: แก้สมการ</b><br>👉 3x = {total} - 6<br>👉 3x = {total-6}<br>👉 x = {(total-6)} ÷ 3 = <b>{start}</b><br><br><b>ขั้นที่ 3: สรุปหาจำนวนที่มากที่สุด</b><br>👉 จากขั้นที่ 2 เราหาค่า x ได้ <b>{start}</b> ซึ่งก็คือ 'จำนวน{ctype}ที่น้อยที่สุด' <br>👉 เรามาลองเขียนไล่ลำดับจำนวนทั้ง 3 จำนวน จะได้: <b>{start}</b>, <b>{start+2}</b>, และ <b>{start+4}</b><br>👉 จะเห็นได้ชัดเจนว่า จำนวนที่มากที่สุด (ตัวที่สาม) ก็คือ <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
 
                 elif scenario == "fraction_money":
                     d1 = random.choice([3, 4, 5])
@@ -3770,21 +3770,126 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     ans = random.randint(5, 15) * 100 * lcm 
                     rem_money = ans * rem_frac_n // lcm
                     
-                    # คำอธิบาย ค.ร.น.
                     m1_list = [d1 * i for i in range(1, (lcm//d1) + 1)]
                     m2_list = [d2 * i for i in range(1, (lcm//d2) + 1)]
                     lcm_explain = f"<br><span style='color:#7f8c8d; font-size:15px;'><i>&nbsp;&nbsp;&nbsp;&nbsp;(วิธีหา ค.ร.น. แบบง่ายๆ คือไล่สูตรคูณหาตัวเลขที่ซ้ำกันตัวแรก:<br>&nbsp;&nbsp;&nbsp;&nbsp;แม่ {d1} : {', '.join(map(str, m1_list))} <br>&nbsp;&nbsp;&nbsp;&nbsp;แม่ {d2} : {', '.join(map(str, m2_list))} <br>&nbsp;&nbsp;&nbsp;&nbsp;เจอเลข <b>{lcm}</b> ซ้ำกันเป็นตัวแรก ดังนั้น ค.ร.น. คือ {lcm})</i></span>"
                     
-                    # HTML เศษส่วนแนวตั้ง (ก่อนตัด)
                     f_norm1 = f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b>{lcm}x</b></div><div style='padding-top:2px;'><b>{d1}</b></div></div>"
                     f_norm2 = f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b>{lcm}x</b></div><div style='padding-top:2px;'><b>{d2}</b></div></div>"
                     
-                    # HTML เศษส่วนแนวตั้ง (ขีดฆ่าตัดทอน สีแดง-เขียว)
                     f_canc1 = f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b><s style='color:#e74c3c;'>{lcm}</s><sup style='color:#27ae60; font-size:14px; margin-left:3px;'>{lcm//d1}</sup>x</b></div><div style='padding-top:2px;'><b><s style='color:#e74c3c;'>{d1}</s><sub style='color:#27ae60; font-size:12px; margin-left:3px;'>1</sub></b></div></div>"
                     f_canc2 = f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b><s style='color:#e74c3c;'>{lcm}</s><sup style='color:#27ae60; font-size:14px; margin-left:3px;'>{lcm//d2}</sup>x</b></div><div style='padding-top:2px;'><b><s style='color:#e74c3c;'>{d2}</s><sub style='color:#27ae60; font-size:12px; margin-left:3px;'>1</sub></b></div></div>"
                     
                     q = f"สมชายใช้เงินซื้อหนังสือไป <b>1/{d1} ของเงินทั้งหมด</b> และซื้อขนมไปอีก <b>1/{d2} ของเงินทั้งหมด</b><br>ปรากฏว่าสมชายยังเหลือเงินอยู่ <b>{rem_money:,} บาท</b><br>เดิมสมชายมีเงินทั้งหมดกี่บาท?"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์สมการเศษส่วน):</b><br>👉 กำหนดให้เดิมสมชายมีเงินทั้งหมด <b>x</b> บาท<br>👉 ซื้อหนังสือ: x/{d1} บาท, ซื้อขนม: x/{d2} บาท<br><br><b>ขั้นที่ 1: สร้างสมการ</b><br>👉 เงินทั้งหมด - หนังสือ - ขนม = เงินที่เหลือ<br>👉 x - (x/{d1}) - (x/{d2}) = {rem_money:,}<br><br><b>ขั้นที่ 2: แก้สมการโดยหา ค.ร.น.</b><br>👉 ค.ร.น. ของส่วน {d1} และ {d2} คือ <b>{lcm}</b> {lcm_explain}<br><br>👉 นำ ค.ร.น. ({lcm}) คูณกระจายเข้าไปใน <b>ทุกๆ จำนวน</b> ของสมการ:<br><div style='margin: 12px 0;'>👉 <b>({lcm} × x) - {f_norm1} - {f_norm2} = {rem_money:,} × {lcm}</b></div>👉 นำตัวส่วนไปตัดทอนกับ {lcm} ให้กลายเป็นจำนวนเต็ม:<br><div style='margin: 12px 0;'>👉 <b>{lcm}x - {f_canc1} - {f_canc2} = {rem_money * lcm:,}</b></div>👉 จะได้สมการใหม่ที่ไม่มีเศษส่วนกวนใจแล้ว:<br>👉 <b>{lcm}x - {lcm//d1}x - {lcm//d2}x = {rem_money * lcm:,}</b><br><br><div style='background-color:#fef9e7; padding:10px; border-radius:5px; border-left: 4px solid #f39c12; margin: 10px 0;'><span style='color:#d35400; font-size:15px;'><i><b>💡 ทำไมบรรทัดต่อไปถึงเหลือ x เดียว? (สมบัติการแจกแจง / ดึงตัวร่วม)</b><br>สังเกตว่าทุกจำนวนมี <b>x</b> เกาะอยู่เหมือนกันหมด เราจึงสามารถดึง <b>x</b> ออกมาเป็นตัวแทนไว้ข้างนอกวงเล็บได้!<br>เปรียบเทียบให้เห็นภาพ: มีเงิน {lcm} บาท จ่ายไป {lcm//d1} บาท และจ่ายอีก {lcm//d2} บาท<br>ก็คือเอาตัวเลขมาหักลบกันก่อน <b>({lcm} - {lcm//d1} - {lcm//d2})</b> แล้วค่อยแปะคำว่า <b>x (แทนหน่วยบาท)</b> ไว้ข้างหลังครับ!</i></span></div>👉 <b>({lcm} - {lcm//d1} - {lcm//d2})x = {rem_money * lcm:,}</b><br>👉 <b>{rem_frac_n}x = {rem_money * lcm:,}</b><br>👉 x = {rem_money * lcm:,} ÷ {rem_frac_n} = <b>{ans:,}</b><br><br><b>ตอบ: เดิมสมชายมีเงิน {ans:,} บาท</b></span>"
+
+            elif actual_sub_t == "แบบรูปและอนุกรม (Number Patterns)":
+                scenario = random.choice(["increasing_diff", "fibonacci", "telescoping"])
+                
+                def f_html(n, d): return f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 2px;'><div style='border-bottom:1px solid #2c3e50; padding:0 2px; font-size:15px;'><b>{n}</b></div><div style='padding-top:1px; font-size:15px;'><b>{d}</b></div></div>"
+                def f_canc(n, d): return f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 2px;'><div style='border-bottom:1px solid #e74c3c; padding:0 2px; font-size:15px;'><s style='color:#e74c3c; opacity:0.6;'><span style='color:#2c3e50;'><b>{n}</b></span></s></div><div style='padding-top:1px; font-size:15px;'><s style='color:#e74c3c; opacity:0.6;'><span style='color:#2c3e50;'><b>{d}</b></span></s></div></div>"
+
+                if scenario == "increasing_diff":
+                    # อนุกรมที่ระยะห่างเพิ่มขึ้นทีละขั้น (เช่น +3, +5, +7, +9)
+                    start = random.randint(1, 10)
+                    diff_start = random.choice([2, 3, 4])
+                    diff_step = random.choice([1, 2])
+                    
+                    seq = [start]
+                    diffs = []
+                    cur = start
+                    cur_diff = diff_start
+                    
+                    for _ in range(5):
+                        cur += cur_diff
+                        seq.append(cur)
+                        diffs.append(cur_diff)
+                        cur_diff += diff_step
+                        
+                    ans = seq[-1]
+                    given_seq = seq[:-1]
+                    
+                    q = f"จากแบบรูปของจำนวนที่กำหนดให้:<br><div style='font-size:22px; margin:15px 0; color:#c0392b;'><b>{', '.join(map(str, given_seq))}, ...</b></div>จงหาจำนวนถัดไป?"
+                    
+                    # วาดเส้นโยงความสัมพันธ์
+                    relation_html = "<div style='font-family: monospace; font-size: 16px;'>"
+                    relation_html += " &nbsp;&nbsp;&nbsp; ".join([f"<b>{x}</b>" for x in seq]) + "<br>"
+                    relation_html += "&nbsp;&nbsp;&nbsp;".join([f"<span style='color:#2980b9;'>+{d}</span>&nbsp;&nbsp;" for d in diffs])
+                    relation_html += "</div>"
+
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาความสัมพันธ์):</b><br>👉 ให้เราลองหาผลต่าง (ระยะห่าง) ของตัวเลขแต่ละคู่ที่อยู่ติดกันดูครับ<br><br><div style='background:#f8f9fa; padding:10px; border-radius:5px; margin: 10px 0;'>{relation_html}</div>👉 จะสังเกตเห็นว่า ระยะห่างมันไม่ได้เพิ่มขึ้นแบบคงที่ แต่มัน **เพิ่มขึ้นทีละ {diff_step}** (จาก +{diffs[0]} เป็น +{diffs[1]}, +{diffs[2]}, ...)<br>👉 ดังนั้น ระยะห่างตัวสุดท้ายที่จะนำไปบวกคือ <b>+{diffs[-1]}</b><br>👉 นำตัวเลขล่าสุดมาบวกกับระยะห่าง: {given_seq[-1]} + {diffs[-1]} = <b>{ans}</b><br><br><b>ตอบ: {ans}</b></span>"
+
+                elif scenario == "fibonacci":
+                    # อนุกรมฟีโบนัชชี (ตัวหน้าบวกกันได้ตัวหลัง)
+                    a = random.randint(1, 3)
+                    b = random.randint(1, 5)
+                    seq = [a, b]
+                    for _ in range(5):
+                        seq.append(seq[-1] + seq[-2])
+                        
+                    ans = seq[-1]
+                    given_seq = seq[:-1]
+                    
+                    q = f"จากแบบรูปของจำนวนที่กำหนดให้:<br><div style='font-size:22px; margin:15px 0; color:#c0392b;'><b>{', '.join(map(str, given_seq))}, ...</b></div>จงหาจำนวนถัดไป?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (อนุกรมสะสม):</b><br>👉 ข้อนี้ถ้าน้องๆ ลองหาระยะห่างดู จะพบว่ามันไม่มีกฎเกณฑ์ที่ชัดเจนครับ<br>👉 ให้ลองสังเกตความสัมพันธ์แบบ **'นำตัวเลข 2 ตัวหน้า มาบวกกัน จะได้ตัวเลขถัดไป'** เสมอ!<br><br><b>ลองพิสูจน์ดู:</b><br>👉 {seq[0]} + {seq[1]} = <b>{seq[2]}</b><br>👉 {seq[1]} + {seq[2]} = <b>{seq[3]}</b><br>👉 {seq[2]} + {seq[3]} = <b>{seq[4]}</b><br><br><b>ขั้นสุดท้าย: หาคำตอบ</b><br>👉 นำตัวเลข 2 ตัวสุดท้ายมาบวกกัน: {given_seq[-2]} + {given_seq[-1]} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+
+                elif scenario == "telescoping":
+                    # อนุกรมผลบวกเศษส่วนต่อเนื่อง (Telescoping Series)
+                    end_n = random.choice([20, 30, 40, 50, 99])
+                    
+                    term1 = f_html(1, "1×2")
+                    term2 = f_html(1, "2×3")
+                    term3 = f_html(1, "3×4")
+                    term_n = f_html(1, f"{end_n}×{end_n+1}")
+                    
+                    q = f"จงหาผลบวกของอนุกรมเศษส่วนต่อไปนี้:<br><br><div style='font-size:20px; text-align:center;'>{term1} + {term2} + {term3} + ... + {term_n} = ?</div>"
+                    
+                    # อธิบายการแยกเศษส่วน
+                    t1_split = f"({f_html(1,1)} - {f_html(1,2)})"
+                    t2_split = f"({f_html(1,2)} - {f_html(1,3)})"
+                    t3_split = f"({f_html(1,3)} - {f_html(1,4)})"
+                    tn_split = f"({f_html(1,end_n)} - {f_html(1,end_n+1)})"
+                    
+                    # อธิบายการตัดทอน
+                    cancel_view = f"<div style='margin:15px 0; font-size:18px;'>= {f_html(1,1)} <span style='color:#e74c3c;'><b>- {f_canc(1,2)} + {f_canc(1,2)}</b></span> <span style='color:#e74c3c;'><b>- {f_canc(1,3)} + {f_canc(1,3)}</b></span> - ... + <span style='color:#e74c3c;'><b>{f_canc(1,end_n)}</b></span> - {f_html(1,end_n+1)}</div>"
+                    
+                    ans_n = end_n
+                    ans_d = end_n + 1
+                    ans_html = f_html(ans_n, ans_d)
+
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 เทคนิคเศษส่วนต่อเนื่อง / Telescoping):</b><br>👉 ถ้าน้องๆ มัวแต่หา ค.ร.น. ข้อนี้ทำทั้งวันก็ไม่เสร็จครับ! เราต้องใช้เทคนิค <b>'การแยกเศษส่วน'</b><br><br><b>ขั้นที่ 1: แปลงร่างเศษส่วน</b><br>สังเกตว่าตัวส่วนเป็นตัวเลขเรียงติดกันคูณกัน เราสามารถจับแยกเป็น 2 ก้อนลบกันได้เสมอ ดังนี้:<br>👉 {term1} แยกได้เป็น {t1_split}<br>👉 {term2} แยกได้เป็น {t2_split}<br>👉 ...ไปเรื่อยๆ จนถึงตัวสุดท้าย...<br>👉 {term_n} แยกได้เป็น {tn_split}<br><br><b>ขั้นที่ 2: นำมาเขียนเรียงต่อกันแล้วสังเกตความวิเศษ!</b><br>เมื่อเราเอาวงเล็บออก จะเกิดการ <b>'ตัดกันเอง'</b> ของตัวเลขตรงกลาง (ตัวติดลบเจอตัวบวก หักล้างกันกลายเป็นศูนย์)<br>{cancel_view}👉 จะเห็นว่าตัวเลขตรงกลางโดน <span style='color:#e74c3c;'><b>ขีดฆ่าตายเรียบ!</b></span> เหลือรอดแค่ <b>'หัวตัวแรก'</b> กับ <b>'หางตัวสุดท้าย'</b> เท่านั้น!<br><br><b>ขั้นที่ 3: คำนวณคำตอบสุดท้าย</b><br>👉 เหลือแค่: {f_html(1,1)} - {f_html(1,end_n+1)}<br>👉 แปลงร่าง 1 ให้ส่วนเท่ากัน: {f_html(end_n+1, end_n+1)} - {f_html(1, end_n+1)}<br>👉 นำเศษมาลบกัน: {ans_html}<br><br><b>ตอบ: {ans_n}/{ans_d}</b></span>"
+
+            elif actual_sub_t == "มาตราส่วนและทิศทาง":
+                scenario = random.choice(["map_to_real", "real_to_map"])
+                
+                if scenario == "map_to_real":
+                    scale_km = random.choice([5, 10, 20, 25, 50, 100])
+                    map_cm_base = random.randint(2, 15)
+                    has_decimal = random.choice([True, False])
+                    if has_decimal: 
+                        map_cm = map_cm_base + 0.5
+                        map_str = f"{map_cm:.1f}"
+                    else: 
+                        map_cm = map_cm_base
+                        map_str = f"{map_cm}"
+                        
+                    ans = map_cm * scale_km
+                    ans_str = f"{ans:g}" # Format to remove trailing zero if integer
+                    
+                    q = f"แผนที่ฉบับหนึ่งกำหนดมาตราส่วน <b>1 ซม. : {scale_km} กม.</b><br>ถ้าวัดระยะทางจากเมือง A ไปเมือง B ในแผนที่ได้ <b>{map_str} เซนติเมตร</b><br>ระยะทางจริงจากเมือง A ไปเมือง B คือกี่กิโลเมตร?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การอ่านมาตราส่วนแผนที่):</b><br>👉 มาตราส่วน 1 ซม. : {scale_km} กม. หมายความว่า <b>'ระยะทางในกระดาษ 1 ซม. เท่ากับระยะทางจริง {scale_km} กิโลเมตร'</b><br><br><b>ขั้นที่ 1: เทียบบัญญัติไตรยางศ์</b><br>👉 แผนที่ 1 ซม. = ของจริง {scale_km} กม.<br>👉 แผนที่ {map_str} ซม. = ของจริง {map_str} × {scale_km} กม.<br><br><b>ขั้นที่ 2: คำนวณคำตอบ</b><br>👉 {map_str} × {scale_km} = <b>{ans_str} กิโลเมตร</b><br><b>ตอบ: {ans_str} กิโลเมตร</b></span>"
+                    
+                elif scenario == "real_to_map":
+                    scale_m = random.choice([10, 20, 50, 100, 200])
+                    map_ans_cm = random.randint(3, 12)
+                    has_decimal = random.choice([True, False])
+                    if has_decimal: map_ans_cm += 0.5
+                    real_m = map_ans_cm * scale_m
+                    real_str = f"{real_m:g}"
+                    map_str = f"{map_ans_cm:g}"
+                    
+                    q = f"แผนผังหมู่บ้านแห่งหนึ่งใช้มาตราส่วน <b>1 ซม. : {scale_m} เมตร</b><br>ถ้าระยะทางจริงจากหน้าหมู่บ้านถึงสวนสาธารณะคือ <b>{real_str} เมตร</b><br>ในแผนผังนี้ ระยะทางดังกล่าวจะมีความยาวกี่เซนติเมตร?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (แปลงระยะจริงลงในแผนผัง):</b><br>👉 มาตราส่วน 1 ซม. : {scale_m} เมตร หมายความว่า <b>'ระยะทางจริงทุกๆ {scale_m} เมตร จะวาดลงในกระดาษ 1 เซนติเมตร'</b><br><br><b>ขั้นที่ 1: เทียบบัญญัติไตรยางศ์ (คิดย้อนกลับ)</b><br>👉 ระยะจริง {scale_m} เมตร = วาดในแผนผัง 1 ซม.<br>👉 ระยะจริง {real_str} เมตร = นำไปหารด้วย {scale_m} เพื่อดูว่าจะได้กระดาษกี่เซนติเมตร<br><br><b>ขั้นที่ 2: คำนวณคำตอบ</b><br>👉 วาดในแผนผัง = {real_str} ÷ {scale_m}<br>👉 วาดในแผนผัง = <b>{map_str} เซนติเมตร</b><br><b>ตอบ: {map_str} เซนติเมตร</b></span>"
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
