@@ -2626,23 +2626,35 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
             elif actual_sub_t == "ความน่าจะเป็นเบื้องต้น (สุ่มหยิบของ)":
                 
-                # --- ฟังก์ชันวาดกล่องลูกแก้ว (VERSION 3 - STRICT BOUNDS & PADDING) ---
+                # --- ฟังก์ชันวาดกล่องลูกแก้ว (VERSION 4 - Auto Resize ยืดหดกล่องอัตโนมัติ) ---
                 def draw_marbles_box_svg(color_counts):
                     color_map = {"สีแดง": "#e74c3c", "สีฟ้า": "#3498db", "สีเขียว": "#2ecc71", "สีเหลือง": "#f1c40f", "สีม่วง": "#9b59b6"}
-                    width = 400
-                    height = 200 # ปรับความสูงให้เหมาะสมขึ้น
-                    svg = f'<div style="text-align:center; margin: 20px 0;"><svg width="{width}" height="{height}">'
                     
-                    # ตัวกล่อง
+                    total_marbles = sum(color_counts.values())
+                    # ปรับจำนวนคอลัมน์ตามปริมาณลูกแก้ว
+                    cols = 10 if total_marbles > 20 else 8
+                    rows = (total_marbles + cols - 1) // cols
+                    
+                    marble_r = 12
+                    col_w = 36
+                    row_h = 36
+                    
                     box_stroke_width = 4
-                    box_width = 300
-                    box_height = 160
+                    # คำนวณขนาดกล่องแบบไดนามิก ยืดตามจำนวนแถวและคอลัมน์
+                    box_width = max(320, cols * col_w + 30)
+                    box_height = max(140, rows * row_h + 60)
+                    
+                    width = box_width + 100
+                    height = box_height + 40
+                    
+                    svg = f'<div style="text-align:center; margin: 15px 0;"><svg width="{width}" height="{height}">'
+                    
                     box_x = 50
                     box_y = 20
+                    # วาดตัวกล่อง
                     svg += f'<rect x="{box_x}" y="{box_y}" width="{box_width}" height="{box_height}" fill="#ecf0f1" stroke="#34495e" stroke-width="{box_stroke_width}" rx="15"/>'
-                    
-                    # เส้นแบ่งครึ่ง (dash)
-                    svg += f'<path d="M {box_x} {box_y + 40} L {box_x + box_width} {box_y + 40}" stroke="#bdc3c7" stroke-width="2" stroke-dasharray="5,5"/>'
+                    # เส้นแบ่งครึ่ง
+                    svg += f'<path d="M {box_x} {box_y + 35} L {box_x + box_width} {box_y + 35}" stroke="#bdc3c7" stroke-width="2" stroke-dasharray="5,5"/>'
                     
                     marbles = []
                     for c_name, count in color_counts.items():
@@ -2650,31 +2662,19 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             marbles.append(color_map[c_name])
                     random.shuffle(marbles)
                     
-                    # ปรับขนาดและระยะห่างของลูกแก้วให้เล็กลงและจัดวางแน่นขึ้น
-                    cols = 8 
-                    marble_r = 12 
-                    row_h = 42 
-                    col_w = 34 
+                    # จุดเริ่มต้นวางลูกแก้ว
+                    start_x = box_x + 20 + marble_r 
+                    start_y = box_y + 35 + 15 + marble_r
                     
-                    padding_x = box_stroke_width + 6
-                    padding_y = box_stroke_width + 10
-                    
-                    start_x = box_x + padding_x + marble_r 
-                    start_y = box_y + padding_y + marble_r + 40 
-                    
-                    max_rows = (box_height - 40 - (padding_y * 2) - marble_r) // row_h
-                    if (len(marbles) + cols - 1) // cols > max_rows:
-                         svg += f'<text x="50" y="22" font-size="12" fill="red">⚠️ จำนวนลูกแก้วมากเกินไป</text>'
-                    else:
-                         for i, color in enumerate(marbles):
-                             row = i // cols
-                             col = i % cols
-                             
-                             cx = start_x + (col * col_w)
-                             cy = start_y + (row * row_h)
-                             
-                             svg += f'<circle cx="{cx}" cy="{cy}" r="{marble_r}" fill="{color}" stroke="#2c3e50" stroke-width="3"/>'
-                             svg += f'<circle cx="{cx-4}" cy="{cy-4}" r="3" fill="#ffffff" opacity="0.5"/>'
+                    for i, color in enumerate(marbles):
+                        r_idx = i // cols
+                        c_idx = i % cols
+                        cx = start_x + (c_idx * col_w)
+                        cy = start_y + (r_idx * row_h)
+                        
+                        # วาดลูกแก้ว
+                        svg += f'<circle cx="{cx}" cy="{cy}" r="{marble_r}" fill="{color}" stroke="#2c3e50" stroke-width="3"/>'
+                        svg += f'<circle cx="{cx-4}" cy="{cy-4}" r="3" fill="#ffffff" opacity="0.5"/>'
                         
                     svg += '</svg></div>'
                     return svg
