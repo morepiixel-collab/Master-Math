@@ -2033,12 +2033,41 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         <b>ตอบ: {ans_str}</b></span>"""
             elif actual_sub_t == "โจทย์ปัญหาบัญญัติไตรยางศ์":
                 
+                # --- ฟังก์ชันวาดรูปสำหรับบัญญัติไตรยางศ์ ---
+                def draw_unitary_step(emoji, qty, price_str, label_unit, is_target=False):
+                    bg_color = "#fdf2e9" if is_target else "#f1f8ff"
+                    border_color = "#e67e22" if is_target else "#3498db"
+                    box_style = f"border: 2px dashed {border_color}; border-radius: 8px; padding: 10px; display: inline-block; text-align: center; margin: 5px; background-color: {bg_color}; min-width: 100px; vertical-align: top;"
+                    emoji_str = "".join([f"<span style='font-size:24px;'>{emoji}</span>"] * min(qty, 4))
+                    if qty > 4: emoji_str += f"<span style='font-size:18px; font-weight:bold; color:#7f8c8d;'>...({qty})</span>"
+                    return f"""
+                    <div style="{box_style}">
+                        <div>{emoji_str}</div>
+                        <div style="font-size: 16px; font-weight: bold; color: #2c3e50; margin-top: 5px;">{qty} {label_unit}</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #e74c3c;">{price_str}</div>
+                    </div>
+                    """
+                    
+                def draw_fuel_step(emoji, liters, dist_str, is_target=False):
+                    bg_color = "#fdf2e9" if is_target else "#eafaf1"
+                    border_color = "#e67e22" if is_target else "#2ecc71"
+                    box_style = f"border: 2px dashed {border_color}; border-radius: 8px; padding: 10px; display: inline-block; text-align: center; margin: 5px; background-color: {bg_color}; min-width: 120px; vertical-align: top;"
+                    return f"""
+                    <div style="{box_style}">
+                        <div style="font-size:24px;">{emoji} ⛽ <span style="font-size:18px; font-weight:bold;">{liters} ลิตร</span></div>
+                        <div style="font-size: 16px; font-weight: bold; color: #2c3e50; margin-top: 5px;">วิ่งได้ระยะทาง</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #27ae60;">{dist_str}</div>
+                    </div>
+                    """
+                # ----------------------------------------
+                
                 scenario = random.choice(["buy", "distance"])
                 
                 if is_challenge:
                     # โหมดชาเลนจ์: ประยุกต์บัญญัติไตรยางศ์กับการหารมีเศษ (เงินทอน)
                     item = random.choice(["ส้ม", "แอปเปิล", "มะม่วง", "ไข่ไก่", "โดนัท", "คัพเค้ก"])
                     unit = "ผล" if item in ["ส้ม", "แอปเปิล", "มะม่วง"] else ("ฟอง" if item == "ไข่ไก่" else "ชิ้น")
+                    emoji = {"ส้ม":"🍊", "แอปเปิล":"🍎", "มะม่วง":"🥭", "ไข่ไก่":"🥚", "โดนัท":"🍩", "คัพเค้ก":"🧁"}[item]
                     
                     unit_price = random.randint(7, 25)
                     A = random.randint(4, 12) * 5 
@@ -2050,27 +2079,25 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     max_items = C_budget // unit_price
                     rem_money = C_budget % unit_price
                     
-                    q = f"แม่ค้าติดป้ายขาย{item} <b>{A} {unit}</b> ในราคา <b>{B:,} บาท</b> <br>ถ้า{name}มีเงินในกระเป๋า <b>{C_budget:,} บาท</b> จะสามารถซื้อ{item}ได้อย่างมากที่สุดกี่{unit} และจะเหลือเงินทอนกี่บาท?"
+                    q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> <div style='display:inline-block; border: 2px solid #e67e22; border-radius:8px; padding:15px; background:#fdf2e9; vertical-align:top; min-width:120px;'><div style='font-size:24px;'>💰</div><div style='font-size:16px; font-weight:bold; color:#2c3e50;'>มีเงินทั้งหมด</div><div style='font-size:18px; font-weight:bold; color:#e74c3c;'>{C_budget:,} บาท</div></div></div>"
+                    sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {A}<br>➔</div> {draw_unitary_step(emoji, 1, f'{unit_price:,} บาท', unit, True)}</div>"
+                    
+                    q = f"แม่ค้าติดป้ายขาย{item} <b>{A} {unit}</b> ในราคา <b>{B:,} บาท</b> <br>ถ้า{name}มีเงินในกระเป๋า <b>{C_budget:,} บาท</b> จะสามารถซื้อ{item}ได้อย่างมากที่สุดกี่{unit} และจะเหลือเงินทอนกี่บาท?<br>{q_graphic}"
                     
                     sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - บัญญัติไตรยางศ์ประยุกต์การหารมีเศษ):</b><br>
-                    <b>ขั้นที่ 1: ทำความเข้าใจตัวเลขที่โจทย์กำหนด</b><br>
-                    👉 <b>{A}</b> คือ จำนวน{item}ที่จัดเซ็ตขาย (หน่วยเป็น {unit})<br>
-                    👉 <b>{B:,}</b> คือ ราคาขายของเซ็ตนี้ (หน่วยเป็น บาท)<br>
-                    👉 <b>{C_budget:,}</b> คือ จำนวนเงินทั้งหมดที่{name}มีอยู่ (หน่วยเป็น บาท)<br><br>
-                    
-                    <b>ขั้นที่ 2: หาค่าของ 1 หน่วย (หัวใจสำคัญของบัญญัติไตรยางศ์)</b><br>
+                    <b>ขั้นที่ 1: หาค่าของ 1 หน่วย (หัวใจสำคัญของบัญญัติไตรยางศ์)</b><br>
+                    {sol_graphic}
                     👉 เราต้องรู้ให้ได้ก่อนว่า {item} <b>เพียง 1 {unit}</b> ราคาตก{unit}ละกี่บาท?<br>
-                    👉 วิธีหา: นำเงินราคาเซ็ต ({B:,}) มาแบ่งเฉลี่ยให้เท่ากับจำนวนของในเซ็ต ({A})<br>
-                    👉 คำนวณ: <b>{B:,} ÷ {A} = {unit_price:,}</b><br>
-                    👉 สรุปขั้นนี้: ตัวเลข <b>{unit_price:,}</b> คือ "ราคาของ{item} 1 {unit}"<br><br>
+                    👉 นำเงินราคาเซ็ต ({B:,}) มาแบ่งเฉลี่ยให้เท่ากับจำนวนของในเซ็ต ({A})<br>
+                    👉 คำนวณ: <b>{B:,} ÷ {A} = {unit_price:,} บาท</b><br><br>
                     
-                    <b>ขั้นที่ 3: คำนวณจำนวนชิ้นที่จะซื้อได้จากเงินที่มี</b><br>
+                    <b>ขั้นที่ 2: คำนวณจำนวนชิ้นที่จะซื้อได้จากเงินที่มี</b><br>
                     👉 {name}มีเงิน <b>{C_budget:,}</b> บาท และของราคาชิ้นละ <b>{unit_price:,}</b> บาท<br>
-                    👉 วิธีหา: นำเงินทั้งหมดมาแบ่งจ่ายออกทีละ {unit_price:,} บาท (คือการตั้งหาร)<br>
+                    👉 นำเงินทั้งหมดมาแบ่งจ่ายออกทีละ {unit_price:,} บาท (คือการตั้งหาร)<br>
                     👉 คำนวณ: <b>{C_budget:,} ÷ {unit_price:,}</b><br>
                     👉 จะได้ผลหารคือ <b>{max_items:,}</b> และเหลือเศษ <b>{rem_money:,}</b><br><br>
                     
-                    <b>ขั้นที่ 4: แปลงตัวเลขผลลัพธ์เป็นคำตอบ</b><br>
+                    <b>ขั้นที่ 3: แปลงตัวเลขผลลัพธ์เป็นคำตอบ</b><br>
                     👉 ผลหาร <b>{max_items:,}</b> หมายถึง จำนวน{unit}ที่เงินพอซื้อได้เต็มๆ<br>
                     👉 เศษ <b>{rem_money:,}</b> หมายถึง เงินส่วนที่เหลือซึ่งไม่พอซื้อของชิ้นต่อไป (นั่นคือเงินทอน)<br><br>
                     <b>ตอบ: ซื้อได้อย่างมากที่สุด {max_items:,} {unit} และเหลือเงินทอน {rem_money:,} บาท</b></span>"""
@@ -2079,6 +2106,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     # โหมดปกติ: การซื้อของ (Direct Variation)
                     item = random.choice(["สมุด", "ปากกา", "ดินสอ", "ยางลบ", "ไม้บรรทัด", "แฟ้ม"])
                     unit = "เล่ม" if item in ["สมุด", "แฟ้ม"] else ("ด้าม" if item == "ปากกา" else "แท่ง" if item == "ดินสอ" else "อัน")
+                    emoji = {"สมุด":"📓", "ปากกา":"🖊️", "ดินสอ":"✏️", "ยางลบ":"🧽", "ไม้บรรทัด":"📏", "แฟ้ม":"📁"}[item]
                     
                     A = random.randint(3, 12) 
                     unit_price = random.randint(5, 30) * random.choice([1, 2, 5])
@@ -2087,31 +2115,29 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     while C == A: C = random.randint(15, 50)
                     ans = C * unit_price
                     
-                    q = f"ร้านค้าสหกรณ์ขาย{item} <b>{A} {unit}</b> ในราคา <b>{B:,} บาท</b> <br>ถ้าคุณครูต้องการสั่งซื้อ{item}แบบเดียวกันจำนวน <b>{C} {unit}</b> จะต้องจ่ายเงินทั้งหมดกี่บาท?"
+                    q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> {draw_unitary_step(emoji, C, '? บาท', unit, True)}</div>"
+                    sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {A}<br>➔</div> {draw_unitary_step(emoji, 1, f'{unit_price:,} บาท', unit)} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>คูณ {C}<br>➔</div> {draw_unitary_step(emoji, C, f'{ans:,} บาท', unit, True)}</div>"
+                    
+                    q = f"ร้านค้าสหกรณ์ขาย{item} <b>{A} {unit}</b> ในราคา <b>{B:,} บาท</b> <br>ถ้าคุณครูต้องการสั่งซื้อ{item}แบบเดียวกันจำนวน <b>{C} {unit}</b> จะต้องจ่ายเงินทั้งหมดกี่บาท?<br>{q_graphic}"
                     
                     sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (บัญญัติไตรยางศ์ แบบหาค่า 1 หน่วย):</b><br>
-                    หลักการของบัญญัติไตรยางศ์คือ "หารให้เป็น 1 ก่อน แล้วค่อยนำไปคูณจำนวนที่ต้องการ"<br><br>
-                    <b>ขั้นที่ 1: ทำความเข้าใจตัวเลขที่โจทย์กำหนด</b><br>
-                    👉 <b>{A}</b> คือ จำนวน{item}แพ็กแรก (หน่วยเป็น {unit})<br>
-                    👉 <b>{B:,}</b> คือ ราคาของ{item}แพ็กแรกรวมกัน (หน่วยเป็น บาท)<br>
-                    👉 <b>{C}</b> คือ จำนวน{item}ใหม่ที่คุณครูต้องการจะสั่งซื้อ<br><br>
-                    
-                    <b>ขั้นที่ 2: หาค่าของ 1 หน่วย (หัวใจสำคัญ)</b><br>
+                    หลักการของบัญญัติไตรยางศ์คือ "หารให้เป็น 1 ก่อน แล้วค่อยนำไปคูณจำนวนที่ต้องการ"<br>
+                    {sol_graphic}
+                    <b>ขั้นที่ 1: หาค่าของ 1 หน่วย (หัวใจสำคัญ)</b><br>
                     👉 เราต้องรู้ให้ได้ก่อนว่า {item} <b>แค่ 1 {unit}</b> ราคาเท่าไร?<br>
-                    👉 วิธีหา: นำเงินทั้งหมด ({B:,}) มาแบ่งเฉลี่ยให้เท่ากับจำนวนชิ้น ({A})<br>
-                    👉 คำนวณ: <b>{B:,} ÷ {A} = {unit_price:,}</b><br>
-                    👉 สรุปขั้นนี้: ตัวเลข <b>{unit_price:,}</b> คือ "ราคาของ{item} 1 {unit}"<br><br>
+                    👉 นำเงินทั้งหมด ({B:,}) มาแบ่งเฉลี่ยให้เท่ากับจำนวนชิ้น ({A})<br>
+                    👉 คำนวณ: <b>{B:,} ÷ {A} = {unit_price:,} บาท</b><br><br>
                     
-                    <b>ขั้นที่ 3: คำนวณหาสิ่งที่โจทย์ถาม</b><br>
+                    <b>ขั้นที่ 2: คำนวณหาสิ่งที่โจทย์ถาม</b><br>
                     👉 โจทย์อยากรู้ว่า ถ้าซื้อ <b>{C}</b> {unit} ต้องจ่ายเงินเท่าไร?<br>
-                    👉 วิธีหา: นำราคาต่อ 1 {unit} (คือ <b>{unit_price:,}</b>) มาบวกซ้ำๆ กัน {C} ครั้ง (หรือก็คือการ <b>คูณ</b>)<br>
-                    👉 คำนวณ: <b>{unit_price:,} × {C} = {ans:,}</b><br>
-                    👉 ตัวเลข <b>{ans:,}</b> ที่ได้ คือจำนวนเงินทั้งหมดที่คุณครูต้องจ่าย<br><br>
+                    👉 นำราคาต่อ 1 {unit} (คือ <b>{unit_price:,}</b>) มาคูณกับจำนวนที่ต้องการซื้อ ({C})<br>
+                    👉 คำนวณ: <b>{unit_price:,} × {C} = {ans:,} บาท</b><br><br>
                     <b>ตอบ: {ans:,} บาท</b></span>"""
                     
                 else:
                     # โหมดปกติ: การใช้น้ำมันกับระยะทาง (Direct Variation)
                     vehicle = random.choice(["รถยนต์", "รถตู้", "รถกระบะ"])
+                    emoji = {"รถยนต์":"🚗", "รถตู้":"🚐", "รถกระบะ":"🛻"}[vehicle]
                     A = random.randint(5, 15) 
                     dist_per_liter = random.randint(12, 22)
                     B = A * dist_per_liter 
@@ -2119,25 +2145,22 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     while C == A: C = random.randint(20, 60)
                     ans = C * dist_per_liter
                     
-                    q = f"<b>{vehicle}</b>คันหนึ่งใช้น้ำมัน <b>{A} ลิตร</b> สามารถแล่นได้ระยะทาง <b>{B:,} กิโลเมตร</b> <br>ถ้าในถังมีน้ำมัน <b>{C} ลิตร</b> {vehicle}คันนี้จะแล่นได้ระยะทางทั้งหมดกี่กิโลเมตร? <br><span style='font-size:16px; color:#7f8c8d;'>(กำหนดให้อัตราการกินน้ำมันคงที่ตลอดเส้นทาง)</span>"
+                    q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_fuel_step(emoji, A, f'{B:,} กม.')} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> {draw_fuel_step(emoji, C, '? กม.', True)}</div>"
+                    sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_fuel_step(emoji, A, f'{B:,} กม.')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {A}<br>➔</div> {draw_fuel_step(emoji, 1, f'{dist_per_liter:,} กม.')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>คูณ {C}<br>➔</div> {draw_fuel_step(emoji, C, f'{ans:,} กม.', True)}</div>"
+                    
+                    q = f"<b>{vehicle}</b>คันหนึ่งใช้น้ำมัน <b>{A} ลิตร</b> สามารถแล่นได้ระยะทาง <b>{B:,} กิโลเมตร</b> <br>ถ้าในถังมีน้ำมัน <b>{C} ลิตร</b> {vehicle}คันนี้จะแล่นได้ระยะทางทั้งหมดกี่กิโลเมตร? <br><span style='font-size:16px; color:#7f8c8d;'>(กำหนดให้อัตราการกินน้ำมันคงที่ตลอดเส้นทาง)</span><br>{q_graphic}"
                     
                     sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (บัญญัติไตรยางศ์ อัตราส่วนระยะทาง):</b><br>
-                    <b>ขั้นที่ 1: ทำความเข้าใจตัวเลขที่โจทย์กำหนด</b><br>
-                    👉 <b>{A}</b> คือ ปริมาณน้ำมันตอนแรก (หน่วยเป็น ลิตร)<br>
-                    👉 <b>{B:,}</b> คือ ระยะทางที่วิ่งได้จากน้ำมัน {A} ลิตร (หน่วยเป็น กิโลเมตร)<br>
-                    👉 <b>{C}</b> คือ ปริมาณน้ำมันที่มีในปัจจุบัน<br><br>
+                    {sol_graphic}
+                    <b>ขั้นที่ 1: หาค่าของ 1 หน่วย (น้ำมัน 1 ลิตร วิ่งได้ไกลแค่ไหน?)</b><br>
+                    👉 เราต้องหาอัตราสิ้นเปลืองของรถคันนี้ก่อน โดยนำระยะทางทั้งหมด ({B:,}) มาหารแบ่งด้วยจำนวนลิตรน้ำมันที่ใช้ไป ({A})<br>
+                    👉 คำนวณ: <b>{B:,} ÷ {A} = {dist_per_liter:,} กม./ลิตร</b><br>
+                    👉 สรุป: น้ำมันเพียง 1 ลิตร พาเราไปได้ไกล {dist_per_liter:,} กิโลเมตร<br><br>
                     
-                    <b>ขั้นที่ 2: หาค่าของ 1 หน่วย (น้ำมัน 1 ลิตร วิ่งได้ไกลแค่ไหน?)</b><br>
-                    👉 เราต้องหาอัตราสิ้นเปลืองของรถคันนี้ก่อน<br>
-                    👉 วิธีหา: นำระยะทางทั้งหมด ({B:,}) มาหารแบ่งด้วยจำนวนลิตรน้ำมันที่ใช้ไป ({A})<br>
-                    👉 คำนวณ: <b>{B:,} ÷ {A} = {dist_per_liter:,}</b><br>
-                    👉 สรุปขั้นนี้: ตัวเลข <b>{dist_per_liter:,}</b> หมายความว่า น้ำมันเพียง 1 ลิตร พาเราไปได้ไกล {dist_per_liter:,} กิโลเมตร<br><br>
-                    
-                    <b>ขั้นที่ 3: คำนวณระยะทางจากน้ำมันที่โจทย์กำหนด</b><br>
+                    <b>ขั้นที่ 2: คำนวณระยะทางจากน้ำมันที่โจทย์กำหนด</b><br>
                     👉 โจทย์ถามว่า ถ้าน้ำมัน <b>{C}</b> ลิตร จะวิ่งได้ไกลแค่ไหน?<br>
-                    👉 วิธีหา: นำระยะทางที่ได้ต่อ 1 ลิตร (คือ <b>{dist_per_liter:,}</b>) มาคูณกับจำนวนลิตรน้ำมันที่มี (คือ <b>{C}</b>)<br>
-                    👉 คำนวณ: <b>{dist_per_liter:,} × {C} = {ans:,}</b><br>
-                    👉 ตัวเลข <b>{ans:,}</b> ที่ได้ คือระยะทางรวมทั้งหมดที่รถคันนี้สามารถวิ่งไปถึงได้<br><br>
+                    👉 นำระยะทางที่ได้ต่อ 1 ลิตร (คือ <b>{dist_per_liter:,}</b>) มาคูณกับจำนวนลิตรน้ำมันที่มี (คือ <b>{C}</b>)<br>
+                    👉 คำนวณ: <b>{dist_per_liter:,} × {C} = {ans:,} กม.</b><br><br>
                     <b>ตอบ: {ans:,} กิโลเมตร</b></span>"""
 
             else:
