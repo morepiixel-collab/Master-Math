@@ -3101,26 +3101,41 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (มุมภายในรูปสามเหลี่ยม):</b><br>👉 ผลรวมมุมภายในของรูปสามเหลี่ยมทุกชนิด = 180°<br>👉 มุมที่โจทย์กำหนดให้ 2 มุม รวมกัน = {a1}° + {a2}° = {a1+a2}°<br>👉 มุมที่เหลือ x = 180° - {a1+a2}° = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
 
             elif actual_sub_t == "เส้นขนานและมุมแย้ง":
+                # --- ฟังก์ชันวาดรูปเส้นขนาน (อัปเกรด: เพิ่มชื่อเส้นและเส้นตัดสีฟ้าเพื่อความสมจริง) ---
                 def draw_parallel_svg(mode, val, lbl):
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="300" height="160">'
-                    # เส้นขนาน 2 เส้น
-                    svg += '<line x1="50" y1="50" x2="250" y2="50" stroke="#2980b9" stroke-width="4"/>'
-                    svg += '<line x1="50" y1="110" x2="250" y2="110" stroke="#2980b9" stroke-width="4"/>'
-                    # เส้นตัด
-                    svg += '<line x1="100" y1="140" x2="200" y2="20" stroke="#c0392b" stroke-width="3"/>'
-                    # ลูกศรแสดงความขนาน
-                    svg += '<polygon points="240,45 250,50 240,55" fill="#2980b9"/>'
-                    svg += '<polygon points="240,105 250,110 240,115" fill="#2980b9"/>'
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="320" height="180">' # เพิ่มขนาดเผื่อชื่อเส้น
                     
+                    # 💡 แก้ไข: เปลี่ยนสีเส้นตัดจากแดงเป็นฟ้าตามคำขอ และเพิ่ม terminal points เพื่อความสมจริง
+                    svg += '<line x1="100" y1="160" x2="220" y2="20" stroke="#3498db" stroke-width="4"/>'
+                    svg += '<circle cx="100" cy="160" r="5" fill="#3498db" />' # Terminal point ด้านล่าง
+                    svg += '<circle cx="220" cy="20" r="5" fill="#3498db" />' # Terminal point ด้านบน
+
+                    # เส้นขนาน 2 เส้น (ปรับตำแหน่งใหม่เล็กน้อยเพื่อให้สมดุล)
+                    svg += '<line x1="50" y1="60" x2="270" y2="60" stroke="#2980b9" stroke-width="4"/>' # เส้นตรง AB
+                    svg += '<line x1="50" y1="120" x2="270" y2="120" stroke="#2980b9" stroke-width="4"/>' # เส้นตรง CD
+                    
+                    # 💡 เพิ่ม: ชื่อเส้นตรง A, B, C, D ที่ปลายเส้นตามที่ครูวาดมา
+                    label_style = 'font-family:Sarabun; font-size:20px; font-weight:bold; fill:#2c3e50;'
+                    svg += f'<text x="30" y="65" {label_style}>A</text>' # ปลายซ้ายของ AB
+                    svg += f'<text x="280" y="65" {label_style}>B</text>' # ปลายขวาของ AB
+                    svg += f'<text x="30" y="125" {label_style}>C</text>' # ปลายซ้ายของ CD
+                    svg += f'<text x="280" y="125" {label_style}>D</text>' # ปลายขวาของ CD
+
+                    # ลูกศรแสดงความขนาน (ปรับตำแหน่งตามพิกัดใหม่)
+                    svg += '<polygon points="255,55 265,60 255,65" fill="#2980b9"/>'
+                    svg += '<polygon points="255,115 265,120 255,125" fill="#2980b9"/>'
+                    
+                    # ปรับตำแหน่งตัวเลข/ตัวแปรมุมตามตำแหน่งใหม่เพื่อให้เห็นชัดเจน
+                    text_style = 'font-size:16px; fill:#c0392b; font-weight:bold;'
                     if mode == "Z": 
-                        svg += f'<text x="145" y="70" font-size="16" fill="#2c3e50" font-weight="bold">{val}°</text>'
-                        svg += f'<text x="125" y="100" font-size="16" fill="#2c3e50" font-weight="bold">{lbl}</text>'
+                        svg += f'<text x="155" y="80" {text_style}>{val}°</text>'
+                        svg += f'<text x="135" y="110" {text_style}>{lbl}</text>'
                     elif mode == "C": 
-                        svg += f'<text x="145" y="70" font-size="16" fill="#2c3e50" font-weight="bold">{val}°</text>'
-                        svg += f'<text x="160" y="100" font-size="16" fill="#2c3e50" font-weight="bold">{lbl}</text>'
+                        svg += f'<text x="155" y="80" {text_style}>{val}°</text>'
+                        svg += f'<text x="170" y="110" {text_style}>{lbl}</text>'
                     elif mode == "F": 
-                        svg += f'<text x="180" y="40" font-size="16" fill="#2c3e50" font-weight="bold">{val}°</text>'
-                        svg += f'<text x="160" y="100" font-size="16" fill="#2c3e50" font-weight="bold">{lbl}</text>'
+                        svg += f'<text x="190" y="50" {text_style}>{val}°</text>'
+                        svg += f'<text x="170" y="110" {text_style}>{lbl}</text>'
                     svg += '</svg></div>'
                     return svg
 
