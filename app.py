@@ -2625,11 +2625,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
             elif actual_sub_t == "ความน่าจะเป็นเบื้องต้น (สุ่มหยิบของ)":
                 
-                # --- ฟังก์ชันวาดกล่องลูกแก้ว (VERSION 2 - ขยายร่าง!) ---
+                # --- ฟังก์ชันวาดกล่องลูกแก้ว (VERSION 2 - ขยายร่าง! + ย่อขนาดลูกแก้ว) ---
                 def draw_marbles_box_svg(color_counts):
                     color_map = {"สีแดง": "#e74c3c", "สีฟ้า": "#3498db", "สีเขียว": "#2ecc71", "สีเหลือง": "#f1c40f", "สีม่วง": "#9b59b6"}
-                    width = 500  # ขยายความกว้าง
-                    height = 250 # ขยายความสูง
+                    width = 500  
+                    height = 250 
                     svg = f'<div style="text-align:center; margin: 20px 0;"><svg width="{width}" height="{height}">'
                     
                     # ตัวกล่อง (ใหญ่ขึ้น)
@@ -2643,19 +2643,19 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             marbles.append(color_map[c_name])
                     random.shuffle(marbles)
                     
-                    cols = 8 # เพิ่มจำนวนคอลัมน์
-                    marble_r = 20 # เพิ่มขนาดลูกแก้ว (รัศมี)
+                    cols = 8 
+                    marble_r = 14 # 💡 ลดรัศมีลูกแก้วลง (จาก 20 เป็น 14)
                     
                     for i, color in enumerate(marbles):
                         r = i // cols
                         c = i % cols
-                        # คำนวณตำแหน่งใหม่ให้ดูไม่อัดกัน
                         cx = 60 + c * 52 
                         cy = 80 + r * 55
                         
                         # วาดลูกแก้วพร้อมเงาสวยงาม
                         svg += f'<circle cx="{cx}" cy="{cy}" r="{marble_r}" fill="{color}" stroke="#2c3e50" stroke-width="3"/>'
-                        svg += f'<circle cx="{cx-7}" cy="{cy-7}" r="6" fill="#ffffff" opacity="0.6"/>'
+                        # ปรับขนาดและตำแหน่งเงาให้เข้ากับรัศมีใหม่
+                        svg += f'<circle cx="{cx-5}" cy="{cy-5}" r="4" fill="#ffffff" opacity="0.6"/>'
                         
                     svg += '</svg></div>'
                     return svg
