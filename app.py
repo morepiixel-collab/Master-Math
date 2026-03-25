@@ -3945,14 +3945,15 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
             elif actual_sub_t == "เรขาคณิตประยุกต์ (หาพื้นที่แรเงา)":
                 def draw_shaded_svg(scenario, W, H, p1=0):
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="360" height="220">'
-                    max_w, max_h = 220, 140 
+                    # ขยายผืนผ้าใบให้กว้างแบบ Ultra Wide (460px) เพื่อให้ตัวหนังสือมีพื้นที่หายใจเยอะๆ ไม่มีทางตกขอบครับ
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="460" height="240">'
+                    max_w, max_h = 200, 140 
                     scale = min(max_w / W, max_h / H)
                     draw_w = W * scale
                     draw_h = H * scale
                     
-                    ox = (360 - draw_w) / 2
-                    oy = (220 - draw_h) / 2
+                    ox = (460 - draw_w) / 2
+                    oy = (240 - draw_h) / 2
 
                     lbl_style = 'font-family:Sarabun; font-size:15px; font-weight:bold; fill:#c0392b;'
                     lbl_style_sm = 'font-family:Sarabun; font-size:14px; font-weight:bold; fill:#2980b9;'
@@ -3992,7 +3993,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         
                         svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ม.</text>'
                         svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} ม.</text>'
-                        svg += f'<text x="{ox + draw_w + 10}" y="{oy + draw_h/2 + 5}" {lbl_style_sm} text-anchor="start">ทางกว้าง {p1} ม.</text>'
+                        # เลื่อนตัวหนังสือให้ปลอดภัยยิ่งขึ้น
+                        svg += f'<text x="{ox + draw_w + 10}" y="{oy + draw_h/2 + 5}" {lbl_style_sm} text-anchor="start">กว้าง {p1} ม.</text>'
 
                     elif scenario == "four_corners":
                         c = p1 * scale
@@ -4003,11 +4005,29 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ซม.</text>'
                         svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} ซม.</text>'
                         svg += f'<text x="{ox + draw_w/2}" y="{oy - 10}" {lbl_style_sm} text-anchor="middle">ตัดมุมละ {p1}x{p1}</text>'
+
+                    elif scenario == "midpoint_rhombus":
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="#ffffff" stroke="#2c3e50" stroke-width="3"/>'
+                        pts = f"{ox+draw_w/2},{oy} {ox+draw_w},{oy+draw_h/2} {ox+draw_w/2},{oy+draw_h} {ox},{oy+draw_h/2}"
+                        svg += f'<polygon points="{pts}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="2"/>'
                         
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ซม.</text>'
+                        svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} ซม.</text>'
+
+                    elif scenario == "l_shape_path":
+                        p_scale = p1 * scale
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
+                        # วาดสีขาวทับเพื่อให้เหลือแต่ขอบตัว L (ด้านซ้ายและล่าง)
+                        svg += f'<rect x="{ox+p_scale}" y="{oy}" width="{draw_w-p_scale}" height="{draw_h-p_scale}" fill="#ffffff" stroke="#2c3e50" stroke-width="2"/>'
+                        
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ม.</text>'
+                        svg += f'<text x="{ox + draw_w + 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="start">{H} ม.</text>'
+                        svg += f'<text x="{ox + p_scale/2}" y="{oy + draw_h/2 + 5}" {lbl_style_sm} text-anchor="middle">{p1} ม.</text>'
+
                     svg += '</svg></div>'
                     return svg
 
-                scenario = random.choice(["frame", "corner_cut", "triangle_in_rect", "cross_path", "four_corners"])
+                scenario = random.choice(["frame", "corner_cut", "triangle_in_rect", "cross_path", "four_corners", "midpoint_rhombus", "l_shape_path"])
                 
                 if scenario == "frame":
                     W = random.randint(15, 30)
@@ -4074,6 +4094,32 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg = draw_shaded_svg("four_corners", W, H, cut)
                     q = f"กระดาษรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} เซนติเมตร</b> ยาว <b>{W} เซนติเมตร</b><br>ถูกตัดมุมออก <b>ทั้ง 4 มุม</b> เป็นรูปสี่เหลี่ยมจัตุรัสยาวด้านละ <b>{cut} เซนติเมตร</b> เพื่อนำไปพับเป็นกล่อง (ดังรูป)<br>จงหาพื้นที่ของกระดาษส่วนที่เหลือ (ส่วนที่แรเงา)?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาพื้นที่แรเงา - ตัด 4 มุม):</b><br>👉 หลักการคิด: <b>พื้นที่ส่วนที่แรเงา = พื้นที่กระดาษแผ่นเต็ม - พื้นที่ส่วนที่ถูกตัดออก (4 ชิ้น)</b><br><br><b>ขั้นที่ 1: หาพื้นที่กระดาษแผ่นเต็ม</b><br>👉 พื้นที่ = กว้าง × ยาว = {H} × {W} = <b>{area_out} ตารางเซนติเมตร</b><br><br><b>ขั้นที่ 2: หาพื้นที่ส่วนที่ถูกตัดออกทั้งหมด</b><br>👉 ตัดออก 1 มุม = ด้าน × ด้าน = {cut} × {cut} = <b>{area_1cut} ตร.ซม.</b><br>👉 แต่เราตัดออก 4 มุม จึงต้องคูณ 4 = 4 × {area_1cut} = <b>{area_4cuts} ตร.ซม.</b><br><br><b>ขั้นที่ 3: หาพื้นที่ส่วนที่เหลือ (แรเงา)</b><br>👉 นำพื้นที่แผ่นเต็ม ลบ พื้นที่ถูกตัดทั้งหมด: {area_out} - {area_4cuts} = <b>{ans} ตารางเซนติเมตร</b><br><br><b>ตอบ: {ans} ตารางเซนติเมตร</b></span>"
+
+                elif scenario == "midpoint_rhombus":
+                    W = random.randint(12, 30)
+                    if W % 2 != 0: W += 1
+                    H = random.randint(10, 24)
+                    if H % 2 != 0: H += 1
+                    area_out = W * H
+                    ans = area_out // 2
+                    
+                    svg = draw_shaded_svg("midpoint_rhombus", W, H)
+                    q = f"รูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} เซนติเมตร</b> ยาว <b>{W} เซนติเมตร</b><br>ถูกลากเส้นเชื่อม <b>จุดกึ่งกลาง</b> ของความยาวแต่ละด้าน เกิดเป็นรูปที่แรเงา (ดังรูป)<br>จงหาพื้นที่ของส่วนที่แรเงา?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 สี่เหลี่ยมขนมเปียกปูนแนบใน):</b><br>👉 หลักการคิดแบบตรงๆ คือ: หาพื้นที่สี่เหลี่ยมใหญ่ ลบด้วย พื้นที่สามเหลี่ยมสีขาว 4 มุม<br>👉 แต่ข้อนี้มี <b>สูตรลัดระดับเซียน!</b> ให้สังเกตครับ<br><br><div style='background-color:#fef9e7; padding:10px; border-radius:5px; border-left: 4px solid #f39c12; margin: 10px 0;'><span style='color:#d35400; font-size:15px;'><i><b>💡 ทริคข้อสอบ (สูตรลัด):</b><br>ถ้านำจุดกึ่งกลางของสี่เหลี่ยมผืนผ้ามาลากเชื่อมกัน จะเกิดเป็นรูป 'สี่เหลี่ยมขนมเปียกปูน' ที่มีพื้นที่ <b>'เท่ากับครึ่งหนึ่ง'</b> ของสี่เหลี่ยมผืนผ้าแผ่นใหญ่พอดีเป๊ะครับ!</i></span></div><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมรูปใหญ่</b><br>👉 พื้นที่ = กว้าง × ยาว = {H} × {W} = <b>{area_out} ตารางเซนติเมตร</b><br><br><b>ขั้นที่ 2: หาพื้นที่แรเงา (ใช้สูตรลัด)</b><br>👉 พื้นที่แรเงา = พื้นที่รูปใหญ่ ÷ 2<br>👉 {area_out} ÷ 2 = <b>{ans} ตารางเซนติเมตร</b><br><br><b>ตอบ: {ans} ตารางเซนติเมตร</b></span>"
+
+                elif scenario == "l_shape_path":
+                    W = random.randint(15, 30)
+                    H = random.randint(12, 20)
+                    path = random.randint(2, 4)
+                    area_out = W * H
+                    inner_w = W - path
+                    inner_h = H - path
+                    area_in = inner_w * inner_h
+                    ans = area_out - area_in
+                    
+                    svg = draw_shaded_svg("l_shape_path", W, H, path)
+                    q = f"สระว่ายน้ำแห่งหนึ่งถูกสร้างทางเดิน (ส่วนที่แรเงา) ล้อมรอบเพียง <b>2 ด้าน</b> ดังรูป<br>ถ้าสระว่ายน้ำรวมทางเดิน กว้าง <b>{H} เมตร</b> ยาว <b>{W} เมตร</b> และทางเดินกว้าง <b>{path} เมตร</b><br>จงหาพื้นที่ของทางเดินรูปตัว L นี้?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ทางเดินตัว L):</b><br>👉 หลักการคิดที่ง่ายที่สุดคือ: มองให้เป็น <b>กรอบรูปที่ถูกดันไปชิดมุม</b><br>👉 <b>พื้นที่ทางเดิน = พื้นที่สี่เหลี่ยมรูปใหญ่(รวมทางเดิน) - พื้นที่สี่เหลี่ยมรูปเล็ก(เฉพาะสระสีขาว)</b><br><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมรูปใหญ่ (ทั้งหมด)</b><br>👉 กว้าง {H} ม., ยาว {W} ม.<br>👉 พื้นที่รูปใหญ่ = {H} × {W} = <b>{area_out} ตารางเมตร</b><br><br><b>ขั้นที่ 2: หาขนาดของสี่เหลี่ยมรูปเล็ก (สีขาว)</b><br>👉 ความกว้างด้านใน = กว้างรวม - ความกว้างทางเดิน = {H} - {path} = <b>{inner_h} เมตร</b><br>👉 ความยาวด้านใน = ยาวรวม - ความกว้างทางเดิน = {W} - {path} = <b>{inner_w} เมตร</b><br>👉 พื้นที่รูปเล็ก = {inner_h} × {inner_w} = <b>{area_in} ตารางเมตร</b><br><br><b>ขั้นที่ 3: หาพื้นที่ทางเดินตัว L (แรเงา)</b><br>👉 นำพื้นที่รูปใหญ่ ลบ พื้นที่รูปเล็ก: {area_out} - {area_in} = <b>{ans} ตารางเมตร</b><br><br><b>ตอบ: {ans} ตารางเมตร</b></span>"
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
