@@ -3120,78 +3120,112 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (มุมภายในรูปสามเหลี่ยม):</b><br>👉 ผลรวมมุมภายในของรูปสามเหลี่ยมทุกชนิด = 180°<br>👉 มุมที่โจทย์กำหนดให้ 2 มุม รวมกัน = {a1}° + {a2}° = {a1+a2}°<br>👉 มุมที่เหลือ x = 180° - {a1+a2}° = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
 
             elif actual_sub_t == "เส้นขนานและมุมแย้ง":
-                def draw_parallel_svg(mode, val, lbl):
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="320" height="180">'
-                    
-                    # เส้นตัดสีฟ้า พร้อมจุดปลาย
-                    svg += '<line x1="113" y1="160" x2="207" y2="20" stroke="#3498db" stroke-width="4"/>'
-                    svg += '<circle cx="113" cy="160" r="4" fill="#3498db" />'
-                    svg += '<circle cx="207" cy="20" r="4" fill="#3498db" />'
+                # 💡 Engine V2: ฐานข้อมูลพิกัดมุมทุกจุด และแนวเส้น 2 ทิศทาง
+                angle_config = {
+                    "dir1": { # เส้นตัดเอียงขวา ( / )
+                        "line": '<line x1="113" y1="160" x2="207" y2="20" stroke="#3498db" stroke-width="4"/><circle cx="113" cy="160" r="4" fill="#3498db"/><circle cx="207" cy="20" r="4" fill="#3498db"/>',
+                        "angles": {
+                            "TL_ext": {"path": "M 150 60 Q 150 40 190 45", "text": (165, 48), "type": "obtuse"},
+                            "TR_ext": {"path": "M 190 45 Q 200 50 210 60", "text": (205, 52), "type": "acute"},
+                            "BL_int": {"path": "M 150 60 Q 155 75 170 75", "text": (155, 78), "type": "acute"},
+                            "BR_int": {"path": "M 170 75 Q 195 75 210 60", "text": (195, 78), "type": "obtuse"},
+                            "TL_int": {"path": "M 110 120 Q 110 100 150 105", "text": (125, 108), "type": "obtuse"},
+                            "TR_int": {"path": "M 150 105 Q 160 110 170 120", "text": (165, 112), "type": "acute"},
+                            "BL_ext": {"path": "M 110 120 Q 115 135 130 135", "text": (115, 138), "type": "acute"},
+                            "BR_ext": {"path": "M 130 135 Q 155 135 170 120", "text": (155, 138), "type": "obtuse"}
+                        },
+                        "pairs": {
+                            "Z": [("BL_int", "TR_int"), ("BR_int", "TL_int")],
+                            "C": [("BL_int", "TL_int"), ("BR_int", "TR_int")],
+                            "F": [("TL_ext", "TL_int"), ("TR_ext", "TR_int"), ("BL_int", "BL_ext"), ("BR_int", "BR_ext")]
+                        }
+                    },
+                    "dir2": { # เส้นตัดเอียงซ้าย ( \ )
+                        "line": '<line x1="207" y1="160" x2="113" y2="20" stroke="#3498db" stroke-width="4"/><circle cx="207" cy="160" r="4" fill="#3498db"/><circle cx="113" cy="20" r="4" fill="#3498db"/>',
+                        "angles": {
+                            "TR_ext": {"path": "M 170 60 Q 170 40 130 45", "text": (155, 48), "type": "obtuse"},
+                            "TL_ext": {"path": "M 130 45 Q 120 50 110 60", "text": (115, 52), "type": "acute"},
+                            "BR_int": {"path": "M 170 60 Q 165 75 150 75", "text": (165, 78), "type": "acute"},
+                            "BL_int": {"path": "M 150 75 Q 125 75 110 60", "text": (125, 78), "type": "obtuse"},
+                            "TR_int": {"path": "M 210 120 Q 210 100 170 105", "text": (195, 108), "type": "obtuse"},
+                            "TL_int": {"path": "M 170 105 Q 160 110 150 120", "text": (155, 112), "type": "acute"},
+                            "BR_ext": {"path": "M 210 120 Q 205 135 190 135", "text": (205, 138), "type": "obtuse"},
+                            "BL_ext": {"path": "M 190 135 Q 165 135 150 120", "text": (165, 138), "type": "acute"}
+                        },
+                        "pairs": {
+                            "Z": [("BR_int", "TL_int"), ("BL_int", "TR_int")],
+                            "C": [("BL_int", "TL_int"), ("BR_int", "TR_int")],
+                            "F": [("TL_ext", "TL_int"), ("TR_ext", "TR_int"), ("BL_int", "BL_ext"), ("BR_int", "BR_ext")]
+                        }
+                    }
+                }
 
-                    # เส้นขนาน 2 เส้น
+                def draw_parallel_svg(dir_config, pos1, val1, pos2, val2):
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="320" height="180">'
+                    svg += dir_config["line"]
+                    
                     svg += '<line x1="50" y1="60" x2="270" y2="60" stroke="#2980b9" stroke-width="4"/>'
                     svg += '<line x1="50" y1="120" x2="270" y2="120" stroke="#2980b9" stroke-width="4"/>'
-
-                    # ชื่อเส้นตรง A, B, C, D
+                    
                     label_style = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
                     svg += f'<text x="30" y="65" {label_style}>A</text>'
                     svg += f'<text x="280" y="65" {label_style}>B</text>'
                     svg += f'<text x="30" y="125" {label_style}>C</text>'
                     svg += f'<text x="280" y="125" {label_style}>D</text>'
-
-                    # ลูกศรแสดงความขนาน
+                    
                     svg += '<polygon points="255,55 265,60 255,65" fill="#2980b9"/>'
                     svg += '<polygon points="255,115 265,120 255,125" fill="#2980b9"/>'
-
-                    # 💡 จัดการเส้นโค้งสีเขียว และวางตัวเลขให้เข้ามุมพอดี (ปรับขนาดฟอนต์ 13px)
+                    
                     text_style = 'font-size:13px; font-weight:bold; text-anchor:middle;'
-                    if mode == "Z":
-                        # มุมบน (Acute) -> ล่างซ้ายของจุดตัด
-                        svg += '<path d="M 152 60 Q 152 75 165 82" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += f'<text x="156" y="78" {text_style} fill="#c0392b">{val}°</text>'
-                        # มุมล่าง (Acute) -> บนขวาของจุดตัด
-                        svg += '<path d="M 168 120 Q 168 105 155 98" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += f'<text x="164" y="108" {text_style} fill="#2980b9">{lbl}</text>'
-                    elif mode == "C":
-                        # มุมบน (Acute) -> ล่างซ้าย
-                        svg += '<path d="M 152 60 Q 152 75 165 82" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += f'<text x="156" y="78" {text_style} fill="#c0392b">{val}°</text>'
-                        # มุมล่าง (Obtuse) -> บนซ้ายของจุดตัด
-                        svg += '<path d="M 115 120 Q 115 95 155 98" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += f'<text x="135" y="108" {text_style} fill="#2980b9">{lbl}</text>'
-                    elif mode == "F":
-                        # มุมบน (Obtuse) -> บนซ้ายของจุดตัด
-                        svg += '<path d="M 150 60 Q 150 35 195 38" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += f'<text x="170" y="52" {text_style} fill="#c0392b">{val}°</text>'
-                        # มุมล่าง (Obtuse) -> บนซ้ายของจุดตัด
-                        svg += '<path d="M 115 120 Q 115 95 155 98" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += f'<text x="135" y="108" {text_style} fill="#2980b9">{lbl}</text>'
-
+                    
+                    arc1 = dir_config["angles"][pos1]["path"]
+                    t1_x, t1_y = dir_config["angles"][pos1]["text"]
+                    svg += f'<path d="{arc1}" fill="none" stroke="#2ecc71" stroke-width="3"/>'
+                    svg += f'<text x="{t1_x}" y="{t1_y}" {text_style} fill="#c0392b">{val1}°</text>'
+                    
+                    arc2 = dir_config["angles"][pos2]["path"]
+                    t2_x, t2_y = dir_config["angles"][pos2]["text"]
+                    svg += f'<path d="{arc2}" fill="none" stroke="#2ecc71" stroke-width="3"/>'
+                    svg += f'<text x="{t2_x}" y="{t2_y}" {text_style} fill="#2980b9">{val2}</text>'
+                    
                     svg += '</svg></div>'
                     return svg
 
+                direction = random.choice(["dir1", "dir2"])
                 scenario = random.choice(["Z", "C", "F"])
                 
-                # 💡 แก้ไข: บังคับค่าให้ตรงกับความเป็นจริงของรูปภาพ (ป้องกันมุมแหลมแต่ตัวเลขเกิน 90)
+                # สุ่มเลือกคู่มุมที่ตรงกับกฏที่ต้องการ
+                pair = random.choice(angle_config[direction]["pairs"][scenario])
+                
+                # สุ่มสลับว่ามุมไหนคือตัวเลข มุมไหนคือตัวแปร x
+                if random.choice([True, False]):
+                    pos1, pos2 = pair
+                else:
+                    pos2, pos1 = pair
+                    
+                type1 = angle_config[direction]["angles"][pos1]["type"]
+                
+                # บังคับค่าให้สอดคล้องกับภาพจริงของมุมนั้นๆ
+                if type1 == "acute":
+                    val = random.randint(40, 85)
+                else:
+                    val = random.randint(95, 140)
+                    
                 if scenario == "Z":
-                    val = random.randint(40, 85) # 💡 บังคับมุมแหลม
                     ans = val
-                    svg = draw_parallel_svg("Z", val, "x")
+                    svg = draw_parallel_svg(angle_config[direction], pos1, val, pos2, "x")
                     q = f"จากรูป เส้นตรงสองเส้นขนานกัน<br>จงหาขนาดของมุม <b>x</b> (พิจารณามุมแย้ง)?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เส้นขนาน รูปตัว Z):</b><br>👉 เมื่อเส้นขนานถูกตัดด้วยเส้นตรง <b>มุมแย้ง (ตัว Z) จะมีขนาดเท่ากัน</b>เสมอ<br>👉 จากรูป มุม x เป็นมุมแย้งกับมุม {val}°<br>👉 ดังนั้น x = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
                 elif scenario == "C":
-                    val = random.randint(40, 85) # 💡 บังคับมุมแหลม (บน)
-                    ans = 180 - val # มุมป้าน (ล่าง)
-                    svg = draw_parallel_svg("C", val, "x")
+                    ans = 180 - val
+                    svg = draw_parallel_svg(angle_config[direction], pos1, val, pos2, "x")
                     q = f"จากรูป เส้นตรงสองเส้นขนานกัน<br>จงหาขนาดของมุม <b>x</b> (พิจารณามุมภายในข้างเดียวกัน)?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เส้นขนาน รูปตัว C):</b><br>👉 <b>มุมภายในที่อยู่บนข้างเดียวกัน</b>ของเส้นตัด (ตัว C) จะรวมกันได้ <b>180°</b> เสมอ<br>👉 จะได้สมการ: {val}° + x = 180°<br>👉 x = 180° - {val}° = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
                 elif scenario == "F":
-                    val = random.randint(95, 140) # 💡 บังคับมุมป้าน (บน)
-                    ans = val # มุมป้าน (ล่าง)
-                    svg = draw_parallel_svg("F", val, "x")
+                    ans = val
+                    svg = draw_parallel_svg(angle_config[direction], pos1, val, pos2, "x")
                     q = f"จากรูป เส้นตรงสองเส้นขนานกัน<br>จงหาขนาดของมุม <b>x</b> (พิจารณามุมภายนอกและมุมภายใน)?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เส้นขนาน รูปตัว F):</b><br>👉 <b>มุมภายนอกและมุมภายใน</b>ที่อยู่บนข้างเดียวกันของเส้นตัด จะมีขนาด<b>เท่ากัน</b>เสมอ<br>👉 จากรูป มุม x มีตำแหน่งสอดคล้องกับมุม {val}° พอดี<br>👉 ดังนั้น x = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
-
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
