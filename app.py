@@ -3388,6 +3388,147 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     q = f"ตู้ปลาทรงสี่เหลี่ยมมุมฉาก กว้าง <b>{w} ซม.</b> ยาว <b>{l} ซม.</b> สูง <b>{h} ซม.</b><br>ถ้าเติมน้ำลงไปในตู้ปลาให้มีระดับน้ำสูง <b>{water_h} ซม.</b><br>ปริมาตรของน้ำในตู้ปลาจะเป็นกี่ลูกบาศก์เซนติเมตร?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ประยุกต์ปริมาตรน้ำ):</b><br><i>จุดระวัง: โจทย์ถามปริมาตรของ 'น้ำ' ดังนั้นเราต้องใช้ 'ความสูงของน้ำ' ไม่ใช่ความสูงของตู้ปลานะครับ!</i><br><br><b>สูตร:</b> ปริมาตรน้ำ = กว้าง × ยาว × ความสูงของน้ำ<br>👉 แทนค่า: กว้าง = {w}, ยาว = {l}, สูงของน้ำ = {water_h}<br>👉 คำนวณ: {w} × {l} × {water_h} = <b>{vol:,} ลูกบาศก์เซนติเมตร</b><br><b>ตอบ: {vol:,} ลูกบาศก์เซนติเมตร</b></span>"
 
+elif actual_sub_t in ["การบวกเศษส่วน", "การลบเศษส่วน", "การคูณเศษส่วน", "การหารเศษส่วน"]:
+                # --- เครื่องยนต์เศษส่วน (Fraction Engine V5) แสดงผลแบบสมจริง ---
+                def render_frac(n, d, w=0):
+                    # สร้างเศษส่วนแนวตั้ง (ตัวเศษอยู่บน ตัวส่วนอยู่ล่าง)
+                    frac_html = f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b>{n}</b></div><div style='padding-top:2px;'><b>{d}</b></div></div>"
+                    if w != 0: # กรณีเป็นจำนวนคละ
+                        return f"<div style='display:inline-block; vertical-align:middle;'><span style='font-size:24px; font-weight:bold; color:#2c3e50; margin-right:3px;'>{w}</span>{frac_html}</div>"
+                    return frac_html
+                    
+                def get_mixed(n, d):
+                    # ฟังก์ชันแปลงเศษเกินเป็นจำนวนคละ หรือเศษส่วนอย่างต่ำ
+                    if n == 0: return "0"
+                    if d == 1: return str(n)
+                    if n < d: return render_frac(n, d)
+                    w = n // d
+                    rem = n % d
+                    if rem == 0: return str(w)
+                    return render_frac(rem, d, w)
+
+                op_map = {"การบวกเศษส่วน": "+", "การลบเศษส่วน": "-", "การคูณเศษส่วน": "×", "การหารเศษส่วน": "÷"}
+                op_sign = op_map[actual_sub_t]
+                
+                if is_challenge:
+                    # 🔥 โหมดชาเลนจ์: คำนวณ "จำนวนคละ" (Mixed Numbers)
+                    d1 = random.randint(3, 9)
+                    d2 = random.randint(3, 9)
+                    while d1 == d2: d2 = random.randint(3, 9)
+                    n1 = random.randint(1, d1-1)
+                    n2 = random.randint(1, d2-1)
+                    w1 = random.randint(1, 5)
+                    w2 = random.randint(1, 5)
+                    
+                    # ป้องกันค่าติดลบสำหรับ ป.5
+                    if actual_sub_t == "การลบเศษส่วน" or actual_sub_t == "การหารเศษส่วน":
+                        val1 = w1 + (n1/d1)
+                        val2 = w2 + (n2/d2)
+                        if val1 <= val2:
+                            w1, w2 = w2, w1
+                            n1, n2 = n2, n1
+                            d1, d2 = d2, d1
+                            
+                    f1_str = render_frac(n1, d1, w1)
+                    f2_str = render_frac(n2, d2, w2)
+                    
+                    q = f"จงหาผลลัพธ์ต่อไปนี้ให้อยู่ในรูปอย่างง่าย<br><br><div style='text-align:center; font-size:24px;'>{f1_str} <span style='color:#e74c3c; margin: 0 10px; font-size:28px; vertical-align:middle;'><b>{op_sign}</b></span> {f2_str} = ?</div>"
+                    
+                    # แปลงจำนวนคละเป็นเศษเกิน
+                    imp_n1 = (w1 * d1) + n1
+                    imp_n2 = (w2 * d2) + n2
+                    
+                    step_mixed = f"<b>ขั้นที่ 1:</b> แปลงจำนวนคละให้เป็นเศษเกิน<br>👉 {f1_str} = {render_frac(imp_n1, d1)}<br>👉 {f2_str} = {render_frac(imp_n2, d2)}<br><br>"
+                    
+                    # คำนวณต่อ
+                    lcm = (d1 * d2) // math.gcd(d1, d2)
+                    if actual_sub_t == "การบวกเศษส่วน":
+                        new_n1 = imp_n1 * (lcm // d1)
+                        new_n2 = imp_n2 * (lcm // d2)
+                        res_n = new_n1 + new_n2
+                        res_d = lcm
+                        step1 = f"<b>ขั้นที่ 2:</b> หา ค.ร.น. ของ {d1} และ {d2} คือ <b>{lcm}</b>"
+                        step2 = f"<b>ขั้นที่ 3:</b> แปลงส่วนให้เท่ากัน แล้วนำเศษมาบวกกัน<br>👉 ({new_n1} + {new_n2}) / {lcm} = {render_frac(res_n, res_d)}"
+                    elif actual_sub_t == "การลบเศษส่วน":
+                        new_n1 = imp_n1 * (lcm // d1)
+                        new_n2 = imp_n2 * (lcm // d2)
+                        res_n = new_n1 - new_n2
+                        res_d = lcm
+                        step1 = f"<b>ขั้นที่ 2:</b> หา ค.ร.น. ของ {d1} และ {d2} คือ <b>{lcm}</b>"
+                        step2 = f"<b>ขั้นที่ 3:</b> แปลงส่วนให้เท่ากัน แล้วนำเศษมาลบกัน<br>👉 ({new_n1} - {new_n2}) / {lcm} = {render_frac(res_n, res_d)}"
+                    elif actual_sub_t == "การคูณเศษส่วน":
+                        res_n = imp_n1 * imp_n2
+                        res_d = d1 * d2
+                        step1 = f"<b>ขั้นที่ 2:</b> นำ (เศษ × เศษ) และ (ส่วน × ส่วน)"
+                        step2 = f"👉 คำนวณ: ({imp_n1} × {imp_n2}) / ({d1} × {d2}) = {render_frac(res_n, res_d)}"
+                    elif actual_sub_t == "การหารเศษส่วน":
+                        res_n = imp_n1 * d2
+                        res_d = d1 * imp_n2
+                        step1 = f"<b>ขั้นที่ 2:</b> เปลี่ยนหารเป็นคูณ กลับเศษเป็นส่วนของตัวหลัง<br>👉 {render_frac(imp_n1, d1)} × {render_frac(d2, imp_n2)}"
+                        step2 = f"👉 คำนวณ: ({imp_n1} × {d2}) / ({d1} × {imp_n2}) = {render_frac(res_n, res_d)}"
+                        
+                    g = math.gcd(abs(res_n), res_d)
+                    simp_n = res_n // g
+                    simp_d = res_d // g
+                    ans_str = get_mixed(simp_n, simp_d)
+                    
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br>{step_mixed}{step1}<br>{step2}<br><br><b>ขั้นสุดท้าย:</b> ทอนเป็นเศษส่วนอย่างต่ำหรือจำนวนคละ<br>👉 คำตอบคือ <b><span style='font-size:24px; color:#e74c3c;'>{ans_str}</span></b></span>"
+
+                else:
+                    # 🔹 โหมดปกติ: เศษส่วนแท้ (Proper Fractions)
+                    d1 = random.randint(3, 12)
+                    d2 = random.randint(3, 12)
+                    while d1 == d2: d2 = random.randint(3, 12) # บังคับให้ส่วนไม่เท่ากันเพื่อฝึก ค.ร.น.
+                    n1 = random.randint(1, d1-1)
+                    n2 = random.randint(1, d2-1)
+                    
+                    # ป้องกันค่าติดลบสำหรับ ป.5
+                    if actual_sub_t == "การลบเศษส่วน" or actual_sub_t == "การหารเศษส่วน":
+                        if n1*d2 <= n2*d1:
+                            n1, n2 = n2, n1
+                            d1, d2 = d2, d1
+                            
+                    f1_str = render_frac(n1, d1)
+                    f2_str = render_frac(n2, d2)
+                    
+                    q = f"จงหาผลลัพธ์ต่อไปนี้ให้อยู่ในรูปอย่างง่าย<br><br><div style='text-align:center; font-size:24px;'>{f1_str} <span style='color:#e74c3c; margin: 0 10px; font-size:28px; vertical-align:middle;'><b>{op_sign}</b></span> {f2_str} = ?</div>"
+                    
+                    lcm = (d1 * d2) // math.gcd(d1, d2)
+                    if actual_sub_t == "การบวกเศษส่วน":
+                        new_n1 = n1 * (lcm // d1)
+                        new_n2 = n2 * (lcm // d2)
+                        res_n = new_n1 + new_n2
+                        res_d = lcm
+                        step1 = f"<b>ขั้นที่ 1:</b> หา ค.ร.น. ของส่วน {d1} และ {d2} คือ <b>{lcm}</b>"
+                        step2 = f"<b>ขั้นที่ 2:</b> แปลงเศษส่วนให้ส่วนเท่ากัน<br>👉 {render_frac(n1, d1)} = {render_frac(new_n1, lcm)} <br>👉 {render_frac(n2, d2)} = {render_frac(new_n2, lcm)}"
+                        step3 = f"<b>ขั้นที่ 3:</b> นำตัวเศษมาบวกกัน: {new_n1} + {new_n2} = {res_n} <br>ได้ผลลัพธ์คือ {render_frac(res_n, lcm)}"
+                    elif actual_sub_t == "การลบเศษส่วน":
+                        new_n1 = n1 * (lcm // d1)
+                        new_n2 = n2 * (lcm // d2)
+                        res_n = new_n1 - new_n2
+                        res_d = lcm
+                        step1 = f"<b>ขั้นที่ 1:</b> หา ค.ร.น. ของส่วน {d1} และ {d2} คือ <b>{lcm}</b>"
+                        step2 = f"<b>ขั้นที่ 2:</b> แปลงเศษส่วนให้ส่วนเท่ากัน<br>👉 {render_frac(n1, d1)} = {render_frac(new_n1, lcm)} <br>👉 {render_frac(n2, d2)} = {render_frac(new_n2, lcm)}"
+                        step3 = f"<b>ขั้นที่ 3:</b> นำตัวเศษมาลบกัน: {new_n1} - {new_n2} = {res_n} <br>ได้ผลลัพธ์คือ {render_frac(res_n, lcm)}"
+                    elif actual_sub_t == "การคูณเศษส่วน":
+                        res_n = n1 * n2
+                        res_d = d1 * d2
+                        step1 = f"<b>หลักการ:</b> การคูณเศษส่วน ให้นำ (เศษ × เศษ) และ (ส่วน × ส่วน)"
+                        step2 = f"<b>ขั้นที่ 1:</b> เข้าสมการ ({n1} × {n2}) / ({d1} × {d2})"
+                        step3 = f"<b>ขั้นที่ 2:</b> ได้ผลลัพธ์คือ {render_frac(res_n, res_d)}"
+                    elif actual_sub_t == "การหารเศษส่วน":
+                        res_n = n1 * d2
+                        res_d = d1 * n2
+                        step1 = f"<b>หลักการ:</b> การหารเศษส่วน ให้เปลี่ยนเครื่องหมาย ÷ เป็น × แล้วกลับเศษเป็นส่วนของตัวหาร"
+                        step2 = f"<b>ขั้นที่ 1:</b> จะได้ {render_frac(n1, d1)} × {render_frac(d2, n2)}"
+                        step3 = f"<b>ขั้นที่ 2:</b> คำนวณ ({n1} × {d2}) / ({d1} × {n2}) = {render_frac(res_n, res_d)}"
+                        
+                    g = math.gcd(abs(res_n), res_d)
+                    simp_n = res_n // g
+                    simp_d = res_d // g
+                    ans_str = get_mixed(simp_n, simp_d)
+                    
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>{step1}<br>{step2}<br>{step3}<br><br><b>ขั้นสุดท้าย:</b> ทอนเป็นเศษส่วนอย่างต่ำ/จำนวนคละ<br>👉 คำตอบคือ <b><span style='font-size:24px; color:#e74c3c;'>{ans_str}</span></b></span>"
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
