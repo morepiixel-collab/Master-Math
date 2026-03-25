@@ -3934,7 +3934,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 elif scenario == "find_scale":
                     real_km = random.choice([15, 20, 30, 45, 60, 120])
                     map_cm = random.choice([3, 4, 5, 6, 10, 12])
-                    # Ensure it divides cleanly for a neat scale
                     while real_km * 100000 % map_cm != 0:
                         map_cm = random.choice([3, 4, 5, 6, 10, 12])
                     
@@ -3943,6 +3942,90 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     q = f"ระยะทางจริงจากจังหวัด ก ไปจังหวัด ข คือ <b>{real_km} กิโลเมตร</b><br>ถ้าวัดระยะทางในแผนที่ได้ <b>{map_cm} เซนติเมตร</b><br>แผนที่ฉบับนี้ใช้มาตราส่วน <b>1 : เท่าใด?</b>"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - หามาตราส่วน):</b><br>👉 การหามาตราส่วน 1 : x  เราต้องทำให้หน่วยของทั้งสองฝั่ง <b>'เป็นเซนติเมตรเหมือนกัน'</b> ก่อนครับ<br><br><b>ขั้นที่ 1: แปลงระยะทางจริงจาก กิโลเมตร เป็น เซนติเมตร</b><br>👉 1 กิโลเมตร = 1,000 เมตร<br>👉 1 เมตร = 100 เซนติเมตร<br>👉 ดังนั้น 1 กิโลเมตร = 1,000 × 100 = <b>100,000 เซนติเมตร</b><br>👉 ระยะจริง {real_km} กม. = {real_km} × 100,000 = <b>{real_cm:,} เซนติเมตร</b><br><br><b>ขั้นที่ 2: เทียบอัตราส่วนเพื่อหามาตราส่วน</b><br>👉 ระยะในแผนที่ : ระยะจริง<br>👉 <b>{map_cm} ซม. : {real_cm:,} ซม.</b><br>👉 ทำฝั่งซ้ายให้เป็น 1 โดยนำ {map_cm} ไปหารทั้งสองฝั่ง<br>👉 1 : ({real_cm:,} ÷ {map_cm})<br>👉 <b>1 : {scale_val:,}</b><br><br><b>ตอบ: มาตราส่วน 1 : {scale_val:,}</b></span>"
+
+            elif actual_sub_t == "เรขาคณิตประยุกต์ (หาพื้นที่แรเงา)":
+                def draw_shaded_svg(scenario, W, H, p1=0):
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="300" height="200">'
+                    max_w, max_h = 240, 150
+                    scale = min(max_w / W, max_h / H)
+                    draw_w = W * scale
+                    draw_h = H * scale
+                    ox = (300 - draw_w) / 2
+                    oy = (200 - draw_h) / 2
+
+                    lbl_style = 'font-family:Sarabun; font-size:15px; font-weight:bold; fill:#c0392b;'
+                    lbl_style_sm = 'font-family:Sarabun; font-size:14px; font-weight:bold; fill:#2980b9;'
+                    
+                    if scenario == "frame":
+                        border_scale = p1 * scale
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
+                        svg += f'<rect x="{ox+border_scale}" y="{oy+border_scale}" width="{draw_w-2*border_scale}" height="{draw_h-2*border_scale}" fill="#ffffff" stroke="#2c3e50" stroke-width="2"/>'
+                        
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy - 10}" {lbl_style} text-anchor="middle">{W} ม.</text>'
+                        svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} ม.</text>'
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + border_scale/2 + 5}" {lbl_style_sm} text-anchor="middle">กว้าง {p1} ม.</text>'
+                        
+                    elif scenario == "corner_cut":
+                        cut_scale = p1 * scale
+                        pts = f"{ox},{oy} {ox+draw_w-cut_scale},{oy} {ox+draw_w-cut_scale},{oy+cut_scale} {ox+draw_w},{oy+cut_scale} {ox+draw_w},{oy+draw_h} {ox},{oy+draw_h}"
+                        svg += f'<polygon points="{pts}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="none" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>'
+                        
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ซม.</text>'
+                        svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} ซม.</text>'
+                        svg += f'<text x="{ox + draw_w - cut_scale/2}" y="{oy - 10}" {lbl_style_sm} text-anchor="middle">ตัด {p1}x{p1}</text>'
+
+                    elif scenario == "triangle_in_rect":
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
+                        svg += f'<polygon points="{ox},{oy+draw_h} {ox+draw_w},{oy+draw_h} {ox+draw_w/2},{oy}" fill="#ffffff" stroke="#2c3e50" stroke-width="2"/>'
+                        
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} นิ้ว</text>'
+                        svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} นิ้ว</text>'
+                        
+                    svg += '</svg></div>'
+                    return svg
+
+                scenario = random.choice(["frame", "corner_cut", "triangle_in_rect"])
+                
+                if scenario == "frame":
+                    W = random.randint(15, 30)
+                    H = random.randint(10, 20)
+                    while W <= H: W += random.randint(2, 5)
+                    border = random.randint(1, 3)
+                    inner_w = W - 2*border
+                    inner_h = H - 2*border
+                    area_out = W * H
+                    area_in = inner_w * inner_h
+                    ans = area_out - area_in
+                    
+                    svg = draw_shaded_svg("frame", W, H, border)
+                    q = f"สระว่ายน้ำมีทางเดินรอบขอบสระ (ส่วนที่แรเงา) รูปสี่เหลี่ยมผืนผ้าขนาดใหญ่ กว้าง <b>{H} เมตร</b> ยาว <b>{W} เมตร</b><br>ถ้าทางเดินกว้าง <b>{border} เมตร</b> เท่ากันโดยตลอด<br>จงหาพื้นที่ของทางเดินนี้?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาพื้นที่แรเงา - กรอบรูป):</b><br>👉 หลักการคิด: <b>พื้นที่ส่วนที่แรเงา = พื้นที่สี่เหลี่ยมรูปใหญ่(ข้างนอก) - พื้นที่สี่เหลี่ยมรูปเล็ก(ข้างใน)</b><br><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมรูปใหญ่ (ทั้งหมด)</b><br>👉 กว้าง {H} ม., ยาว {W} ม.<br>👉 พื้นที่รูปใหญ่ = {H} × {W} = <b>{area_out} ตารางเมตร</b><br><br><b>ขั้นที่ 2: หาขนาดของสี่เหลี่ยมรูปเล็ก (สีขาวข้างใน)</b><br>👉 ความกว้างด้านใน = กว้างรูปใหญ่ - (ขอบบน + ขอบล่าง) = {H} - ({border} + {border}) = <b>{inner_h} เมตร</b><br>👉 ความยาวด้านใน = ยาวรูปใหญ่ - (ขอบซ้าย + ขอบขวา) = {W} - ({border} + {border}) = <b>{inner_w} เมตร</b><br>👉 พื้นที่รูปเล็ก = {inner_h} × {inner_w} = <b>{area_in} ตารางเมตร</b><br><br><b>ขั้นที่ 3: หาพื้นที่ทางเดิน (แรเงา)</b><br>👉 นำพื้นที่รูปใหญ่ ลบ พื้นที่รูปเล็ก: {area_out} - {area_in} = <b>{ans} ตารางเมตร</b><br><br><b>ตอบ: {ans} ตารางเมตร</b></span>"
+
+                elif scenario == "corner_cut":
+                    W = random.randint(12, 25)
+                    H = random.randint(10, 20)
+                    while W <= H: W += random.randint(1, 4)
+                    cut = random.randint(2, 5)
+                    area_out = W * H
+                    area_cut = cut * cut
+                    ans = area_out - area_cut
+                    
+                    svg = draw_shaded_svg("corner_cut", W, H, cut)
+                    q = f"กระดาษรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} เซนติเมตร</b> ยาว <b>{W} เซนติเมตร</b><br>ถูกตัดมุมออกเป็นรูปสี่เหลี่ยมจัตุรัสยาวด้านละ <b>{cut} เซนติเมตร</b> (ดังรูป)<br>จงหาพื้นที่ของกระดาษส่วนที่เหลือ (ส่วนที่แรเงา)?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาพื้นที่แรเงา - ตัดมุม):</b><br>👉 หลักการคิด: <b>พื้นที่ส่วนที่แรเงา = พื้นที่กระดาษแผ่นเต็ม - พื้นที่ส่วนที่ถูกตัดออก</b><br><br><b>ขั้นที่ 1: หาพื้นที่กระดาษแผ่นเต็ม</b><br>👉 พื้นที่สี่เหลี่ยมผืนผ้า = กว้าง × ยาว<br>👉 พื้นที่แผ่นเต็ม = {H} × {W} = <b>{area_out} ตารางเซนติเมตร</b><br><br><b>ขั้นที่ 2: หาพื้นที่ส่วนที่ถูกตัดออก</b><br>👉 เป็นรูปสี่เหลี่ยมจัตุรัส ด้านละ {cut} ซม.<br>👉 พื้นที่ตัดออก = ด้าน × ด้าน = {cut} × {cut} = <b>{area_cut} ตารางเซนติเมตร</b><br><br><b>ขั้นที่ 3: หาพื้นที่ส่วนที่เหลือ (แรเงา)</b><br>👉 นำพื้นที่แผ่นเต็ม ลบ พื้นที่ตัดออก: {area_out} - {area_cut} = <b>{ans} ตารางเซนติเมตร</b><br><br><b>ตอบ: {ans} ตารางเซนติเมตร</b></span>"
+
+                elif scenario == "triangle_in_rect":
+                    W = random.randint(10, 24)
+                    if W % 2 != 0: W += 1
+                    H = random.randint(8, 20)
+                    area_out = W * H
+                    area_tri = (W * H) // 2
+                    ans = area_out - area_tri
+                    
+                    svg = draw_shaded_svg("triangle_in_rect", W, H)
+                    q = f"รูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} นิ้ว</b> ยาว <b>{W} นิ้ว</b><br>มีรูปสามเหลี่ยมสีขาวเจาะอยู่ด้านใน โดยที่ฐานของสามเหลี่ยมพอดีกับความยาวของสี่เหลี่ยม (ดังรูป)<br>จงหาพื้นที่ของส่วนที่แรเงา?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาพื้นที่แรเงา - สามเหลี่ยมในสี่เหลี่ยม):</b><br>👉 หลักการคิด: <b>พื้นที่ส่วนที่แรเงา = พื้นที่สี่เหลี่ยม - พื้นที่สามเหลี่ยม(สีขาว)</b><br><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมผืนผ้า (ทั้งหมด)</b><br>👉 พื้นที่ = กว้าง × ยาว = {H} × {W} = <b>{area_out} ตารางนิ้ว</b><br><br><b>ขั้นที่ 2: หาพื้นที่รูปสามเหลี่ยม (สีขาว)</b><br>👉 ฐานของสามเหลี่ยม = ความยาวสี่เหลี่ยม = {W} นิ้ว<br>👉 ความสูงของสามเหลี่ยม = ความกว้างสี่เหลี่ยม = {H} นิ้ว<br>👉 พื้นที่สามเหลี่ยม = (1/2) × ฐาน × สูง = (1/2) × {W} × {H} = <b>{area_tri} ตารางนิ้ว</b><br><br><b>ขั้นที่ 3: หาพื้นที่แรเงา</b><br>👉 พื้นที่ทั้งหมด ลบ พื้นที่สามเหลี่ยม: {area_out} - {area_tri} = <b>{ans} ตารางนิ้ว</b><br><br><div style='background-color:#fef9e7; padding:10px; border-radius:5px; border-left: 4px solid #f39c12; margin: 10px 0;'><span style='color:#d35400; font-size:15px;'><i><b>💡 ทริคข้อสอบ (สูตรลัด):</b><br>ถ้ารูปสามเหลี่ยมมี <b>ฐาน</b> และ <b>ความสูง</b> พอดีกับสี่เหลี่ยมแบบรูปนี้<br>พื้นที่ของสามเหลี่ยมจะ <b>'เท่ากับครึ่งหนึ่ง'</b> ของสี่เหลี่ยมพอดีเป๊ะ!<br>ดังนั้น พื้นที่แรเงาก็คืออีกครึ่งหนึ่งที่เหลือนั่นเองครับ ({area_out} ÷ 2 = {ans})</i></span></div><br><b>ตอบ: {ans} ตารางนิ้ว</b></span>"
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
