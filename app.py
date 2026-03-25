@@ -3945,13 +3945,16 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
             elif actual_sub_t == "เรขาคณิตประยุกต์ (หาพื้นที่แรเงา)":
                 def draw_shaded_svg(scenario, W, H, p1=0):
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="300" height="200">'
-                    max_w, max_h = 240, 150
+                    # ขยายพื้นที่ Canvas ให้กว้างขึ้นเป็น 360x220 และลดขนาดรูปลงเพื่อให้มีขอบเหลือเยอะๆ
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="360" height="220">'
+                    max_w, max_h = 220, 140 
                     scale = min(max_w / W, max_h / H)
                     draw_w = W * scale
                     draw_h = H * scale
-                    ox = (300 - draw_w) / 2
-                    oy = (200 - draw_h) / 2
+                    
+                    # คำนวณจุดกึ่งกลาง (ตอนนี้จะมีขอบด้านซ้ายอย่างน้อย 70 px ตัวหนังสือไม่มีทางล้นแน่นอน)
+                    ox = (360 - draw_w) / 2
+                    oy = (220 - draw_h) / 2
 
                     lbl_style = 'font-family:Sarabun; font-size:15px; font-weight:bold; fill:#c0392b;'
                     lbl_style_sm = 'font-family:Sarabun; font-size:14px; font-weight:bold; fill:#2980b9;'
