@@ -3451,13 +3451,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 
                 if is_challenge:
                     scenario = random.choice(["distributive", "fractional_coef", "both_sides", "word_problem"])
-                    
                     if scenario == "distributive":
                         a = random.randint(2, 6)
                         ans = random.randint(3, 12)
                         b = random.randint(1, 10)
                         is_plus = random.choice([True, False])
-                        
                         if is_plus:
                             c = a * (ans + b)
                             q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a}({var} + {b}) = {c}</b></div>"
@@ -3469,7 +3467,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             c = a * (ans - b)
                             q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a}({var} - {b}) = {c}</b></div>"
                             sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br>👉 นำ {a} ที่คูณอยู่หน้าวงเล็บ ย้ายไปหารอีกฝั่ง<br>👉 {var} - {b} = {c} ÷ {a}<br>👉 {var} - {b} = {c//a}<br>👉 ย้าย -{b} ไปบวก<br>👉 {var} = {c//a} + {b}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
-                            
                     elif scenario == "fractional_coef":
                         a = random.randint(2, 5)
                         b = random.randint(3, 7)
@@ -3477,12 +3474,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         ans = b * random.randint(1, 5) 
                         c = random.randint(5, 15)
                         d = (a * ans // b) + c
-                        
                         f_html = r_frac(f"{a}{var}", b)
                         q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{f_html} + <b>{c} = {d}</b></div>"
-                        
                         sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br>👉 ย้าย +{c} ไปลบอีกฝั่งก่อน<br>👉 {f_html} = {d} - {c}<br>👉 {f_html} = {d-c}<br>👉 ย้าย {b} ที่เป็นตัวส่วน (หารอยู่) ไปคูณ<br>👉 {a}{var} = {d-c} × {b}<br>👉 {a}{var} = {(d-c)*b}<br>👉 ย้าย {a} ไปหาร<br>👉 {var} = {(d-c)*b} ÷ {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
-                        
                     elif scenario == "both_sides":
                         ans = random.randint(2, 10)
                         c = random.randint(2, 5)
@@ -3491,10 +3485,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         diff_val = diff_a * ans
                         b = random.randint(1, 10)
                         d = diff_val + b
-                        
                         q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a}{var} + {b} = {c}{var} + {d}</b></div>"
                         sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - ตัวแปรสองฝั่ง):</b><br>👉 ย้ายตัวแปรให้อยู่ฝั่งเดียวกัน และย้ายตัวเลขไปอีกฝั่ง<br>👉 ย้าย {c}{var} ไปลบ และย้าย +{b} ไปลบอีกฝั่ง<br>👉 {a}{var} - {c}{var} = {d} - {b}<br>👉 {diff_a}{var} = {d-b}<br>👉 {var} = {d-b} ÷ {diff_a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
-
                     elif scenario == "word_problem":
                         ans = random.randint(5, 20)
                         mult = random.randint(2, 5)
@@ -3502,7 +3494,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         res = (mult * ans) - sub
                         q = f"<b>{mult} เท่า</b> ของจำนวนจำนวนหนึ่ง หักออกด้วย <b>{sub}</b> จะมีค่าเท่ากับ <b>{res}</b><br>จงหาจำนวนนั้น?"
                         sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - ตีโจทย์ปัญหา):</b><br>👉 กำหนดให้จำนวนนั้นคือ <b>{var}</b><br>👉 สร้างสมการได้เป็น: <b>{mult}{var} - {sub} = {res}</b><br>👉 ย้าย -{sub} ไปบวกอีกฝั่ง: {mult}{var} = {res} + {sub}<br>👉 {mult}{var} = {res+sub}<br>👉 ย้าย {mult} ไปหาร: {var} = {res+sub} ÷ {mult}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
-
                 else:
                     scenario = random.choice(["mult", "div", "mult_add", "div_sub"])
                     if scenario == "mult":
@@ -3537,6 +3528,49 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         f_html = r_frac(var, a)
                         q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b>: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{f_html} - <b>{b} = {c}</b></div>"
                         sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้าย -{b} ไปบวกอีกฝั่งก่อน<br>👉 {f_html} = {c} + {b}<br>👉 {f_html} = {c+b}<br>👉 ย้าย {a} ที่หารอยู่ไปคูณ<br>👉 {var} = {c+b} × {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+
+            elif actual_sub_t == "โจทย์ปัญหา ห.ร.ม. และ ค.ร.น.":
+                scenario = random.choice(["gcd_fruit", "gcd_student", "lcm_clock", "lcm_bus"])
+                
+                if scenario == "gcd_fruit":
+                    g = random.choice([5, 6, 8, 10, 12, 15])
+                    m1, m2, m3 = random.sample([3, 4, 5, 7, 9, 11], 3)
+                    a, b, c = g * m1, g * m2, g * m3
+                    q = f"แม่ค้ามีส้ม <b>{a} ผล</b>, มังคุด <b>{b} ผล</b> และชมพู่ <b>{c} ผล</b><br>ต้องการจัดผลไม้ใส่ถุง ถุงละเท่าๆ กัน โดยไม่ให้ผลไม้ปะปนกันและไม่เหลือเศษ<br>จะจัดผลไม้ได้<b>มากที่สุด</b>ถุงละกี่ผล และจัดได้ทั้งหมดกี่ถุง?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ประยุกต์ ห.ร.ม.):</b><br>👉 คีย์เวิร์ด: 'แบ่งเท่าๆ กัน' และ 'มากที่สุด' = หา <b>ห.ร.ม.</b><br><b>ขั้นที่ 1:</b> หา ห.ร.ม. ของ {a}, {b} และ {c} จะได้ <b>{g}</b><br>👉 หมายความว่า จัดผลไม้ได้มากที่สุดถุงละ <b>{g} ผล</b><br><b>ขั้นที่ 2:</b> หาจำนวนถุงทั้งหมด โดยนำจำนวนผลไม้แต่ละชนิดมาหารด้วย {g}<br>👉 ส้ม: {a} ÷ {g} = {m1} ถุง<br>👉 มังคุด: {b} ÷ {g} = {m2} ถุง<br>👉 ชมพู่: {c} ÷ {g} = {m3} ถุง<br>👉 นำจำนวนถุงมารวมกัน: {m1} + {m2} + {m3} = <b>{m1+m2+m3} ถุง</b><br><b>ตอบ: ถุงละ {g} ผล, ได้ทั้งหมด {m1+m2+m3} ถุง</b></span>"
+                    
+                elif scenario == "gcd_student":
+                    g = random.choice([12, 15, 18, 20, 24])
+                    m1, m2, m3 = random.sample([2, 3, 4, 5, 7], 3)
+                    a, b, c = g * m1, g * m2, g * m3
+                    q = f"โรงเรียนแห่งหนึ่งมีนักเรียนชั้น ป.4 จำนวน <b>{a} คน</b>, ป.5 จำนวน <b>{b} คน</b> และ ป.6 จำนวน <b>{c} คน</b><br>ครูต้องการแบ่งนักเรียนเป็นกลุ่ม กลุ่มละเท่าๆ กัน โดยนักเรียนในแต่ละกลุ่มต้องอยู่ชั้นเดียวกัน<br>จะแบ่งนักเรียนได้กลุ่มละ<b>มากที่สุด</b>กี่คน และได้ทั้งหมดกี่กลุ่ม?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ประยุกต์ ห.ร.ม.):</b><br>👉 คีย์เวิร์ด: 'แบ่งกลุ่มเท่าๆ กัน' และ 'มากที่สุด' = หา <b>ห.ร.ม.</b><br><b>ขั้นที่ 1:</b> หา ห.ร.ม. ของ {a}, {b} และ {c} จะได้ <b>{g}</b><br>👉 หมายความว่า แบ่งนักเรียนได้กลุ่มละมากที่สุด <b>{g} คน</b><br><b>ขั้นที่ 2:</b> หาจำนวนกลุ่มทั้งหมด นำนักเรียนแต่ละชั้นหารด้วย {g}<br>👉 ป.4: {a} ÷ {g} = {m1} กลุ่ม<br>👉 ป.5: {b} ÷ {g} = {m2} กลุ่ม<br>👉 ป.6: {c} ÷ {g} = {m3} กลุ่ม<br>👉 รวมทั้งหมด: {m1} + {m2} + {m3} = <b>{m1+m2+m3} กลุ่ม</b><br><b>ตอบ: กลุ่มละ {g} คน, ได้ทั้งหมด {m1+m2+m3} กลุ่ม</b></span>"
+                    
+                elif scenario == "lcm_clock":
+                    sets = [(12, 15, 20, 60), (15, 20, 30, 60), (20, 30, 40, 120), (15, 30, 45, 90), (20, 30, 45, 180), (30, 45, 60, 180)]
+                    t1, t2, t3, lcm = random.choice(sets)
+                    start_h = random.randint(6, 9)
+                    start_m = random.choice([0, 15, 30])
+                    add_h, add_m = lcm // 60, lcm % 60
+                    end_h, end_m = start_h + add_h, start_m + add_m
+                    if end_m >= 60:
+                        end_h += 1; end_m -= 60
+                        
+                    q = f"นาฬิกาปลุก 3 เรือน ตั้งเวลาปลุกดังนี้:<br>เรือนแรก ปลุกทุกๆ <b>{t1} นาที</b><br>เรือนที่สอง ปลุกทุกๆ <b>{t2} นาที</b><br>เรือนที่สาม ปลุกทุกๆ <b>{t3} นาที</b><br>ถ้านาฬิกาทั้งสามเรือนปลุกพร้อมกันครั้งแรกเวลา <b>{start_h:02d}:{start_m:02d} น.</b><br>นาฬิกาทั้งสามเรือนจะปลุกพร้อมกันอีกครั้งเวลาใด?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ประยุกต์ ค.ร.น.):</b><br>👉 คีย์เวิร์ด: 'พร้อมกันอีกครั้ง' = หา <b>ค.ร.น.</b><br><b>ขั้นที่ 1:</b> หา ค.ร.น. ของ {t1}, {t2} และ {t3} จะได้ <b>{lcm} นาที</b><br><b>ขั้นที่ 2:</b> แปลงเวลาเป็นชั่วโมงและนาที<br>👉 {lcm} นาที = {add_h} ชั่วโมง {add_m} นาที<br><b>ขั้นที่ 3:</b> นำไปบวกกับเวลาเริ่มต้น ({start_h:02d}:{start_m:02d} น.)<br>👉 {start_h:02d}:{start_m:02d} + {add_h} ชม. {add_m} นาที = <b>{end_h:02d}:{end_m:02d} น.</b><br><b>ตอบ: {end_h:02d}:{end_m:02d} น.</b></span>"
+                    
+                elif scenario == "lcm_bus":
+                    sets = [(10, 15, 20, 60), (12, 15, 20, 60), (15, 20, 30, 60), (20, 30, 45, 180), (30, 45, 60, 180)]
+                    t1, t2, t3, lcm = random.choice(sets)
+                    start_h = random.randint(5, 8)
+                    start_m = random.choice([0, 15, 20, 30, 45])
+                    add_h, add_m = lcm // 60, lcm % 60
+                    end_h, end_m = start_h + add_h, start_m + add_m
+                    if end_m >= 60:
+                        end_h += 1; end_m -= 60
+                        
+                    q = f"รถโดยสาร 3 สาย ออกจากสถานีพร้อมกันเวลา <b>{start_h:02d}:{start_m:02d} น.</b><br>สายที่ 1 ออกทุกๆ <b>{t1} นาที</b><br>สายที่ 2 ออกทุกๆ <b>{t2} นาที</b><br>สายที่ 3 ออกทุกๆ <b>{t3} นาที</b><br>รถโดยสารทั้งสามสายจะออกจากสถานีพร้อมกันอีกครั้งเวลาใด?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ประยุกต์ ค.ร.น.):</b><br>👉 คีย์เวิร์ด: 'พร้อมกันอีกครั้ง' = หา <b>ค.ร.น.</b><br><b>ขั้นที่ 1:</b> หา ค.ร.น. ของ {t1}, {t2} และ {t3} จะได้ <b>{lcm} นาที</b><br><b>ขั้นที่ 2:</b> แปลงเวลาเป็นชั่วโมงและนาที<br>👉 {lcm} นาที = {add_h} ชั่วโมง {add_m} นาที<br><b>ขั้นที่ 3:</b> นำไปบวกกับเวลาเริ่มต้น ({start_h:02d}:{start_m:02d} น.)<br>👉 {start_h:02d}:{start_m:02d} + {add_h} ชม. {add_m} นาที = <b>{end_h:02d}:{end_m:02d} น.</b><br><b>ตอบ: {end_h:02d}:{end_m:02d} น.</b></span>"
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
