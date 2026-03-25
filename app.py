@@ -3784,13 +3784,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์สมการเศษส่วน):</b><br>👉 กำหนดให้เดิมสมชายมีเงินทั้งหมด <b>x</b> บาท<br>👉 ซื้อหนังสือ: x/{d1} บาท, ซื้อขนม: x/{d2} บาท<br><br><b>ขั้นที่ 1: สร้างสมการ</b><br>👉 เงินทั้งหมด - หนังสือ - ขนม = เงินที่เหลือ<br>👉 x - (x/{d1}) - (x/{d2}) = {rem_money:,}<br><br><b>ขั้นที่ 2: แก้สมการโดยหา ค.ร.น.</b><br>👉 ค.ร.น. ของส่วน {d1} และ {d2} คือ <b>{lcm}</b> {lcm_explain}<br><br>👉 นำ ค.ร.น. ({lcm}) คูณกระจายเข้าไปใน <b>ทุกๆ จำนวน</b> ของสมการ:<br><div style='margin: 12px 0;'>👉 <b>({lcm} × x) - {f_norm1} - {f_norm2} = {rem_money:,} × {lcm}</b></div>👉 นำตัวส่วนไปตัดทอนกับ {lcm} ให้กลายเป็นจำนวนเต็ม:<br><div style='margin: 12px 0;'>👉 <b>{lcm}x - {f_canc1} - {f_canc2} = {rem_money * lcm:,}</b></div>👉 จะได้สมการใหม่ที่ไม่มีเศษส่วนกวนใจแล้ว:<br>👉 <b>{lcm}x - {lcm//d1}x - {lcm//d2}x = {rem_money * lcm:,}</b><br><br><div style='background-color:#fef9e7; padding:10px; border-radius:5px; border-left: 4px solid #f39c12; margin: 10px 0;'><span style='color:#d35400; font-size:15px;'><i><b>💡 ทำไมบรรทัดต่อไปถึงเหลือ x เดียว? (สมบัติการแจกแจง / ดึงตัวร่วม)</b><br>สังเกตว่าทุกจำนวนมี <b>x</b> เกาะอยู่เหมือนกันหมด เราจึงสามารถดึง <b>x</b> ออกมาเป็นตัวแทนไว้ข้างนอกวงเล็บได้!<br>เปรียบเทียบให้เห็นภาพ: มีเงิน {lcm} บาท จ่ายไป {lcm//d1} บาท และจ่ายอีก {lcm//d2} บาท<br>ก็คือเอาตัวเลขมาหักลบกันก่อน <b>({lcm} - {lcm//d1} - {lcm//d2})</b> แล้วค่อยแปะคำว่า <b>x (แทนหน่วยบาท)</b> ไว้ข้างหลังครับ!</i></span></div>👉 <b>({lcm} - {lcm//d1} - {lcm//d2})x = {rem_money * lcm:,}</b><br>👉 <b>{rem_frac_n}x = {rem_money * lcm:,}</b><br>👉 x = {rem_money * lcm:,} ÷ {rem_frac_n} = <b>{ans:,}</b><br><br><b>ตอบ: เดิมสมชายมีเงิน {ans:,} บาท</b></span>"
 
             elif actual_sub_t == "แบบรูปและอนุกรม (Number Patterns)":
-                scenario = random.choice(["increasing_diff", "fibonacci", "telescoping"])
+                scenario = random.choice(["increasing_diff", "fibonacci", "telescoping", "alternating", "perfect_square"])
                 
                 def f_html(n, d): return f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 2px;'><div style='border-bottom:1px solid #2c3e50; padding:0 2px; font-size:15px;'><b>{n}</b></div><div style='padding-top:1px; font-size:15px;'><b>{d}</b></div></div>"
                 def f_canc(n, d): return f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 2px;'><div style='border-bottom:1px solid #e74c3c; padding:0 2px; font-size:15px;'><s style='color:#e74c3c; opacity:0.6;'><span style='color:#2c3e50;'><b>{n}</b></span></s></div><div style='padding-top:1px; font-size:15px;'><s style='color:#e74c3c; opacity:0.6;'><span style='color:#2c3e50;'><b>{d}</b></span></s></div></div>"
 
                 if scenario == "increasing_diff":
-                    # อนุกรมที่ระยะห่างเพิ่มขึ้นทีละขั้น (เช่น +3, +5, +7, +9)
                     start = random.randint(1, 10)
                     diff_start = random.choice([2, 3, 4])
                     diff_step = random.choice([1, 2])
@@ -3811,7 +3810,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     q = f"จากแบบรูปของจำนวนที่กำหนดให้:<br><div style='font-size:22px; margin:15px 0; color:#c0392b;'><b>{', '.join(map(str, given_seq))}, ...</b></div>จงหาจำนวนถัดไป?"
                     
-                    # วาดเส้นโยงความสัมพันธ์
                     relation_html = "<div style='font-family: monospace; font-size: 16px;'>"
                     relation_html += " &nbsp;&nbsp;&nbsp; ".join([f"<b>{x}</b>" for x in seq]) + "<br>"
                     relation_html += "&nbsp;&nbsp;&nbsp;".join([f"<span style='color:#2980b9;'>+{d}</span>&nbsp;&nbsp;" for d in diffs])
@@ -3820,7 +3818,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาความสัมพันธ์):</b><br>👉 ให้เราลองหาผลต่าง (ระยะห่าง) ของตัวเลขแต่ละคู่ที่อยู่ติดกันดูครับ<br><br><div style='background:#f8f9fa; padding:10px; border-radius:5px; margin: 10px 0;'>{relation_html}</div>👉 จะสังเกตเห็นว่า ระยะห่างมันไม่ได้เพิ่มขึ้นแบบคงที่ แต่มัน **เพิ่มขึ้นทีละ {diff_step}** (จาก +{diffs[0]} เป็น +{diffs[1]}, +{diffs[2]}, ...)<br>👉 ดังนั้น ระยะห่างตัวสุดท้ายที่จะนำไปบวกคือ <b>+{diffs[-1]}</b><br>👉 นำตัวเลขล่าสุดมาบวกกับระยะห่าง: {given_seq[-1]} + {diffs[-1]} = <b>{ans}</b><br><br><b>ตอบ: {ans}</b></span>"
 
                 elif scenario == "fibonacci":
-                    # อนุกรมฟีโบนัชชี (ตัวหน้าบวกกันได้ตัวหลัง)
                     a = random.randint(1, 3)
                     b = random.randint(1, 5)
                     seq = [a, b]
@@ -3834,7 +3831,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (อนุกรมสะสม):</b><br>👉 ข้อนี้ถ้าน้องๆ ลองหาระยะห่างดู จะพบว่ามันไม่มีกฎเกณฑ์ที่ชัดเจนครับ<br>👉 ให้ลองสังเกตความสัมพันธ์แบบ **'นำตัวเลข 2 ตัวหน้า มาบวกกัน จะได้ตัวเลขถัดไป'** เสมอ!<br><br><b>ลองพิสูจน์ดู:</b><br>👉 {seq[0]} + {seq[1]} = <b>{seq[2]}</b><br>👉 {seq[1]} + {seq[2]} = <b>{seq[3]}</b><br>👉 {seq[2]} + {seq[3]} = <b>{seq[4]}</b><br><br><b>ขั้นสุดท้าย: หาคำตอบ</b><br>👉 นำตัวเลข 2 ตัวสุดท้ายมาบวกกัน: {given_seq[-2]} + {given_seq[-1]} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
 
                 elif scenario == "telescoping":
-                    # อนุกรมผลบวกเศษส่วนต่อเนื่อง (Telescoping Series)
                     end_n = random.choice([20, 30, 40, 50, 99])
                     
                     term1 = f_html(1, "1×2")
@@ -3844,13 +3840,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     q = f"จงหาผลบวกของอนุกรมเศษส่วนต่อไปนี้:<br><br><div style='font-size:20px; text-align:center;'>{term1} + {term2} + {term3} + ... + {term_n} = ?</div>"
                     
-                    # อธิบายการแยกเศษส่วน
                     t1_split = f"({f_html(1,1)} - {f_html(1,2)})"
                     t2_split = f"({f_html(1,2)} - {f_html(1,3)})"
                     t3_split = f"({f_html(1,3)} - {f_html(1,4)})"
                     tn_split = f"({f_html(1,end_n)} - {f_html(1,end_n+1)})"
                     
-                    # อธิบายการตัดทอน
                     cancel_view = f"<div style='margin:15px 0; font-size:18px;'>= {f_html(1,1)} <span style='color:#e74c3c;'><b>- {f_canc(1,2)} + {f_canc(1,2)}</b></span> <span style='color:#e74c3c;'><b>- {f_canc(1,3)} + {f_canc(1,3)}</b></span> - ... + <span style='color:#e74c3c;'><b>{f_canc(1,end_n)}</b></span> - {f_html(1,end_n+1)}</div>"
                     
                     ans_n = end_n
@@ -3859,8 +3853,41 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 เทคนิคเศษส่วนต่อเนื่อง / Telescoping):</b><br>👉 ถ้าน้องๆ มัวแต่หา ค.ร.น. ข้อนี้ทำทั้งวันก็ไม่เสร็จครับ! เราต้องใช้เทคนิค <b>'การแยกเศษส่วน'</b><br><br><b>ขั้นที่ 1: แปลงร่างเศษส่วน</b><br>สังเกตว่าตัวส่วนเป็นตัวเลขเรียงติดกันคูณกัน เราสามารถจับแยกเป็น 2 ก้อนลบกันได้เสมอ ดังนี้:<br>👉 {term1} แยกได้เป็น {t1_split}<br>👉 {term2} แยกได้เป็น {t2_split}<br>👉 ...ไปเรื่อยๆ จนถึงตัวสุดท้าย...<br>👉 {term_n} แยกได้เป็น {tn_split}<br><br><b>ขั้นที่ 2: นำมาเขียนเรียงต่อกันแล้วสังเกตความวิเศษ!</b><br>เมื่อเราเอาวงเล็บออก จะเกิดการ <b>'ตัดกันเอง'</b> ของตัวเลขตรงกลาง (ตัวติดลบเจอตัวบวก หักล้างกันกลายเป็นศูนย์)<br>{cancel_view}👉 จะเห็นว่าตัวเลขตรงกลางโดน <span style='color:#e74c3c;'><b>ขีดฆ่าตายเรียบ!</b></span> เหลือรอดแค่ <b>'หัวตัวแรก'</b> กับ <b>'หางตัวสุดท้าย'</b> เท่านั้น!<br><br><b>ขั้นที่ 3: คำนวณคำตอบสุดท้าย</b><br>👉 เหลือแค่: {f_html(1,1)} - {f_html(1,end_n+1)}<br>👉 แปลงร่าง 1 ให้ส่วนเท่ากัน: {f_html(end_n+1, end_n+1)} - {f_html(1, end_n+1)}<br>👉 นำเศษมาลบกัน: {ans_html}<br><br><b>ตอบ: {ans_n}/{ans_d}</b></span>"
 
+                elif scenario == "alternating":
+                    # อนุกรมสลับ (2 ชุดซ้อนกัน)
+                    start1 = random.randint(2, 5)
+                    step1 = random.randint(2, 4)
+                    start2 = random.randint(20, 30)
+                    step2 = random.randint(1, 3)
+                    
+                    seq1 = [start1 + (i*step1) for i in range(4)]
+                    seq2 = [start2 - (i*step2) for i in range(4)]
+                    
+                    # สลับตัวเลข
+                    mixed_seq = []
+                    for i in range(4):
+                        mixed_seq.append(seq1[i])
+                        mixed_seq.append(seq2[i])
+                        
+                    ans = mixed_seq[6] # ถามตัวที่ 7 (อยู่ในชุดที่ 1)
+                    given_seq = mixed_seq[:6]
+                    
+                    q = f"จากแบบรูปของจำนวนที่กำหนดให้:<br><div style='font-size:22px; margin:15px 0; color:#c0392b;'><b>{', '.join(map(str, given_seq))}, ...</b></div>จงหาจำนวนถัดไป?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 อนุกรมสลับซ้อนกัน):</b><br>👉 ข้อนี้ดูเผินๆ เหมือนตัวเลขเดี๋ยวเพิ่มเดี๋ยวลด ไม่มีกฎเกณฑ์ที่แน่นอน<br>👉 <b>ความลับคือ:</b> มีอนุกรม 2 ชุดซ่อนสลับกันอยู่! ให้เราลองมอง <b>'ข้ามกระโดดทีละ 1 ตัว'</b> ดูครับ<br><br><b>แยกอนุกรมออกเป็น 2 ชุด:</b><br>🔹 <b>ชุดที่ 1 (ตัวคี่):</b> {seq1[0]}, {seq1[1]}, {seq1[2]}, <b>...ตัวที่กำลังหา...</b><br><i>(สังเกตว่า: บวกเพิ่มทีละ {step1})</i><br>🔸 <b>ชุดที่ 2 (ตัวคู่):</b> {seq2[0]}, {seq2[1]}, {seq2[2]}<br><i>(สังเกตว่า: ลบออกทีละ {step2})</i><br><br><b>ขั้นสุดท้าย: หาคำตอบ</b><br>👉 ตำแหน่งที่เราต้องการหา คือตัวถัดไปของ <b>ชุดที่ 1</b><br>👉 นำตัวสุดท้ายของชุดที่ 1 มาบวกเพิ่ม: {seq1[2]} + {step1} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+
+                elif scenario == "perfect_square":
+                    # อนุกรมยกกำลังสอง (Perfect Squares)
+                    start_base = random.randint(1, 4)
+                    bases = [start_base + i for i in range(6)]
+                    seq = [b**2 for b in bases]
+                    ans = seq[-1]
+                    given_seq = seq[:-1]
+                    
+                    q = f"จากแบบรูปของจำนวนที่กำหนดให้:<br><div style='font-size:22px; margin:15px 0; color:#c0392b;'><b>{', '.join(map(str, given_seq))}, ...</b></div>จงหาจำนวนถัดไป?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (อนุกรมกำลังสอง):</b><br>👉 ข้อนี้ถ้าลองหาระยะห่าง จะพบว่ามันเพิ่มขึ้นทีละเลขคี่ (ตัวอย่าง: ลองลบกันดูจะได้ระยะห่างไม่เท่ากัน)<br>👉 แต่ถ้าเราแม่นสูตรคูณ เราจะสังเกตเห็นความน่าสนใจของตัวเลขกลุ่มนี้ครับ!<br><br><b>ลองแยกตัวประกอบดู:</b><br>👉 {seq[0]} เกิดจาก <b>{bases[0]} × {bases[0]}</b><br>👉 {seq[1]} เกิดจาก <b>{bases[1]} × {bases[1]}</b><br>👉 {seq[2]} เกิดจาก <b>{bases[2]} × {bases[2]}</b><br>👉 {seq[3]} เกิดจาก <b>{bases[3]} × {bases[3]}</b><br>👉 {seq[4]} เกิดจาก <b>{bases[4]} × {bases[4]}</b><br><br><b>ขั้นสุดท้าย: หาคำตอบ</b><br>👉 จะเห็นว่ามันคือตัวเลขเรียงติดกันคูณด้วยตัวมันเอง (ยกกำลังสอง)<br>👉 ดังนั้น ตัวถัดไปต้องเป็น <b>{bases[5]} × {bases[5]} = {ans}</b><br><b>ตอบ: {ans}</b></span>"
+
             elif actual_sub_t == "มาตราส่วนและทิศทาง":
-                scenario = random.choice(["map_to_real", "real_to_map"])
+                scenario = random.choice(["map_to_real", "real_to_map", "map_area", "find_scale"])
                 
                 if scenario == "map_to_real":
                     scale_km = random.choice([5, 10, 20, 25, 50, 100])
@@ -3874,7 +3901,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         map_str = f"{map_cm}"
                         
                     ans = map_cm * scale_km
-                    ans_str = f"{ans:g}" # Format to remove trailing zero if integer
+                    ans_str = f"{ans:g}" 
                     
                     q = f"แผนที่ฉบับหนึ่งกำหนดมาตราส่วน <b>1 ซม. : {scale_km} กม.</b><br>ถ้าวัดระยะทางจากเมือง A ไปเมือง B ในแผนที่ได้ <b>{map_str} เซนติเมตร</b><br>ระยะทางจริงจากเมือง A ไปเมือง B คือกี่กิโลเมตร?"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การอ่านมาตราส่วนแผนที่):</b><br>👉 มาตราส่วน 1 ซม. : {scale_km} กม. หมายความว่า <b>'ระยะทางในกระดาษ 1 ซม. เท่ากับระยะทางจริง {scale_km} กิโลเมตร'</b><br><br><b>ขั้นที่ 1: เทียบบัญญัติไตรยางศ์</b><br>👉 แผนที่ 1 ซม. = ของจริง {scale_km} กม.<br>👉 แผนที่ {map_str} ซม. = ของจริง {map_str} × {scale_km} กม.<br><br><b>ขั้นที่ 2: คำนวณคำตอบ</b><br>👉 {map_str} × {scale_km} = <b>{ans_str} กิโลเมตร</b><br><b>ตอบ: {ans_str} กิโลเมตร</b></span>"
@@ -3890,6 +3917,32 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     q = f"แผนผังหมู่บ้านแห่งหนึ่งใช้มาตราส่วน <b>1 ซม. : {scale_m} เมตร</b><br>ถ้าระยะทางจริงจากหน้าหมู่บ้านถึงสวนสาธารณะคือ <b>{real_str} เมตร</b><br>ในแผนผังนี้ ระยะทางดังกล่าวจะมีความยาวกี่เซนติเมตร?"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (แปลงระยะจริงลงในแผนผัง):</b><br>👉 มาตราส่วน 1 ซม. : {scale_m} เมตร หมายความว่า <b>'ระยะทางจริงทุกๆ {scale_m} เมตร จะวาดลงในกระดาษ 1 เซนติเมตร'</b><br><br><b>ขั้นที่ 1: เทียบบัญญัติไตรยางศ์ (คิดย้อนกลับ)</b><br>👉 ระยะจริง {scale_m} เมตร = วาดในแผนผัง 1 ซม.<br>👉 ระยะจริง {real_str} เมตร = นำไปหารด้วย {scale_m} เพื่อดูว่าจะได้กระดาษกี่เซนติเมตร<br><br><b>ขั้นที่ 2: คำนวณคำตอบ</b><br>👉 วาดในแผนผัง = {real_str} ÷ {scale_m}<br>👉 วาดในแผนผัง = <b>{map_str} เซนติเมตร</b><br><b>ตอบ: {map_str} เซนติเมตร</b></span>"
+
+                elif scenario == "map_area":
+                    scale_m = random.choice([5, 10, 20, 50])
+                    w_cm = random.randint(3, 8)
+                    l_cm = random.randint(4, 12)
+                    while w_cm >= l_cm: l_cm += 1
+                    
+                    real_w = w_cm * scale_m
+                    real_l = l_cm * scale_m
+                    real_area = real_w * real_l
+                    
+                    q = f"แผนผังที่ดินรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{w_cm} ซม.</b> ยาว <b>{l_cm} ซม.</b><br>ใช้มาตราส่วน <b>1 ซม. : {scale_m} เมตร</b><br>ที่ดินผืนนี้มี <b>พื้นที่จริง</b> กี่ตารางเมตร?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - หาพื้นที่จริง):</b><br><div style='background-color:#fce4e4; padding:10px; border-radius:5px; border-left: 4px solid #c0392b; margin: 10px 0;'><span style='color:#c0392b; font-size:15px;'><i><b>⚠️ จุดระวัง (ข้อนี้เด็กๆ โดนหลอกบ่อยมาก!):</b><br>ห้ามเอา (กว้าง × ยาว) ในกระดาษ แล้วมาคูณ {scale_m} โดยเด็ดขาด!<br>เพราะการหาพื้นที่ จะต้องแปลง <b>'ความกว้าง'</b> และ <b>'ความยาว'</b> ให้เป็นของจริงก่อนนำมาคูณกันครับ!</i></span></div><br><b>ขั้นที่ 1: แปลงความกว้างและความยาวให้เป็นของจริง</b><br>👉 ความกว้างจริง = {w_cm} ซม. × {scale_m} เมตร = <b>{real_w} เมตร</b><br>👉 ความยาวจริง = {l_cm} ซม. × {scale_m} เมตร = <b>{real_l} เมตร</b><br><br><b>ขั้นที่ 2: คำนวณหาพื้นที่จริง</b><br>👉 พื้นที่สี่เหลี่ยมผืนผ้า = กว้างจริง × ยาวจริง<br>👉 พื้นที่ = {real_w} × {real_l} = <b>{real_area:,} ตารางเมตร</b><br><br><b>ตอบ: {real_area:,} ตารางเมตร</b></span>"
+
+                elif scenario == "find_scale":
+                    real_km = random.choice([15, 20, 30, 45, 60, 120])
+                    map_cm = random.choice([3, 4, 5, 6, 10, 12])
+                    # Ensure it divides cleanly for a neat scale
+                    while real_km * 100000 % map_cm != 0:
+                        map_cm = random.choice([3, 4, 5, 6, 10, 12])
+                    
+                    real_cm = real_km * 100000
+                    scale_val = real_cm // map_cm
+                    
+                    q = f"ระยะทางจริงจากจังหวัด ก ไปจังหวัด ข คือ <b>{real_km} กิโลเมตร</b><br>ถ้าวัดระยะทางในแผนที่ได้ <b>{map_cm} เซนติเมตร</b><br>แผนที่ฉบับนี้ใช้มาตราส่วน <b>1 : เท่าใด?</b>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - หามาตราส่วน):</b><br>👉 การหามาตราส่วน 1 : x  เราต้องทำให้หน่วยของทั้งสองฝั่ง <b>'เป็นเซนติเมตรเหมือนกัน'</b> ก่อนครับ<br><br><b>ขั้นที่ 1: แปลงระยะทางจริงจาก กิโลเมตร เป็น เซนติเมตร</b><br>👉 1 กิโลเมตร = 1,000 เมตร<br>👉 1 เมตร = 100 เซนติเมตร<br>👉 ดังนั้น 1 กิโลเมตร = 1,000 × 100 = <b>100,000 เซนติเมตร</b><br>👉 ระยะจริง {real_km} กม. = {real_km} × 100,000 = <b>{real_cm:,} เซนติเมตร</b><br><br><b>ขั้นที่ 2: เทียบอัตราส่วนเพื่อหามาตราส่วน</b><br>👉 ระยะในแผนที่ : ระยะจริง<br>👉 <b>{map_cm} ซม. : {real_cm:,} ซม.</b><br>👉 ทำฝั่งซ้ายให้เป็น 1 โดยนำ {map_cm} ไปหารทั้งสองฝั่ง<br>👉 1 : ({real_cm:,} ÷ {map_cm})<br>👉 <b>1 : {scale_val:,}</b><br><br><b>ตอบ: มาตราส่วน 1 : {scale_val:,}</b></span>"
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
