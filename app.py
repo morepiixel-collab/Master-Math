@@ -2693,6 +2693,178 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 name = random.choice(NAMES)
                 
                 # ... (ส่วนตรรกะการสร้างโจทย์ยังคงเดิม) ...
+            elif actual_sub_t == "โจทย์ปัญหาพื้นที่และความยาวรอบรูป":
+                
+                # --- ฟังก์ชันวาดรูปเรขาคณิต ---
+                def draw_rect_svg(w_val, h_val, w_lbl, h_lbl, fill_color="#eaf2f8"):
+                    scale = 140 / max(w_val, h_val)
+                    dw = w_val * scale
+                    dh = h_val * scale
+                    svg = f'<div style="text-align:center; margin: 15px 0;"><svg width="300" height="200">'
+                    svg += f'<rect x="{150 - dw/2}" y="{100 - dh/2}" width="{dw}" height="{dh}" fill="{fill_color}" stroke="#2980b9" stroke-width="3"/>'
+                    # labels
+                    svg += f'<text x="150" y="{100 - dh/2 - 10}" font-family="Sarabun" font-size="16" font-weight="bold" fill="#c0392b" text-anchor="middle">{w_lbl}</text>'
+                    svg += f'<text x="{150 + dw/2 + 10}" y="105" font-family="Sarabun" font-size="16" font-weight="bold" fill="#c0392b" text-anchor="start" dominant-baseline="middle">{h_lbl}</text>'
+                    svg += '</svg></div>'
+                    return svg
+
+                def draw_frame_svg(w_out, h_out, w_in, h_in, w_lbl, h_lbl, in_w_lbl, in_h_lbl):
+                    scale = 140 / max(w_out, h_out)
+                    dw_o = w_out * scale
+                    dh_o = h_out * scale
+                    dw_i = w_in * scale
+                    dh_i = h_in * scale
+                    svg = f'<div style="text-align:center; margin: 15px 0;"><svg width="300" height="200">'
+                    # สี่เหลี่ยมใหญ่ด้านนอก (แรเงาสีเทา)
+                    svg += f'<rect x="{150 - dw_o/2}" y="{100 - dh_o/2}" width="{dw_o}" height="{dh_o}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
+                    # สี่เหลี่ยมเล็กด้านใน (สระน้ำสีฟ้า)
+                    svg += f'<rect x="{150 - dw_i/2}" y="{100 - dh_i/2}" width="{dw_i}" height="{dh_i}" fill="#85c1e9" stroke="#2c3e50" stroke-width="2" stroke-dasharray="4,4"/>'
+                    
+                    svg += f'<text x="150" y="{100 - dh_o/2 - 10}" font-family="Sarabun" font-size="14" font-weight="bold" fill="#c0392b" text-anchor="middle">{w_lbl}</text>'
+                    svg += f'<text x="{150 + dw_o/2 + 10}" y="100" font-family="Sarabun" font-size="14" font-weight="bold" fill="#c0392b" text-anchor="start" dominant-baseline="middle">{h_lbl}</text>'
+                    svg += f'<text x="150" y="{100 - dh_i/2 + 15}" font-family="Sarabun" font-size="12" font-weight="bold" fill="#2c3e50" text-anchor="middle">{in_w_lbl}</text>'
+                    svg += f'<text x="{150 - dw_i/2 + 15}" y="100" font-family="Sarabun" font-size="12" font-weight="bold" fill="#2c3e50" text-anchor="start" dominant-baseline="middle">{in_h_lbl}</text>'
+                    svg += f'<text x="150" y="100" font-family="Sarabun" font-size="16" font-weight="bold" fill="#fff" text-anchor="middle" dominant-baseline="middle">สระน้ำ</text>'
+                    svg += '</svg></div>'
+                    return svg
+
+                # ----------------------------------------
+                
+                if is_challenge:
+                    scenario = random.choice(["reverse_square", "shaded_area", "cost_calc"])
+                    
+                    if scenario == "reverse_square":
+                        side = random.randint(12, 35)
+                        area = side * side
+                        perimeter = 4 * side
+                        
+                        q = f"สนามหญ้ารูปสี่เหลี่ยมจัตุรัส มีพื้นที่ <b>{area:,} ตารางเมตร</b><br>ถ้าต้องการทำรั้วล้อมรอบสนามหญ้านี้ 1 รอบ จะต้องใช้รั้วยาวกี่เมตร?"
+                        
+                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - ย้อนกลับหาความยาวด้าน):</b><br>
+                        <b>ขั้นที่ 1: หาความยาวด้านของรูปสี่เหลี่ยมจัตุรัส</b><br>
+                        👉 สูตรพื้นที่สี่เหลี่ยมจัตุรัส = ด้าน × ด้าน<br>
+                        👉 เราต้องหาว่า ตัวเลขอะไรคูณตัวเองแล้วได้ {area:,} ?<br>
+                        👉 พบว่า <b>{side} × {side} = {area:,}</b><br>
+                        👉 ดังนั้น สนามหญ้านี้ยาวด้านละ <b>{side} เมตร</b><br><br>
+                        <b>ขั้นที่ 2: หาความยาวรอบรูป (ความยาวรั้ว)</b><br>
+                        👉 สี่เหลี่ยมจัตุรัสมี 4 ด้านยาวเท่ากัน<br>
+                        👉 ความยาวรอบรูป = 4 × ด้าน = 4 × {side} = <b>{perimeter:,} เมตร</b><br>
+                        <b>ตอบ: {perimeter:,} เมตร</b></span>"""
+                        
+                    elif scenario == "shaded_area":
+                        path_w = random.randint(2, 4)
+                        in_w = random.randint(8, 15)
+                        in_h = random.randint(5, 10)
+                        out_w = in_w + (2 * path_w)
+                        out_h = in_h + (2 * path_w)
+                        
+                        area_out = out_w * out_h
+                        area_in = in_w * in_h
+                        area_shaded = area_out - area_in
+                        
+                        svg = draw_frame_svg(out_w, out_h, in_w, in_h, f"{out_w} ม.", f"{out_h} ม.", f"{in_w} ม.", f"{in_h} ม.")
+                        
+                        q = f"สวนสาธารณะรูปสี่เหลี่ยมผืนผ้า กว้าง {out_h} ม. ยาว {out_w} ม.<br>มีสระน้ำอยู่ตรงกลาง กว้าง {in_h} ม. ยาว {in_w} ม. ดังรูป<br>จงหาพื้นที่ของ <b>ทางเดินรอบสระน้ำ</b> (พื้นที่แรเงาสีเทา) ว่ามีกี่ตารางเมตร?<br>{svg}"
+                        
+                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - พื้นที่แรเงา):</b><br>
+                        <i>หลักการ: พื้นที่ทางเดิน = พื้นที่รูปใหญ่ (ทั้งหมด) - พื้นที่รูปเล็ก (สระน้ำ)</i><br><br>
+                        <b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมรูปใหญ่ (พื้นที่ทั้งหมด)</b><br>
+                        👉 สูตร: กว้าง × ยาว<br>
+                        👉 คำนวณ: {out_h} × {out_w} = <b>{area_out:,} ตารางเมตร</b><br><br>
+                        <b>ขั้นที่ 2: หาพื้นที่สี่เหลี่ยมรูปเล็ก (สระน้ำตรงกลาง)</b><br>
+                        👉 คำนวณ: {in_h} × {in_w} = <b>{area_in:,} ตารางเมตร</b><br><br>
+                        <b>ขั้นที่ 3: หาพื้นที่ทางเดินรอบสระ</b><br>
+                        👉 นำพื้นที่ทั้งหมด ลบด้วย พื้นที่สระน้ำ<br>
+                        👉 {area_out:,} - {area_in:,} = <b>{area_shaded:,} ตารางเมตร</b><br>
+                        <b>ตอบ: {area_shaded:,} ตารางเมตร</b></span>"""
+                        
+                    elif scenario == "cost_calc":
+                        w = random.randint(8, 15)
+                        h = random.randint(12, 25)
+                        area = w * h
+                        rate = random.choice([250, 350, 450, 500])
+                        total_cost = area * rate
+                        
+                        q = f"ห้องประชุมรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{w} เมตร</b> ยาว <b>{h} เมตร</b><br>ถ้าต้องการปูกระเบื้องพื้นห้อง โดยช่างคิดค่าปูกระเบื้อง <b>ตารางเมตรละ {rate:,} บาท</b><br>จะต้องจ่ายเงินค่าปูกระเบื้องทั้งหมดกี่บาท?"
+                        
+                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - ประยุกต์หาค่าใช้จ่าย):</b><br>
+                        <b>ขั้นที่ 1: หาพื้นที่ของห้องประชุมก่อน</b><br>
+                        👉 เพราะช่างคิดราคาเป็น "ตารางเมตร" เราจึงต้องหาพื้นที่ ไม่ใช่ความยาวรอบรูป!<br>
+                        👉 พื้นที่ห้อง = กว้าง × ยาว<br>
+                        👉 คำนวณ: {w} × {h} = <b>{area:,} ตารางเมตร</b><br><br>
+                        <b>ขั้นที่ 2: คำนวณค่าใช้จ่ายทั้งหมด</b><br>
+                        👉 พื้นที่ 1 ตารางเมตร จ่าย {rate:,} บาท<br>
+                        👉 พื้นที่ {area:,} ตารางเมตร ต้องจ่าย = {area:,} × {rate:,} = <b>{total_cost:,} บาท</b><br>
+                        <b>ตอบ: {total_cost:,} บาท</b></span>"""
+                        
+                else:
+                    # โหมดปกติ ป.5
+                    scenario = random.choice(["find_area", "find_peri", "find_side"])
+                    is_square = random.choice([True, False])
+                    
+                    if is_square:
+                        side = random.randint(8, 25)
+                        area = side * side
+                        perimeter = 4 * side
+                        shape_name = "สี่เหลี่ยมจัตุรัส"
+                        svg = draw_rect_svg(side, side, f"{side} ซม.", f"{side} ซม.", "#fcf3cf")
+                    else:
+                        w = random.randint(5, 15)
+                        h = random.randint(16, 30)
+                        area = w * h
+                        perimeter = 2 * (w + h)
+                        shape_name = "สี่เหลี่ยมผืนผ้า"
+                        svg = draw_rect_svg(h, w, f"{h} ซม.", f"{w} ซม.", "#d5f5e3")
+                        
+                    if scenario == "find_area":
+                        q = f"รูป{shape_name}ดังรูป มี<b>พื้นที่</b>กี่ตารางเซนติเมตร?<br>{svg}"
+                        if is_square:
+                            sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                            👉 สูตรพื้นที่สี่เหลี่ยมจัตุรัส = ด้าน × ด้าน<br>
+                            👉 คำนวณ: {side} × {side} = <b>{area:,} ตารางเซนติเมตร</b><br>
+                            <b>ตอบ: {area:,} ตารางเซนติเมตร</b></span>"""
+                        else:
+                            sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                            👉 สูตรพื้นที่สี่เหลี่ยมผืนผ้า = กว้าง × ยาว<br>
+                            👉 คำนวณ: {w} × {h} = <b>{area:,} ตารางเซนติเมตร</b><br>
+                            <b>ตอบ: {area:,} ตารางเซนติเมตร</b></span>"""
+                            
+                    elif scenario == "find_peri":
+                        q = f"รูป{shape_name}ดังรูป มี<b>ความยาวรอบรูป</b>กี่เซนติเมตร?<br>{svg}"
+                        if is_square:
+                            sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                            👉 ความยาวรอบรูปสี่เหลี่ยมจัตุรัส = 4 × ด้าน (นำทั้ง 4 ด้านมาบวกกัน)<br>
+                            👉 คำนวณ: 4 × {side} = <b>{perimeter:,} เซนติเมตร</b><br>
+                            <b>ตอบ: {perimeter:,} เซนติเมตร</b></span>"""
+                        else:
+                            sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                            👉 ความยาวรอบรูปสี่เหลี่ยมผืนผ้า = (กว้าง + ยาว) × 2<br>
+                            👉 คำนวณ: กว้าง + ยาว = {w} + {h} = {w+h} ซม.<br>
+                            👉 นำมาคูณ 2 (เพราะมีด้านละ 2 ฝั่ง): {w+h} × 2 = <b>{perimeter:,} เซนติเมตร</b><br>
+                            <b>ตอบ: {perimeter:,} เซนติเมตร</b></span>"""
+                            
+                    elif scenario == "find_side":
+                        if is_square:
+                            q = f"กระดาษรูปสี่เหลี่ยมจัตุรัส มี<b>ความยาวรอบรูป {perimeter:,} เซนติเมตร</b><br>จงหาว่ากระดาษแผ่นนี้มีความยาวด้านละกี่เซนติเมตร?"
+                            sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                            👉 สี่เหลี่ยมจัตุรัสมีด้านยาวเท่ากัน 4 ด้าน<br>
+                            👉 ถ้าความยาวทั้ง 4 ด้านรวมกันได้ {perimeter:,} ซม.<br>
+                            👉 หาความยาว 1 ด้าน โดยการนำไปหาร 4<br>
+                            👉 คำนวณ: {perimeter:,} ÷ 4 = <b>{side} เซนติเมตร</b><br>
+                            <b>ตอบ: {side} เซนติเมตร</b></span>"""
+                        else:
+                            q = f"กรอบรูปร้านหนึ่งเป็นรูปสี่เหลี่ยมผืนผ้า มี<b>ความยาวรอบรูป {perimeter:,} เซนติเมตร</b><br>ถ้ากรอบรูปนี้กว้าง <b>{w} เซนติเมตร</b> จะมีความยาวกี่เซนติเมตร?"
+                            sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                            <b>ขั้นที่ 1: หาความยาวของด้านกว้างทั้ง 2 ด้านรวมกัน</b><br>
+                            👉 กรอบรูปมีด้านกว้าง 2 ด้าน = {w} × 2 = <b>{w*2} ซม.</b><br><br>
+                            <b>ขั้นที่ 2: หาความยาวที่เหลือ (สำหรับด้านยาว 2 ด้าน)</b><br>
+                            👉 นำความยาวรอบรูปทั้งหมด ลบด้วย ความยาวด้านกว้าง<br>
+                            👉 {perimeter:,} - {w*2} = <b>{perimeter - (w*2)} ซม.</b><br><br>
+                            <b>ขั้นที่ 3: หาความยาว 1 ด้าน</b><br>
+                            👉 ด้านยาวมี 2 ด้าน จึงต้องแบ่งครึ่งความยาวที่เหลือ<br>
+                            👉 {(perimeter - (w*2))} ÷ 2 = <b>{h} เซนติเมตร</b><br>
+                            <b>ตอบ: {h} เซนติเมตร</b></span>"""
+
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
