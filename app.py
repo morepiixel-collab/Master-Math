@@ -742,7 +742,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         
                         if is_major:
                             lbl = int(i * (max_ml / ticks))
-                            svg += f'<text x="{x}" y="80" font-family="sans-serif" font-size="14" fill="#333" text-anchor="middle">{lbl}</text>'
+                            if lbl >= 1000 and lbl % 1000 == 0:
+                                lbl_str = f"{lbl//1000}L"
+                            else:
+                                lbl_str = str(lbl)
+                            svg += f'<text x="{x}" y="80" font-family="sans-serif" font-size="14" fill="#333" text-anchor="middle">{lbl_str}</text>'
                     
                     val_x = 50 + (val_ml / max_ml) * 400
                     svg += f'<circle cx="{val_x}" cy="50" r="6" fill="#e74c3c"/>'
@@ -778,28 +782,38 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 multiplier = 1000
                 u_major, u_minor = "ลิตร", "มิลลิลิตร"
                 
-                if q_cat == "recipe_convert": # โจทย์ช้อนชา ช้อนโต๊ะ ถ้วยตวง
+                if q_cat == "recipe_convert": 
                     recipe_item = random.choice(["น้ำเชื่อม", "น้ำปลา", "ซีอิ๊ว", "กะทิ", "น้ำมะนาว", "นมข้นหวาน"])
                     note_html = "<br><span style='font-size:16px; color:#7f8c8d;'><i>(หมายเหตุ: 1 ช้อนชา = 5 มล., 1 ช้อนโต๊ะ = 15 มล., 1 ถ้วยตวง = 250 มล.)</i></span>"
                     
                     if is_challenge:
-                        cup = random.randint(1, 3)
-                        tbsp = random.randint(1, 5)
-                        tsp = random.randint(1, 4)
-                        ans = (cup * 250) + (tbsp * 15) + (tsp * 5)
+                        cup = random.randint(1, 4)
+                        tbsp = random.randint(2, 6)
+                        tsp = random.randint(2, 5)
+                        batches = random.randint(3, 8)
                         
-                        q = f"สูตรทำอาหารต้องใช้{recipe_item} <b>{cup} ถ้วยตวง, {tbsp} ช้อนโต๊ะ และ {tsp} ช้อนชา</b><br>คิดเป็นปริมาตรรวมกี่มิลลิลิตร?{note_html}"
-                        sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การแปลงหน่วยความจุ):</b><br>
-                        <b>ขั้นที่ 1: แปลงหน่วยทีละอย่างให้เป็นมิลลิลิตร</b><br>
+                        total_1_batch = (cup * 250) + (tbsp * 15) + (tsp * 5)
+                        total_all = total_1_batch * batches
+                        
+                        ans_l = total_all // 1000
+                        ans_ml = total_all % 1000
+                        ans_str = f"{ans_l} ลิตร {ans_ml} มิลลิลิตร" if ans_ml > 0 else f"{ans_l} ลิตร"
+                        
+                        q = f"สูตรทำ{recipe_item} 1 ชุด ต้องใช้ส่วนผสม <b>{cup} ถ้วยตวง, {tbsp} ช้อนโต๊ะ และ {tsp} ช้อนชา</b><br>ถ้าต้องการทำทั้งหมด <b>{batches} ชุด</b> จะต้องใช้ปริมาตรรวมกี่ลิตร กี่มิลลิลิตร?{note_html}"
+                        sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - การแปลงหน่วยและคูณทวีคูณ):</b><br>
+                        <b>ขั้นที่ 1: หาปริมาตรของส่วนผสม 1 ชุด (แปลงเป็นมิลลิลิตร)</b><br>
                         👉 {cup} ถ้วยตวง = {cup} × 250 = <b>{cup * 250} มล.</b><br>
                         👉 {tbsp} ช้อนโต๊ะ = {tbsp} × 15 = <b>{tbsp * 15} มล.</b><br>
                         👉 {tsp} ช้อนชา = {tsp} × 5 = <b>{tsp * 5} มล.</b><br>
-                        <b>ขั้นที่ 2: นำปริมาตรทั้งหมดมารวมกัน</b><br>
-                        👉 {cup * 250} + {tbsp * 15} + {tsp * 5} = <b>{ans:,} มล.</b><br>
-                        <b>ตอบ: {ans:,} มิลลิลิตร</b></span>"""
+                        👉 ปริมาตร 1 ชุด = {cup * 250} + {tbsp * 15} + {tsp * 5} = <b>{total_1_batch:,} มล.</b><br>
+                        <b>ขั้นที่ 2: คูณด้วยจำนวนชุดที่ต้องการทำ</b><br>
+                        👉 ทำ {batches} ชุด ➔ {total_1_batch:,} × {batches} = <b>{total_all:,} มล.</b><br>
+                        <b>ขั้นที่ 3: แปลงกลับเป็นหน่วยผสม</b><br>
+                        👉 {total_all:,} มล. คิดเป็น <b>{ans_str}</b><br>
+                        <b>ตอบ: {ans_str}</b></span>"""
                     else:
                         unit_name, unit_val = random.choice([("ช้อนชา", 5), ("ช้อนโต๊ะ", 15), ("ถ้วยตวง", 250)])
-                        qty = random.randint(2, 12)
+                        qty = random.randint(2, 15)
                         ans = qty * unit_val
                         
                         q = f"สูตรทำน้ำจิ้มต้องใช้{recipe_item} <b>{qty} {unit_name}</b><br>คิดเป็นปริมาตรกี่มิลลิลิตร?{note_html}"
@@ -810,35 +824,57 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         👉 {qty} {unit_name} = {qty} × {unit_val} = <b>{ans:,} มิลลิลิตร</b><br>
                         <b>ตอบ: {ans:,} มิลลิลิตร</b></span>"""
                         
-                elif q_cat == "number_line": # โจทย์เส้นจำนวน
+                elif q_cat == "number_line": 
                     if is_challenge:
-                        val_ml = random.randint(1, 19) * 50
+                        max_l = random.randint(3, 5)
+                        max_ml = max_l * 1000
+                        val_ml = random.randint(2, (max_ml//100) - 2) * 100
+                        ans_l = val_ml // 1000
+                        ans_ml = val_ml % 1000
+                        ans_str = f"{ans_l} ลิตร {ans_ml} มิลลิลิตร" if ans_l > 0 else f"{ans_ml} มิลลิลิตร"
+                        
+                        svg = draw_vol_number_line(val_ml, max_ml)
+                        q = f"จากเส้นจำนวนด้านล่าง ลูกศรชี้ที่ปริมาตรความจุเท่าใด? (ตอบเป็นลิตรและมิลลิลิตร)<br>{svg}"
+                        sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - เส้นจำนวนข้ามหน่วย):</b><br>
+                        <b>ขั้นที่ 1: วิเคราะห์ความกว้างของช่องสเกล</b><br>
+                        👉 เส้นจำนวนเริ่มจาก 0 ถึง {max_l}L (คือ {max_ml:,} มล.) มีขีดใหญ่ทั้งหมด 5 ช่วง<br>
+                        👉 1 ช่วงใหญ่ = {max_ml} ÷ 5 = {max_ml//5} มล. และถูกแบ่งครึ่งด้วยขีดเล็ก<br>
+                        👉 แสดงว่า 1 ขีดเล็ก มีค่าช่องละ <b>{(max_ml//5)//2} มิลลิลิตร</b><br>
+                        <b>ขั้นที่ 2: อ่านค่าจากลูกศรและแปลงหน่วย</b><br>
+                        👉 ลูกศรชี้อยู่ที่ตำแหน่ง <b>{val_ml:,} มล.</b><br>
+                        👉 แปลงหน่วย: นำไปหาร 1000 จะได้ <b>{ans_str}</b><br>
+                        <b>ตอบ: {ans_str}</b></span>"""
                     else:
                         val_ml = random.randint(1, 9) * 100
-                        
-                    svg = draw_vol_number_line(val_ml, 1000)
-                    q = f"จากเส้นจำนวนด้านล่าง ลูกศรชี้ที่ปริมาตรความจุเท่าใด?<br>{svg}"
-                    sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
-                    <b>ขั้นที่ 1: วิเคราะห์เส้นจำนวน</b><br>
-                    👉 เส้นจำนวนเริ่มจาก 0 ถึง 1000 มีขีดใหญ่ทั้งหมด 5 ช่วง (ช่วงละ 200) และมีขีดเล็กแบ่งครึ่ง<br>
-                    👉 แสดงว่า 1 ช่องเล็ก มีค่าเท่ากับ <b>100 มิลลิลิตร</b><br>
-                    <b>ขั้นที่ 2: อ่านค่าจากลูกศร</b><br>
-                    👉 ลูกศรชี้อยู่ที่ตำแหน่ง <b>{val_ml}</b> พอดี<br>
-                    <b>ตอบ: {val_ml} มิลลิลิตร</b></span>"""
+                        svg = draw_vol_number_line(val_ml, 1000)
+                        q = f"จากเส้นจำนวนด้านล่าง ลูกศรชี้ที่ปริมาตรความจุเท่าใด?<br>{svg}"
+                        sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
+                        <b>ขั้นที่ 1: วิเคราะห์เส้นจำนวน</b><br>
+                        👉 เส้นจำนวนเริ่มจาก 0 ถึง 1000 มีขีดใหญ่ทั้งหมด 5 ช่วง (ช่วงละ 200) และมีขีดเล็กแบ่งครึ่ง<br>
+                        👉 แสดงว่า 1 ขีดเล็ก มีค่าเท่ากับ <b>100 มิลลิลิตร</b><br>
+                        <b>ขั้นที่ 2: อ่านค่าจากลูกศร</b><br>
+                        👉 ลูกศรชี้อยู่ที่ตำแหน่ง <b>{val_ml}</b> พอดี<br>
+                        <b>ตอบ: {val_ml} มิลลิลิตร</b></span>"""
 
-                elif q_cat == "bar_model": # โจทย์บาร์โมเดล
+                elif q_cat == "bar_model": 
                     mode = random.choice(["add", "diff"])
-                    v1_l, v1_ml = random.randint(3, 8), random.randint(100, 900)
+                    
+                    if is_challenge:
+                        v1_l, v1_ml = random.randint(12, 35), random.randint(100, 900)
+                    else:
+                        v1_l, v1_ml = random.randint(3, 8), random.randint(100, 900)
                     
                     if mode == "add":
-                        v2_l, v2_ml = random.randint(1, 5), random.randint(100, 900)
+                        v2_l = random.randint(5, 20) if is_challenge else random.randint(1, 5)
+                        v2_ml = random.randint(100, 900)
                         str1 = f"{v1_l} ลิตร {v1_ml} มล."
                         str2 = f"{v2_l} ลิตร {v2_ml} มล."
                         svg = draw_bar_model_svg(str1, str2, "add")
                         q = f"จากบาร์โมเดล (Bar Model) ที่กำหนดให้ <b>ปริมาตรรวมทั้งหมด</b> คือเท่าไร?<br>{svg}"
                         op = "+"
                     else:
-                        v2_l, v2_ml = random.randint(1, v1_l-1), random.randint(100, 900)
+                        v2_l = random.randint(1, v1_l-1)
+                        v2_ml = random.randint(100, 900)
                         if v1_ml < v2_ml:
                             v1_ml, v2_ml = v2_ml, v1_ml + 100
                             
@@ -855,50 +891,74 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     <b>ตอบ: {ans_str}</b></span>"""
 
                 elif q_cat == "compare":
-                    val_major = random.randint(5, 50) if is_challenge else random.randint(1, 15)
-                    val_minor = random.randint(50, 950)
-                    total_minor_1 = (val_major * multiplier) + val_minor
-                    
-                    case = random.choice(["greater", "less", "equal"])
-                    if case == "equal":
-                        total_minor_2 = total_minor_1
-                    elif case == "greater":
-                        total_minor_2 = total_minor_1 - random.randint(1, multiplier - 1)
-                    else:
-                        total_minor_2 = total_minor_1 + random.randint(1, multiplier - 1)
-
-                    str_val_1 = f"{val_major} {u_major} {val_minor} {u_minor}"
-                    str_val_2 = f"{total_minor_2:,} {u_minor}"
-
-                    if random.choice([True, False]):
-                        item_A, item_B = str_val_1, str_val_2
-                        val_A, val_B = total_minor_1, total_minor_2
-                    else:
-                        item_A, item_B = str_val_2, str_val_1
-                        val_A, val_B = total_minor_2, total_minor_1
-
-                    if total_minor_1 == total_minor_2:
-                        final_ans = "จุเท่ากัน"
-                    else:
-                        final_ans = "จุมากกว่า" if val_A > val_B else "จุน้อยกว่า"
+                    if is_challenge:
+                        vA_l, vA_ml = random.randint(2, 8), random.randint(100, 900)
+                        vB_l, vB_ml = random.randint(2, 8), random.randint(100, 900)
+                        vC_l = vA_l + vB_l + random.randint(-2, 2)
+                        vC_ml = random.randint(100, 900)
                         
-                    q = f"จงเติมคำว่า <b>จุมากกว่า, จุน้อยกว่า</b> หรือ <b>เท่ากับ</b> ลงในช่องว่างให้ถูกต้อง<br><br><span style='font-size:22px; font-weight:bold; margin-left: 20px;'>{item_A} &nbsp;&nbsp; ____________________ &nbsp;&nbsp; {item_B}</span>"
-
-                    sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การเปรียบเทียบความจุ):</b><br>
-                    <b>ขั้นที่ 1: สร้างสมการแปลงหน่วยให้เหมือนกัน</b><br>
-                    👉 แปลง <b>{str_val_1}</b> ให้เป็น <b>{u_minor}</b> ทั้งหมด<br>
-                    👉 เนื่องจาก 1 {u_major} = {multiplier:,} {u_minor}<br>
-                    👉 <b>สมการล่าสุด:</b> ({val_major} <b style='color:red;'>× {multiplier:,}</b>) + {val_minor} = {val_major * multiplier:,} + {val_minor} = <b>{total_minor_1:,} {u_minor}</b><br>
-                    <b>ขั้นที่ 2: เปรียบเทียบปริมาตร</b><br>"""
-
-                    if val_A == val_B:
-                        sol += f"👉 จะเห็นว่า {total_minor_1:,} {u_minor} <b>เท่ากับ</b> {total_minor_2:,} {u_minor} พอดี!<br>"
+                        tot_A_ml = vA_l * 1000 + vA_ml
+                        tot_B_ml = vB_l * 1000 + vB_ml
+                        sum_AB_ml = tot_A_ml + tot_B_ml
+                        tot_C_ml = vC_l * 1000 + vC_ml
+                        
+                        diff_ml = abs(sum_AB_ml - tot_C_ml)
+                        ans_l = diff_ml // 1000
+                        ans_ml = diff_ml % 1000
+                        ans_str = f"{ans_l} ลิตร {ans_ml} มิลลิลิตร" if ans_l > 0 else f"{ans_ml} มิลลิลิตร"
+                        if diff_ml == 0: ans_str = "เท่ากันพอดี"
+                        
+                        q = f"ถัง A มีน้ำ <b>{vA_l} ลิตร {vA_ml} มล.</b> และถัง B มีน้ำ <b>{vB_l} ลิตร {vB_ml} มล.</b><br>ถ้านำน้ำถัง A และ B มารวมกัน จะมีปริมาตร <b>มากกว่า หรือ น้อยกว่า</b> ถัง C ที่มีน้ำอยู่ <b>{vC_l} ลิตร {vC_ml} มล.</b> อยู่เท่าไร?"
+                        
+                        comp_word = "มากกว่า" if sum_AB_ml > tot_C_ml else "น้อยกว่า" if sum_AB_ml < tot_C_ml else "เท่ากับ"
+                        sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - เปรียบเทียบ 2 ขั้นตอน):</b><br>
+                        <b>ขั้นที่ 1: หาน้ำรวมของถัง A และ B (แปลงหน่วยเป็นมิลลิลิตร)</b><br>
+                        👉 ถัง A = {tot_A_ml:,} มล. | ถัง B = {tot_B_ml:,} มล.<br>
+                        👉 นำมารวมกัน = {tot_A_ml:,} + {tot_B_ml:,} = <b>{sum_AB_ml:,} มล.</b><br>
+                        <b>ขั้นที่ 2: เปรียบเทียบกับถัง C</b><br>
+                        👉 ถัง C มีน้ำ = <b>{tot_C_ml:,} มล.</b><br>
+                        👉 นำมาลบหาผลต่าง: | {sum_AB_ml:,} - {tot_C_ml:,} | = <b>{diff_ml:,} มล.</b><br>
+                        👉 พบว่าผลรวมถัง A+B <b>{comp_word}</b> ถัง C<br>
+                        <b>ตอบ: {comp_word}อยู่ {ans_str}</b></span>"""
                     else:
-                        comp_sign = "น้อยกว่า" if val_A < val_B else "มากกว่า"
-                        sol += f"👉 เปรียบเทียบ {val_A:,} {u_minor} กับ {val_B:,} {u_minor}<br>"
-                        sol += f"👉 จะเห็นว่า {val_A:,} <b>{comp_sign}</b> {val_B:,}<br>"
+                        val_major = random.randint(1, 15)
+                        val_minor = random.randint(50, 950)
+                        total_minor_1 = (val_major * multiplier) + val_minor
+                        
+                        case = random.choice(["greater", "less", "equal"])
+                        if case == "equal":
+                            total_minor_2 = total_minor_1
+                        elif case == "greater":
+                            total_minor_2 = total_minor_1 - random.randint(1, multiplier - 1)
+                        else:
+                            total_minor_2 = total_minor_1 + random.randint(1, multiplier - 1)
 
-                    sol += f"<b>ตอบ: {final_ans}</b></span>"
+                        str_val_1 = f"{val_major} {u_major} {val_minor} {u_minor}"
+                        str_val_2 = f"{total_minor_2:,} {u_minor}"
+
+                        if random.choice([True, False]):
+                            item_A, item_B = str_val_1, str_val_2
+                            val_A, val_B = total_minor_1, total_minor_2
+                        else:
+                            item_A, item_B = str_val_2, str_val_1
+                            val_A, val_B = total_minor_2, total_minor_1
+
+                        final_ans = "จุเท่ากัน" if total_minor_1 == total_minor_2 else "จุมากกว่า" if val_A > val_B else "จุน้อยกว่า"
+                            
+                        q = f"จงเติมคำว่า <b>จุมากกว่า, จุน้อยกว่า</b> หรือ <b>เท่ากับ</b> ลงในช่องว่างให้ถูกต้อง<br><br><span style='font-size:22px; font-weight:bold; margin-left: 20px;'>{item_A} &nbsp;&nbsp; ____________________ &nbsp;&nbsp; {item_B}</span>"
+
+                        sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การเปรียบเทียบความจุ):</b><br>
+                        <b>ขั้นที่ 1: สร้างสมการแปลงหน่วยให้เหมือนกัน</b><br>
+                        👉 แปลง <b>{str_val_1}</b> ให้เป็น <b>{u_minor}</b> ทั้งหมด<br>
+                        👉 <b>สมการล่าสุด:</b> ({val_major} × {multiplier:,}) + {val_minor} = <b>{total_minor_1:,} {u_minor}</b><br>
+                        <b>ขั้นที่ 2: เปรียบเทียบปริมาตร</b><br>"""
+
+                        if val_A == val_B:
+                            sol += f"👉 จะเห็นว่า {total_minor_1:,} {u_minor} <b>เท่ากับ</b> {total_minor_2:,} {u_minor} พอดี!<br>"
+                        else:
+                            comp_sign = "น้อยกว่า" if val_A < val_B else "มากกว่า"
+                            sol += f"👉 จะเห็นว่า {val_A:,} <b>{comp_sign}</b> {val_B:,}<br>"
+                        sol += f"<b>ตอบ: {final_ans}</b></span>"
 
                 elif q_cat == "add_sub":
                     op = random.choice(["+", "-"])
@@ -925,38 +985,55 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     {table_html}
                     <b>ตอบ: {ans_str}</b></span>"""
 
-                else: # divide (การแบ่ง/หารปริมาตร)
+                else: # divide
                     items = ["น้ำผลไม้", "นมสด", "น้ำยาซักผ้า", "น้ำแร่", "น้ำเชื่อม"]
                     containers = ["ขวด", "แก้ว", "เหยือก", "ถ้วย"]
-                    
                     item = random.choice(items)
                     container = random.choice(containers)
-                    N = random.randint(3, 9)
                     
-                    ans_maj = random.randint(0, 2)
-                    ans_min = random.randint(15, 85) * 10
-                    if ans_maj == 0 and ans_min < 200: ans_min += 300
-                    
-                    ans_total_min = ans_maj * multiplier + ans_min
-                    total_min = ans_total_min * N
-                    
-                    tot_maj = total_min // multiplier
-                    tot_rem_min = total_min % multiplier
-                    
-                    str_tot = f"{tot_maj} {u_major} {tot_rem_min} {u_minor}" if tot_rem_min > 0 else f"{tot_maj} {u_major}"
-                    str_ans = f"{ans_maj} {u_major} {ans_min} {u_minor}" if ans_maj > 0 else f"{ans_min} {u_minor}"
-                    
-                    q = f"มี{item}อยู่ <b>{str_tot}</b> ถ้าต้องการแบ่งใส่{container} ทั้งหมด <b>{N} {container}</b> ({container}ละเท่าๆ กัน) <br>จะได้{item}{container}ละเท่าไร?"
-                    
-                    sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์ปัญหาการแบ่งปริมาตร):</b><br>
-                    <b>ขั้นที่ 1: แปลงปริมาตรทั้งหมดให้เป็นหน่วยเล็กสุด ({u_minor}) เพื่อให้คำนวณง่าย</b><br>
-                    👉 ปริมาตรทั้งหมด = {tot_maj} {u_major} {tot_rem_min} {u_minor}<br>
-                    👉 นำมาแปลงเป็น{u_minor}: ({tot_maj} × {multiplier:,}) + {tot_rem_min} = <b>{total_min:,} {u_minor}</b><br>
-                    <b>ขั้นที่ 2: นำปริมาตรทั้งหมดมาหารด้วยจำนวน{container}</b><br>
-                    👉 ต้องการแบ่ง {N} {container} นำไปหาร: {total_min:,} ÷ {N} = <b>{ans_total_min:,} {u_minor}</b><br>
-                    <b>ขั้นที่ 3: แปลงหน่วยกลับเป็น {u_major} และ {u_minor}</b><br>
-                    👉 นำ {ans_total_min:,} ÷ {multiplier:,} จะได้ <b>{ans_maj} {u_major}</b> และเศษ <b>{ans_min} {u_minor}</b><br>
-                    <b>ตอบ: {str_ans}</b></span>"""
+                    if is_challenge:
+                        N_ml = random.choice([150, 200, 250, 300, 450, 500])
+                        tot_l = random.randint(3, 8)
+                        tot_ml = random.randint(100, 900)
+                        total_vol_ml = tot_l * 1000 + tot_ml
+                        
+                        bottles = total_vol_ml // N_ml
+                        rem_ml = total_vol_ml % N_ml
+                        
+                        q = f"มี{item}อยู่ <b>{tot_l} ลิตร {tot_ml} มิลลิลิตร</b> ต้องการนำไปแบ่งใส่{container} {container}ละ <b>{N_ml} มิลลิลิตร</b> เท่าๆ กัน<br>จะสามารถแบ่งได้กี่{container} และจะเหลือ{item}เศษอีกกี่มิลลิลิตร?"
+                        
+                        sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - การหารแบบมีเศษ):</b><br>
+                        <b>ขั้นที่ 1: แปลงปริมาตรทั้งหมดให้เป็นมิลลิลิตร</b><br>
+                        👉 {tot_l} ลิตร {tot_ml} มล. = ({tot_l} × 1,000) + {tot_ml} = <b>{total_vol_ml:,} มล.</b><br>
+                        <b>ขั้นที่ 2: นำไปหารด้วยความจุต่อ{container}</b><br>
+                        👉 ตั้งหาร: {total_vol_ml:,} ÷ {N_ml} <br>
+                        👉 จะได้ผลหาร <b>{bottles}</b> และเหลือเศษ <b>{rem_ml}</b><br>
+                        <b>ตอบ: แบ่งได้ {bottles} {container} และเหลือเศษ {rem_ml} มิลลิลิตร</b></span>"""
+                    else:
+                        N = random.randint(3, 9)
+                        ans_maj = random.randint(0, 2)
+                        ans_min = random.randint(15, 85) * 10
+                        if ans_maj == 0 and ans_min < 200: ans_min += 300
+                        
+                        ans_total_min = ans_maj * multiplier + ans_min
+                        total_min = ans_total_min * N
+                        
+                        tot_maj = total_min // multiplier
+                        tot_rem_min = total_min % multiplier
+                        
+                        str_tot = f"{tot_maj} {u_major} {tot_rem_min} {u_minor}" if tot_rem_min > 0 else f"{tot_maj} {u_major}"
+                        str_ans = f"{ans_maj} {u_major} {ans_min} {u_minor}" if ans_maj > 0 else f"{ans_min} {u_minor}"
+                        
+                        q = f"มี{item}อยู่ <b>{str_tot}</b> ถ้าต้องการแบ่งใส่{container} ทั้งหมด <b>{N} {container}</b> ({container}ละเท่าๆ กัน) <br>จะได้{item}{container}ละเท่าไร?"
+                        
+                        sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์ปัญหาการแบ่งปริมาตร):</b><br>
+                        <b>ขั้นที่ 1: แปลงปริมาตรทั้งหมดให้เป็นหน่วยเล็กสุด ({u_minor})</b><br>
+                        👉 ปริมาตรทั้งหมด = ({tot_maj} × {multiplier:,}) + {tot_rem_min} = <b>{total_min:,} {u_minor}</b><br>
+                        <b>ขั้นที่ 2: นำปริมาตรทั้งหมดมาหารด้วยจำนวน{container}</b><br>
+                        👉 {total_min:,} ÷ {N} = <b>{ans_total_min:,} {u_minor}</b><br>
+                        <b>ขั้นที่ 3: แปลงหน่วยกลับเป็น {u_major} และ {u_minor}</b><br>
+                        👉 นำ {ans_total_min:,} ÷ {multiplier:,} จะได้ <b>{ans_maj} {u_major}</b> และเศษ <b>{ans_min} {u_minor}</b><br>
+                        <b>ตอบ: {str_ans}</b></span>"""
 
             elif actual_sub_t == "การเปรียบเทียบหน่วยการวัด และการแปลงหน่วย (มิลลิเมตร เซนติเมตร เมตร)":
                 q_cat = random.choice(["compare", "add_sub"])
