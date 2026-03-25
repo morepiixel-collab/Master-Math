@@ -2399,6 +2399,154 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     👉 คำนวณ: <b>{C_budget:,} ÷ {unit_price:,} = {ans_qty:,} {unit}</b><br>
                     <b>ตอบ: {ans_qty:,} {unit}</b></span>"""
 
+            elif actual_sub_t == "การหาค่าเฉลี่ย (Average)":
+                
+                def draw_avg_box(icon, count, label_count, avg_val, label_avg, bg_color="#f1f8ff", border_color="#3498db"):
+                    box_style = f"border: 2px dashed {border_color}; border-radius: 8px; padding: 10px 15px; display: inline-block; text-align: center; margin: 5px; background-color: {bg_color}; vertical-align: top; min-width: 120px;"
+                    return f"""
+                    <div style="{box_style}">
+                        <div style="font-size:24px;">{icon} {count} {label_count}</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #7f8c8d; margin-top: 5px;">ค่าเฉลี่ย</div>
+                        <div style="font-size: 20px; font-weight: bold; color: #e74c3c;">{avg_val} {label_avg}</div>
+                    </div>
+                    """
+                
+                scenario = random.choice(["basic", "missing"]) if not is_challenge else random.choice(["group_change", "combine_groups"])
+                
+                if scenario == "basic":
+                    # หาค่าเฉลี่ยพื้นฐาน
+                    items = random.randint(4, 6)
+                    target_avg = random.randint(20, 80)
+                    total = target_avg * items
+                    
+                    nums = []
+                    current_sum = 0
+                    for i in range(items - 1):
+                        n = random.randint(target_avg - 10, target_avg + 10)
+                        nums.append(n)
+                        current_sum += n
+                    
+                    nums.append(total - current_sum) # Ensure exact integer average
+                    random.shuffle(nums)
+                    
+                    nums_str = ", ".join(map(str, nums))
+                    
+                    q = f"จากการสำรวจข้อมูลน้ำหนักของนักเรียน <b>{items} คน</b> พบว่ามีน้ำหนักดังนี้: <br><span style='font-size:22px; font-weight:bold; color:#2980b9;'>{nums_str} กิโลกรัม</span><br>จงหาน้ำหนัก <b>'เฉลี่ย'</b> ของนักเรียนกลุ่มนี้?"
+                    
+                    sum_str = " + ".join(map(str, nums))
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การหาค่าเฉลี่ย):</b><br>
+                    <b>สูตร:</b> ค่าเฉลี่ย = ผลรวมของข้อมูลทั้งหมด ÷ จำนวนข้อมูล<br><br>
+                    <b>ขั้นที่ 1: หาผลรวมของข้อมูลทั้งหมด</b><br>
+                    👉 นำน้ำหนักของทุกคนมาบวกกัน<br>
+                    👉 {sum_str} = <b>{total} กิโลกรัม</b><br><br>
+                    <b>ขั้นที่ 2: นำผลรวมไปหารด้วยจำนวนคน</b><br>
+                    👉 มีนักเรียนทั้งหมด {items} คน<br>
+                    👉 {total} ÷ {items} = <b>{target_avg} กิโลกรัม</b><br>
+                    <b>ตอบ: {target_avg} กิโลกรัม</b></span>"""
+                    
+                elif scenario == "missing":
+                    # ทราบค่าเฉลี่ย หาตัวที่หายไป
+                    items = random.randint(3, 5)
+                    target_avg = random.randint(40, 90)
+                    total = target_avg * items
+                    
+                    nums = []
+                    current_sum = 0
+                    for i in range(items - 1):
+                        n = random.randint(target_avg - 15, target_avg + 15)
+                        nums.append(n)
+                        current_sum += n
+                        
+                    missing_val = total - current_sum
+                    nums_str = ", ".join(map(str, nums))
+                    
+                    q = f"นักเรียน <b>{items} คน</b> มีคะแนนสอบ <b>'เฉลี่ย'</b> อยู่ที่ <b>{target_avg} คะแนน</b><br>ถ้ารู้คะแนนของเพื่อน {items-1} คน คือ <b>{nums_str} คะแนน</b><br>จงหาว่านักเรียนคนที่เหลือสอบได้กี่คะแนน?"
+                    
+                    sum_str = " + ".join(map(str, nums))
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาค่าข้อมูลที่หายไปจากค่าเฉลี่ย):</b><br>
+                    <b>ขั้นที่ 1: หาผลรวมคะแนนที่ควรจะเป็นทั้งหมด</b><br>
+                    👉 ถ้านักเรียน {items} คน มีคะแนนเฉลี่ยคนละ {target_avg} คะแนน<br>
+                    👉 แสดงว่าคะแนนรวมทั้งหมด = {items} × {target_avg} = <b>{total} คะแนน</b><br><br>
+                    <b>ขั้นที่ 2: หาผลรวมคะแนนของคนที่มีอยู่แล้ว</b><br>
+                    👉 {sum_str} = <b>{current_sum} คะแนน</b><br><br>
+                    <b>ขั้นที่ 3: หาคะแนนของคนที่หายไป</b><br>
+                    👉 นำคะแนนรวมทั้งหมด ลบด้วย คะแนนรวมของคนที่มีอยู่<br>
+                    👉 {total} - {current_sum} = <b>{missing_val} คะแนน</b><br>
+                    <b>ตอบ: {missing_val} คะแนน</b></span>"""
+
+                elif scenario == "group_change":
+                    # คนเข้า/ออก กลุ่ม (Challenge)
+                    count1 = random.randint(4, 9)
+                    avg1 = random.randint(30, 60)
+                    sum1 = count1 * avg1
+                    
+                    is_join = random.choice([True, False])
+                    if is_join:
+                        count2 = count1 + 1
+                        avg2 = avg1 + random.randint(1, 4)
+                        sum2 = count2 * avg2
+                        diff = sum2 - sum1
+                        action_txt = f"มีเพื่อนเดินมา <b>ขอเข้ากลุ่มเพิ่ม 1 คน</b>"
+                        q_ask = "เพื่อนคนที่เดินเข้ามาใหม่ มีน้ำหนักกี่กิโลกรัม?"
+                        svg = f"<div style='text-align:center;'>{draw_avg_box('👥', count1, 'คน', avg1, 'กก.')} <span style='font-size:24px; vertical-align:middle; margin:0 10px;'>➕ 🧍‍♂️ ➔</span> {draw_avg_box('👥', count2, 'คน', avg2, 'กก.', '#fef9e7', '#f1c40f')}</div>"
+                    else:
+                        count2 = count1 - 1
+                        avg2 = avg1 - random.randint(1, 4)
+                        sum2 = count2 * avg2
+                        diff = sum1 - sum2
+                        action_txt = f"มีเพื่อน <b>เดินออกจากกลุ่มไป 1 คน</b>"
+                        q_ask = "เพื่อนคนที่เดินออกไป มีน้ำหนักกี่กิโลกรัม?"
+                        svg = f"<div style='text-align:center;'>{draw_avg_box('👥', count1, 'คน', avg1, 'กก.')} <span style='font-size:24px; vertical-align:middle; margin:0 10px;'>➖ 🧍‍♂️ ➔</span> {draw_avg_box('👥', count2, 'คน', avg2, 'กก.', '#fef9e7', '#f1c40f')}</div>"
+                        
+                    q = f"กลุ่มของนักเรียน <b>{count1} คน</b> มีน้ำหนัก <b>'เฉลี่ย'</b> อยู่ที่ <b>{avg1} กิโลกรัม</b><br>ต่อมา {action_txt} ทำให้น้ำหนักเฉลี่ยของกลุ่มเปลี่ยนเป็น <b>{avg2} กิโลกรัม</b><br>{q_ask}<br>{svg}"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - ค่าเฉลี่ยเปลี่ยนกลุ่ม):</b><br>
+                    <i>หลักการสำคัญ: เมื่อเจอโจทย์ค่าเฉลี่ย ให้แปลงเป็น <b>"ผลรวม"</b> ก่อนเสมอ!</i><br><br>
+                    <b>ขั้นที่ 1: หาผลรวมน้ำหนักของกลุ่มเดิม ({count1} คน)</b><br>
+                    👉 ผลรวมเดิม = จำนวนคน × ค่าเฉลี่ย<br>
+                    👉 {count1} × {avg1} = <b>{sum1} กิโลกรัม</b><br><br>
+                    <b>ขั้นที่ 2: หาผลรวมน้ำหนักของกลุ่มใหม่ ({count2} คน)</b><br>
+                    👉 ผลรวมใหม่ = จำนวนคนใหม่ × ค่าเฉลี่ยใหม่<br>
+                    👉 {count2} × {avg2} = <b>{sum2} กิโลกรัม</b><br><br>
+                    <b>ขั้นที่ 3: หาน้ำหนักของคนที่ทำให้ค่าเฉลี่ยเปลี่ยนไป</b><br>
+                    👉 นำผลรวมที่มากกว่า ลบด้วย ผลรวมที่น้อยกว่า<br>
+                    👉 | {sum1} - {sum2} | = <b>{diff} กิโลกรัม</b><br>
+                    <b>ตอบ: {diff} กิโลกรัม</b></span>"""
+                    
+                elif scenario == "combine_groups":
+                    # นำค่าเฉลี่ย 2 กลุ่มมารวมกัน (Challenge)
+                    nA = random.choice([10, 20, 25, 30])
+                    avgA = random.randint(50, 80)
+                    
+                    nB = random.choice([10, 20, 25, 30])
+                    while nB == nA: nB = random.choice([10, 20, 25, 30])
+                    
+                    # สุ่มค่าเฉลี่ยห้อง B ให้ห่างจากห้อง A นิดหน่อย
+                    avgB = avgA + random.choice([4, 5, 8, 10])
+                    
+                    sumA = nA * avgA
+                    sumB = nB * avgB
+                    total_sum = sumA + sumB
+                    total_n = nA + nB
+                    final_avg_str = f"{(total_sum / total_n):g}"
+                    
+                    svg = f"<div style='text-align:center;'>{draw_avg_box('👦', nA, 'คน (ห้อง A)', avgA, 'คะแนน', '#eaf2f8', '#2980b9')} <span style='font-size:30px; vertical-align:middle; margin:0 10px;'>➕</span> {draw_avg_box('👧', nB, 'คน (ห้อง B)', avgB, 'คะแนน', '#fdedec', '#c0392b')}</div>"
+                    
+                    q = f"ในการสอบวิชาคณิตศาสตร์<br>นักเรียนห้อง A จำนวน <b>{nA} คน</b> สอบได้คะแนนเฉลี่ย <b>{avgA} คะแนน</b><br>นักเรียนห้อง B จำนวน <b>{nB} คน</b> สอบได้คะแนนเฉลี่ย <b>{avgB} คะแนน</b><br>ถ้านำคะแนนของนักเรียนทั้งสองห้องมารวมกัน จะได้คะแนน <b>'เฉลี่ยรวม'</b> กี่คะแนน?<br>{svg}"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - ค่าเฉลี่ยรวม):</b><br>
+                    <i>ข้อควรระวัง: เราไม่สามารถนำค่าเฉลี่ยมาบวกกันแล้วหารสองได้โดยตรง (เพราะจำนวนคนไม่เท่ากัน) ต้องหาผลรวมคะแนนของแต่ละห้องก่อน!</i><br><br>
+                    <b>ขั้นที่ 1: หาผลรวมคะแนนของแต่ละห้อง</b><br>
+                    👉 ผลรวมห้อง A = {nA} คน × {avgA} คะแนน = <b>{sumA:,} คะแนน</b><br>
+                    👉 ผลรวมห้อง B = {nB} คน × {avgB} คะแนน = <b>{sumB:,} คะแนน</b><br><br>
+                    <b>ขั้นที่ 2: หาผลรวมคะแนนทั้งหมด และ จำนวนคนทั้งหมด</b><br>
+                    👉 คะแนนรวมสองห้อง = {sumA:,} + {sumB:,} = <b>{total_sum:,} คะแนน</b><br>
+                    👉 จำนวนคนรวมสองห้อง = {nA} + {nB} = <b>{total_n} คน</b><br><br>
+                    <b>ขั้นที่ 3: คำนวณค่าเฉลี่ยรวม</b><br>
+                    👉 นำคะแนนรวมทั้งหมด หารด้วย จำนวนคนทั้งหมด<br>
+                    👉 {total_sum:,} ÷ {total_n} = <b>{final_avg_str} คะแนน</b><br>
+                    <b>ตอบ: {final_avg_str} คะแนน</b></span>"""
+
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
