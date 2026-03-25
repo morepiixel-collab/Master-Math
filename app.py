@@ -1772,6 +1772,111 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 sol = f"{q_base}<br>{table_key}"
 
             elif actual_sub_t == "การคูณและการหารทศนิยม":
+                
+                # ----------------------------------------------------
+                # ฟังก์ชันวาดตารางตั้งหารยาวสำหรับทศนิยม
+                # ----------------------------------------------------
+                def get_decimal_long_div_html(divisor, dividend_str):
+                    div_chars = list(dividend_str)
+                    ans_chars = []
+                    steps = []
+                    curr_val = 0
+                    
+                    for i, char in enumerate(div_chars):
+                        if char == '.':
+                            ans_chars.append('.')
+                            continue
+                            
+                        curr_val = curr_val * 10 + int(char)
+                        q = curr_val // divisor
+                        ans_chars.append(str(q))
+                        
+                        mul = q * divisor
+                        rem = curr_val - mul
+                        
+                        if q > 0 or i == len(div_chars) - 1:
+                            steps.append({'col': i, 'curr': curr_val, 'mul': mul, 'rem': rem})
+                        curr_val = rem
+                        
+                    first_nonzero = False
+                    for i in range(len(ans_chars)):
+                        if ans_chars[i] == '.':
+                            if not first_nonzero and i > 0: ans_chars[i-1] = '0'
+                            break
+                        if ans_chars[i] != '0': first_nonzero = True
+                        elif not first_nonzero: ans_chars[i] = ''
+                            
+                    html = "<div style='margin: 15px 40px; font-family: \"Sarabun\", sans-serif; font-size: 24px;'>"
+                    html += "<table style='border-collapse: collapse; text-align: center;'>"
+                    
+                    # Ans row
+                    html += "<tr><td style='border: none;'></td>"
+                    for c in ans_chars:
+                        html += f"<td style='padding: 2px 10px; color: #c0392b; font-weight: bold;'>{c}</td>"
+                    html += "</tr>"
+                    
+                    # Divisor & Dividend
+                    html += f"<tr><td style='padding: 2px 15px; font-weight: bold; text-align: right;'>{divisor}</td>"
+                    for i, c in enumerate(div_chars):
+                        bt = "border-top: 2px solid #333;"
+                        bl = "border-left: 2px solid #333;" if i == 0 else ""
+                        html += f"<td style='{bt} {bl} padding: 2px 10px; font-weight: bold;'>{c}</td>"
+                    html += "</tr>"
+                    
+                    # Steps
+                    for idx, step in enumerate(steps):
+                        if step['mul'] == 0 and step['curr'] == 0 and idx != len(steps)-1: continue
+                        
+                        if idx > 0:
+                            html += "<tr><td style='border: none;'></td>"
+                            cv_str = str(step['curr'])
+                            cols = []
+                            c_ptr = step['col']
+                            while len(cols) < len(cv_str):
+                                if div_chars[c_ptr] != '.': cols.append(c_ptr)
+                                c_ptr -= 1
+                            cols.reverse()
+                            for i in range(len(div_chars)):
+                                if i in cols: html += f"<td style='padding: 2px 10px;'>{cv_str[cols.index(i)]}</td>"
+                                else: html += "<td style='border: none;'></td>"
+                            html += "</tr>"
+                            
+                        html += "<tr><td style='border: none;'></td>"
+                        mul_str = str(step['mul'])
+                        cols = []
+                        c_ptr = step['col']
+                        while len(cols) < len(mul_str):
+                            if div_chars[c_ptr] != '.': cols.append(c_ptr)
+                            c_ptr -= 1
+                        cols.reverse()
+                        for i in range(len(div_chars)):
+                            if i in cols:
+                                bb = "border-bottom: 2px solid #333;"
+                                html += f"<td style='{bb} padding: 2px 10px;'>{mul_str[cols.index(i)]}</td>"
+                            elif len(cols) > 0 and i == cols[0] - 1:
+                                html += "<td style='padding: 2px 10px;'>-</td>"
+                            else: html += "<td style='border: none;'></td>"
+                        html += "</tr>"
+                        
+                    if len(steps) > 0:
+                        html += "<tr><td style='border: none;'></td>"
+                        rem_str = str(steps[-1]['rem'])
+                        cols = []
+                        c_ptr = steps[-1]['col']
+                        while len(cols) < len(rem_str):
+                            if div_chars[c_ptr] != '.': cols.append(c_ptr)
+                            c_ptr -= 1
+                        cols.reverse()
+                        for i in range(len(div_chars)):
+                            if i in cols:
+                                bb = "border-bottom: 4px double #333;"
+                                html += f"<td style='{bb} padding: 2px 10px;'>{rem_str[cols.index(i)]}</td>"
+                            else: html += "<td style='border: none;'></td>"
+                        html += "</tr>"
+                        
+                    html += "</table></div>"
+                    return html
+
                 op = random.choice(["×", "÷"])
                 
                 if op == "×":
@@ -1832,16 +1937,27 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     b_shift = int(round(b * mult_factor))
                     a_shift_str = f"{a_shift:g}" 
                     
+                    div_table_html = get_decimal_long_div_html(b_shift, a_shift_str)
+                    
                     q = f"จงหาผลลัพธ์ของ <b>{a_str} ÷ {b_str}</b>"
-                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การหารทศนิยม):</b><br>
-                    <b>ขั้นที่ 1:</b> สังเกตตัวหาร ({b_str}) ว่าเป็นทศนิยมกี่ตำแหน่ง<br>
-                    👉 ตัวหารเป็นทศนิยม {b_dp} ตำแหน่ง เราต้องเลื่อนจุดเพื่อให้ตัวหารกลายเป็น <b>จำนวนเต็ม</b> เสมอ<br>
-                    <b>ขั้นที่ 2:</b> นำ <b>{mult_factor:,}</b> มาคูณทั้งตัวตั้งและตัวหาร (เพื่อเลื่อนจุดทศนิยมไปทางขวา {b_dp} ตำแหน่ง)<br>
-                    👉 ตัวตั้ง: {a_str} × {mult_factor:,} = <b>{a_shift_str}</b><br>
-                    👉 ตัวหาร: {b_str} × {mult_factor:,} = <b>{b_shift:,}</b><br>
-                    <b>ขั้นที่ 3:</b> นำมาตั้งหารด้วยโจทย์ใหม่ที่ได้<br>
-                    👉 {a_shift_str} ÷ {b_shift:,} = <b>{ans_str}</b><br>
-                    <b>ตอบ: {ans_str}</b></span>"""
+                    
+                    if b_dp > 0:
+                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การหารทศนิยม):</b><br>
+                        <b>ขั้นที่ 1:</b> สังเกตตัวหาร ({b_str}) ว่าเป็นทศนิยมกี่ตำแหน่ง<br>
+                        👉 ตัวหารเป็นทศนิยม {b_dp} ตำแหน่ง เราต้องเลื่อนจุดเพื่อให้ตัวหารกลายเป็น <b>จำนวนเต็ม</b> เสมอ<br>
+                        <b>ขั้นที่ 2:</b> นำ <b>{mult_factor:,}</b> มาคูณทั้งตัวตั้งและตัวหาร (เพื่อเลื่อนจุดทศนิยมไปทางขวา {b_dp} ตำแหน่ง)<br>
+                        👉 ตัวตั้ง: {a_str} × {mult_factor:,} = <b>{a_shift_str}</b><br>
+                        👉 ตัวหาร: {b_str} × {mult_factor:,} = <b>{b_shift:,}</b><br>
+                        <b>ขั้นที่ 3:</b> นำมาตั้งหารยาวด้วยโจทย์ใหม่ที่ได้<br>
+                        {div_table_html}
+                        <b>ตอบ: {ans_str}</b></span>"""
+                    else:
+                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การหารทศนิยม):</b><br>
+                        <b>ขั้นที่ 1:</b> สังเกตตัวหาร ({b_str}) พบว่าเป็นจำนวนเต็มแล้ว สามารถตั้งหารยาวได้เลย<br>
+                        👉 โดยวางจุดทศนิยมของผลลัพธ์ (ด้านบน) ให้ตรงกับจุดทศนิยมของตัวตั้ง (ด้านล่าง)<br>
+                        <b>ขั้นที่ 2:</b> ตั้งหารยาว<br>
+                        {div_table_html}
+                        <b>ตอบ: {ans_str}</b></span>"""
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
