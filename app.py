@@ -2411,7 +2411,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     </div>
                     """
                 
-                scenario = random.choice(["basic", "missing"]) if not is_challenge else random.choice(["group_change", "combine_groups"])
+                name = random.choice(NAMES)
+
+                if is_challenge:
+                    scenario = random.choice(["group_change", "combine_groups", "target_score", "wrong_data"])
+                else:
+                    scenario = random.choice(["basic", "missing", "total_from_avg"])
                 
                 if scenario == "basic":
                     # หาค่าเฉลี่ยพื้นฐาน
@@ -2426,7 +2431,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         nums.append(n)
                         current_sum += n
                     
-                    nums.append(total - current_sum) # Ensure exact integer average
+                    nums.append(total - current_sum)
                     random.shuffle(nums)
                     
                     nums_str = ", ".join(map(str, nums))
@@ -2474,8 +2479,28 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     👉 {total} - {current_sum} = <b>{missing_val} คะแนน</b><br>
                     <b>ตอบ: {missing_val} คะแนน</b></span>"""
 
+                elif scenario == "total_from_avg":
+                    items = random.randint(5, 12)
+                    avg = random.randint(25, 85)
+                    total = items * avg
+                    
+                    obj = random.choice(["กระสอบข้าวสาร", "ลังผลไม้", "กล่องหนังสือ"])
+                    unit = "กระสอบ" if obj == "กระสอบข้าวสาร" else ("ลัง" if obj == "ลังผลไม้" else "กล่อง")
+                    
+                    q = f"ชั่งน้ำหนัก{obj}จำนวน <b>{items} {unit}</b> พบว่ามีน้ำหนัก <b>'เฉลี่ย'</b> {unit}ละ <b>{avg} กิโลกรัม</b><br>จงหาน้ำหนักรวมทั้งหมดของ{obj}กองนี้?"
+                    
+                    svg = f"<div style='text-align:center;'>{draw_avg_box('📦', items, unit, avg, 'กก.')}</div>"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาผลรวมจากค่าเฉลี่ย):</b><br>
+                    {svg}
+                    <b>สูตร:</b> ผลรวม = จำนวนข้อมูล × ค่าเฉลี่ย<br><br>
+                    <b>ขั้นที่ 1: นำจำนวน{unit}มาคูณกับน้ำหนักเฉลี่ย</b><br>
+                    👉 มี{obj}ทั้งหมด {items} {unit}<br>
+                    👉 แต่ละ{unit}หนักเฉลี่ย {avg} กิโลกรัม<br>
+                    👉 {items} × {avg} = <b>{total} กิโลกรัม</b><br><br>
+                    <b>ตอบ: {total} กิโลกรัม</b></span>"""
+
                 elif scenario == "group_change":
-                    # คนเข้า/ออก กลุ่ม (Challenge)
                     count1 = random.randint(4, 9)
                     avg1 = random.randint(30, 60)
                     sum1 = count1 * avg1
@@ -2514,14 +2539,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     <b>ตอบ: {diff} กิโลกรัม</b></span>"""
                     
                 elif scenario == "combine_groups":
-                    # นำค่าเฉลี่ย 2 กลุ่มมารวมกัน (Challenge)
                     nA = random.choice([10, 20, 25, 30])
                     avgA = random.randint(50, 80)
                     
                     nB = random.choice([10, 20, 25, 30])
                     while nB == nA: nB = random.choice([10, 20, 25, 30])
                     
-                    # สุ่มค่าเฉลี่ยห้อง B ให้ห่างจากห้อง A นิดหน่อย
                     avgB = avgA + random.choice([4, 5, 8, 10])
                     
                     sumA = nA * avgA
@@ -2546,6 +2569,59 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     👉 นำคะแนนรวมทั้งหมด หารด้วย จำนวนคนทั้งหมด<br>
                     👉 {total_sum:,} ÷ {total_n} = <b>{final_avg_str} คะแนน</b><br>
                     <b>ตอบ: {final_avg_str} คะแนน</b></span>"""
+
+                elif scenario == "target_score":
+                    n_exams = random.randint(3, 5)
+                    current_avg = random.randint(65, 85)
+                    target_avg = current_avg + random.randint(1, 3)
+                    
+                    sum1 = n_exams * current_avg
+                    sum2 = (n_exams + 1) * target_avg
+                    needed_score = sum2 - sum1
+                    
+                    svg = f"<div style='text-align:center;'>{draw_avg_box('📝', n_exams, 'ครั้งแรก', current_avg, 'คะแนน')} <span style='font-size:20px; vertical-align:middle; margin:0 10px; color:#27ae60;'><b>เป้าหมายใหม่ ➔</b></span> {draw_avg_box('🏆', n_exams + 1, 'ครั้ง', target_avg, 'คะแนน', '#fef9e7', '#f1c40f')}</div>"
+                    
+                    q = f"<b>{name}</b>สอบวิชาคณิตศาสตร์ไปแล้ว <b>{n_exams} ครั้ง</b> ได้คะแนน <b>'เฉลี่ย'</b> อยู่ที่ <b>{current_avg} คะแนน</b><br>ถ้าต้องการให้คะแนนเฉลี่ยรวมเพิ่มขึ้นเป็น <b>{target_avg} คะแนน</b> ในการสอบครั้งที่ {n_exams + 1} {name}จะต้องทำคะแนนให้ได้อย่างน้อยกี่คะแนน?<br>{svg}"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - หาคะแนนตามเป้าหมาย):</b><br>
+                    <b>ขั้นที่ 1: หาผลรวมคะแนนเดิมที่ทำได้ไปแล้ว</b><br>
+                    👉 สอบไป {n_exams} ครั้ง เฉลี่ย {current_avg} คะแนน<br>
+                    👉 คะแนนรวมเดิม = {n_exams} × {current_avg} = <b>{sum1} คะแนน</b><br><br>
+                    <b>ขั้นที่ 2: หาผลรวมคะแนนใหม่ที่ต้องการ (เป้าหมาย)</b><br>
+                    👉 ถ้ารวมการสอบครั้งหน้า จะสอบทั้งหมด {n_exams + 1} ครั้ง และอยากได้เฉลี่ย {target_avg} คะแนน<br>
+                    👉 คะแนนรวมเป้าหมาย = {n_exams + 1} × {target_avg} = <b>{sum2} คะแนน</b><br><br>
+                    <b>ขั้นที่ 3: หาคะแนนสอบครั้งสุดท้ายที่ต้องทำเพิ่ม</b><br>
+                    👉 นำคะแนนรวมเป้าหมาย ลบด้วย คะแนนรวมเดิมที่มีอยู่<br>
+                    👉 {sum2} - {sum1} = <b>{needed_score} คะแนน</b><br>
+                    <b>ตอบ: {needed_score} คะแนน</b></span>"""
+
+                elif scenario == "wrong_data":
+                    n_items = random.choice([10, 20, 25, 40, 50])
+                    old_avg = random.randint(40, 70)
+                    wrong_val = random.randint(15, 45)
+                    diff = random.choice([10, 20, 25, 40, 50])
+                    correct_val = wrong_val + diff
+                    
+                    old_sum = n_items * old_avg
+                    new_sum = old_sum - wrong_val + correct_val
+                    new_avg = new_sum / n_items
+                    new_avg_str = f"{new_avg:g}"
+                    
+                    svg = f"<div style='text-align:center;'>{draw_avg_box('📊', n_items, 'จำนวน', old_avg, '(เดิม)')} <span style='font-size:20px; vertical-align:middle; margin:0 10px;'>พบว่าอ่านผิด <br><b style='color:#e74c3c;'>❌ {wrong_val} ➔ ✔️ {correct_val}</b></span></div>"
+                    
+                    q = f"ค่าเฉลี่ยของข้อมูล <b>{n_items} จำนวน</b> คือ <b>{old_avg}</b><br>แต่ภายหลังตรวจสอบพบว่ามีการอ่านข้อมูลผิดไป 1 จำนวน คือ <b>อ่านผิดเป็น {wrong_val}</b> แต่ตัวเลขที่ถูกต้องคือ <b>{correct_val}</b><br>จงหา <b>'ค่าเฉลี่ยที่ถูกต้อง'</b> ของข้อมูลชุดนี้?<br>{svg}"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - แก้ไขข้อมูลผิดพลาด):</b><br>
+                    <b>ขั้นที่ 1: หาผลรวมของข้อมูลชุดเดิม (ที่ผิด) ก่อน</b><br>
+                    👉 ผลรวมเดิม = จำนวนข้อมูล × ค่าเฉลี่ยเดิม<br>
+                    👉 {n_items} × {old_avg} = <b>{old_sum:,}</b><br><br>
+                    <b>ขั้นที่ 2: ปรับแก้ผลรวมให้ถูกต้อง</b><br>
+                    👉 นำผลรวมเดิม ลบตัวที่ผิดออก แล้วบวกตัวที่ถูกเข้าไปแทน<br>
+                    👉 {old_sum:,} - {wrong_val} + {correct_val} = <b>{new_sum:,}</b> (นี่คือผลรวมที่ถูกต้อง)<br><br>
+                    <b>ขั้นที่ 3: หาค่าเฉลี่ยใหม่</b><br>
+                    👉 นำผลรวมที่ถูกต้อง หารด้วย จำนวนข้อมูลเท่าเดิม ({n_items})<br>
+                    👉 {new_sum:,} ÷ {n_items} = <b>{new_avg_str}</b><br>
+                    <b>ตอบ: {new_avg_str}</b></span>"""
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
