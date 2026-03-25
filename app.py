@@ -2061,6 +2061,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 # ----------------------------------------
                 
                 scenario = random.choice(["buy", "distance"])
+                name = random.choice(NAMES) # 💡 เพิ่มบรรทัดนี้เพื่อสุ่มชื่อคนครับ
                 
                 if is_challenge:
                     # โหมดชาเลนจ์: ประยุกต์บัญญัติไตรยางศ์กับการหารมีเศษ (เงินทอน)
@@ -2161,7 +2162,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     👉 นำระยะทางที่ได้ต่อ 1 ลิตร (คือ <b>{dist_per_liter:,}</b>) มาคูณกับจำนวนลิตรน้ำมันที่มี (คือ <b>{C}</b>)<br>
                     👉 คำนวณ: <b>{dist_per_liter:,} × {C} = {ans:,} กม.</b><br><br>
                     <b>ตอบ: {ans:,} กิโลเมตร</b></span>"""
-
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
