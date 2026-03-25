@@ -3060,118 +3060,88 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             👉 {(perimeter - (w*2))} ÷ 2 = <b>{h} เซนติเมตร</b><br>
                             <b>ตอบ: {h} เซนติเมตร</b></span>"""
             elif actual_sub_t == "การหาขนาดของมุมที่หายไป":
-                # --- เครื่องยนต์วาดมุมแบบสมบูรณ์แบบ (Graphics Engine V4 - ป้องกันรูปแหว่ง & เพิ่มชื่อเส้น) ---
                 def draw_angle_feature(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
                     len_a = math.hypot(ax - vx, ay - vy)
                     len_b = math.hypot(bx - vx, by - vy)
                     if len_a == 0 or len_b == 0: return ""
-                    
                     sx = vx + (ax - vx) * r_arc / len_a
                     sy = vy + (ay - vy) * r_arc / len_a
                     ex = vx + (bx - vx) * r_arc / len_b
                     ey = vy + (by - vy) * r_arc / len_b
-                    
                     cp = (sx - vx) * (ey - vy) - (sy - vy) * (ex - vx)
                     sweep = 1 if cp > 0 else 0
-                    
                     arc_svg = f'<path d="M {sx} {sy} A {r_arc} {r_arc} 0 0 {sweep} {ex} {ey}" fill="none" stroke="{color_arc}" stroke-width="3"/>'
-                    
                     mid_x = (sx - vx)/r_arc + (ex - vx)/r_arc
                     mid_y = (sy - vy)/r_arc + (ey - vy)/r_arc
                     len_mid = math.hypot(mid_x, mid_y)
-                    
-                    if len_mid == 0: 
-                        tx, ty = vx, vy - r_text
-                    else:
-                        tx = vx + (mid_x / len_mid) * r_text
-                        ty = vy + (mid_y / len_mid) * r_text
-                        
+                    if len_mid == 0: tx, ty = vx, vy - r_text
+                    else: tx, ty = vx + (mid_x / len_mid) * r_text, vy + (mid_y / len_mid) * r_text
                     ty += 4 
                     font_size = "16px" if is_x else "13px"
                     lbl_svg = f'<text x="{tx}" y="{ty}" font-size="{font_size}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
-                    
                     return arc_svg + lbl_svg
 
                 def draw_angle_svg(mode, val1, val2, val3=""):
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="340" height="200">'
                     lbl_style = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
-                    
                     if mode == "straight":
                         vx, vy = 170, 160
                         phi = val2 
-                        
                         ax, ay = 40, 160 
                         cx, cy = 300, 160 
                         bx = vx + 120 * math.cos(math.radians(phi)) 
                         by = vy - 120 * math.sin(math.radians(phi))
-                        
                         svg += f'<line x1="{ax}" y1="{ay}" x2="{cx}" y2="{cy}" stroke="#34495e" stroke-width="4"/>'
                         svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#c0392b" stroke-width="3"/>'
                         svg += f'<circle cx="{bx}" cy="{by}" r="3" fill="#c0392b"/>'
-                        
                         svg += f'<text x="{ax-15}" y="{ay+5}" {lbl_style}>A</text>'
                         svg += f'<text x="{cx+5}" y="{cy+5}" {lbl_style}>B</text>'
                         svg += f'<text x="{bx-5}" y="{by-10}" {lbl_style}>C</text>'
                         svg += f'<text x="{vx-5}" y="{vy+20}" {lbl_style}>O</text>'
-                        
                         svg += draw_angle_feature(vx, vy, ax, ay, bx, by, 28, 45, f"{val1}°", "#2ecc71", "#c0392b")
                         svg += draw_angle_feature(vx, vy, bx, by, cx, cy, 28, 45, val2 if val3=="" else val3, "#2ecc71", "#2980b9", is_x=True)
-                        
                     elif mode == "opposite":
                         vx, vy = 170, 100
                         phi = val1 
                         L = 85
-                        
                         tl_x = vx + L*math.cos(math.radians(180-phi))
                         tl_y = vy - L*math.sin(math.radians(180-phi))
                         br_x = vx + L*math.cos(math.radians(-phi))
                         br_y = vy - L*math.sin(math.radians(-phi))
-                        
                         bl_x = vx + L*math.cos(math.radians(180+phi))
                         bl_y = vy - L*math.sin(math.radians(180+phi))
                         tr_x = vx + L*math.cos(math.radians(phi))
                         tr_y = vy - L*math.sin(math.radians(phi))
-                        
                         svg += f'<line x1="{tl_x}" y1="{tl_y}" x2="{br_x}" y2="{br_y}" stroke="#34495e" stroke-width="4"/>'
                         svg += f'<line x1="{bl_x}" y1="{bl_y}" x2="{tr_x}" y2="{tr_y}" stroke="#34495e" stroke-width="4"/>'
-                        
                         svg += f'<text x="{tl_x-15}" y="{tl_y-5}" {lbl_style}>A</text>'
                         svg += f'<text x="{br_x+5}" y="{br_y+15}" {lbl_style}>B</text>'
                         svg += f'<text x="{bl_x-15}" y="{bl_y+15}" {lbl_style}>C</text>'
                         svg += f'<text x="{tr_x+5}" y="{tr_y-5}" {lbl_style}>D</text>'
-                        
                         svg += draw_angle_feature(vx, vy, tl_x, tl_y, tr_x, tr_y, 25, 42, f"{val1}°", "#2ecc71", "#c0392b")
                         svg += draw_angle_feature(vx, vy, bl_x, bl_y, br_x, br_y, 25, 42, val2 if val3=="" else val3, "#2ecc71", "#2980b9", is_x=True)
-                        
                     elif mode == "triangle":
                         base_y = 160
                         L = 160
                         rad1 = math.radians(val1)
                         rad2 = math.radians(val2)
-                        
                         raw_h = L / (1/math.tan(rad1) + 1/math.tan(rad2))
                         if raw_h > 120:
                             scale = 120 / raw_h
                             L = L * scale
                             h = 120
-                        else:
-                            h = raw_h
-                            
+                        else: h = raw_h
                         p1x = 170 - L/2
                         p2x = 170 + L/2
                         top_y = base_y - h
                         top_x = p1x + h / math.tan(rad1)
-                        
                         svg += f'<polygon points="{p1x},{base_y} {p2x},{base_y} {top_x},{top_y}" fill="#fef9e7" stroke="#f39c12" stroke-width="3" stroke-linejoin="round"/>'
-                        
                         svg += f'<text x="{top_x}" y="{top_y-10}" {lbl_style} text-anchor="middle">A</text>'
                         svg += f'<text x="{p1x-15}" y="{base_y+5}" {lbl_style}>B</text>'
                         svg += f'<text x="{p2x+5}" y="{base_y+5}" {lbl_style}>C</text>'
-                        
                         svg += draw_angle_feature(p1x, base_y, p2x, base_y, top_x, top_y, 25, 40, f"{val1}°", "#2ecc71", "#c0392b")
                         svg += draw_angle_feature(p2x, base_y, top_x, top_y, p1x, base_y, 25, 40, f"{val2}°", "#2ecc71", "#c0392b")
                         svg += draw_angle_feature(top_x, top_y, p1x, base_y, p2x, base_y, 25, 42, val3, "#2ecc71", "#2980b9", is_x=True)
-                        
                     svg += '</svg></div>'
                     return svg
 
@@ -3196,36 +3166,25 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (มุมภายในรูปสามเหลี่ยม):</b><br>👉 ผลรวมมุมภายในของรูปสามเหลี่ยมทุกชนิด = 180°<br>👉 มุมที่โจทย์กำหนดให้ 2 มุม รวมกัน = {a1}° + {a2}° = {a1+a2}°<br>👉 มุมที่เหลือ x = 180° - {a1+a2}° = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
 
             elif actual_sub_t == "เส้นขนานและมุมแย้ง":
-                # --- เครื่องยนต์วาดมุมและเส้นโค้งแบบสมบูรณ์ (ประยุกต์ใช้กับเส้นขนาน) ---
                 def draw_angle_feature(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
                     len_a = math.hypot(ax - vx, ay - vy)
                     len_b = math.hypot(bx - vx, by - vy)
                     if len_a == 0 or len_b == 0: return ""
-                    
                     sx = vx + (ax - vx) * r_arc / len_a
                     sy = vy + (ay - vy) * r_arc / len_a
                     ex = vx + (bx - vx) * r_arc / len_b
                     ey = vy + (by - vy) * r_arc / len_b
-                    
                     cp = (sx - vx) * (ey - vy) - (sy - vy) * (ex - vx)
                     sweep = 1 if cp > 0 else 0
-                    
                     arc_svg = f'<path d="M {sx} {sy} A {r_arc} {r_arc} 0 0 {sweep} {ex} {ey}" fill="none" stroke="{color_arc}" stroke-width="3"/>'
-                    
                     mid_x = (sx - vx)/r_arc + (ex - vx)/r_arc
                     mid_y = (sy - vy)/r_arc + (ey - vy)/r_arc
                     len_mid = math.hypot(mid_x, mid_y)
-                    
-                    if len_mid == 0: 
-                        tx, ty = vx, vy - r_text
-                    else:
-                        tx = vx + (mid_x / len_mid) * r_text
-                        ty = vy + (mid_y / len_mid) * r_text
-                        
+                    if len_mid == 0: tx, ty = vx, vy - r_text
+                    else: tx, ty = vx + (mid_x / len_mid) * r_text, vy + (mid_y / len_mid) * r_text
                     ty += 5 
                     font_size = "16px" if is_x else "14px"
                     lbl_svg = f'<text x="{tx}" y="{ty}" font-size="{font_size}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
-                    
                     return arc_svg + lbl_svg
 
                 angle_meta = {
@@ -3255,61 +3214,44 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
                 def draw_parallel_svg(dir_key, pos1, val1, pos2, val2):
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="340" height="200">'
-                    
                     svg += '<line x1="40" y1="60" x2="300" y2="60" stroke="#2980b9" stroke-width="4"/>'
                     svg += '<line x1="40" y1="120" x2="300" y2="120" stroke="#2980b9" stroke-width="4"/>'
-                    
                     svg += '<polygon points="285,55 295,60 285,65" fill="#2980b9"/>'
                     svg += '<polygon points="285,115 295,120 285,125" fill="#2980b9"/>'
-                    
                     lbl_style = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
                     svg += f'<text x="20" y="65" {lbl_style}>A</text>'
                     svg += f'<text x="310" y="65" {lbl_style}>B</text>'
                     svg += f'<text x="20" y="125" {lbl_style}>C</text>'
                     svg += f'<text x="310" y="125" {lbl_style}>D</text>'
-                    
                     meta = angle_meta[dir_key]
                     bot, top = meta["bot"], meta["top"]
-                    
                     svg += f'<line x1="{bot[0]}" y1="{bot[1]}" x2="{top[0]}" y2="{top[1]}" stroke="#3498db" stroke-width="4"/>'
                     svg += f'<circle cx="{bot[0]}" cy="{bot[1]}" r="4" fill="#3498db" />'
                     svg += f'<circle cx="{top[0]}" cy="{top[1]}" r="4" fill="#3498db" />'
-                    
                     V1, V2 = meta["V1"], meta["V2"]
-                    
                     def draw_pos(pos, val, is_var):
                         vx, arm1, arm2 = get_arms(pos, V1, V2, bot, top)
                         color = "#2980b9" if is_var else "#c0392b"
                         text_label = "x" if is_var else f"{val}°" 
                         return draw_angle_feature(vx[0], vx[1], arm1[0], arm1[1], arm2[0], arm2[1], 25, 42, text_label, "#2ecc71", color, is_x=is_var)
-
                     svg += draw_pos(pos1, val1, is_var=False)
                     svg += draw_pos(pos2, val2, is_var=True)
-
                     svg += '</svg></div>'
                     return svg
 
                 direction = random.choice(["dir1", "dir2"])
                 scenario = random.choice(["Z", "C", "F"])
-                
                 pairs = {
                     "Z": [("BL_int", "TR_int"), ("BR_int", "TL_int")],
                     "C": [("BL_int", "TL_int"), ("BR_int", "TR_int")],
                     "F": [("TL_ext", "TL_int"), ("TR_ext", "TR_int"), ("BL_int", "BL_ext"), ("BR_int", "BR_ext")]
                 }
-                
                 pair = random.choice(pairs[scenario])
-                if random.choice([True, False]):
-                    pos1, pos2 = pair
-                else:
-                    pos2, pos1 = pair
-                    
+                if random.choice([True, False]): pos1, pos2 = pair
+                else: pos2, pos1 = pair
                 is_acute = pos1 in angle_meta[direction]["acute"]
-                
-                if is_acute:
-                    val = random.randint(40, 85)
-                else:
-                    val = random.randint(95, 140)
+                if is_acute: val = random.randint(40, 85)
+                else: val = random.randint(95, 140)
                     
                 if scenario == "Z":
                     ans = val
@@ -3334,17 +3276,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     fill_top = "#85c1e9" if is_water else "#abebc6"
                     fill_right = "#5dade2" if is_water else "#82e0aa"
                     stroke_c = "#2874a6" if is_water else "#27ae60"
-                    
                     if is_water:
                         y_offset = 55 
                         svg += '<line x1="100" y1="10" x2="100" y2="110" stroke="#bdc3c7" stroke-width="2"/>'
                         svg += '<line x1="100" y1="110" x2="200" y2="110" stroke="#bdc3c7" stroke-width="2"/>'
                         svg += '<line x1="60" y1="130" x2="100" y2="110" stroke="#bdc3c7" stroke-width="2"/>'
-                        
                         svg += f'<polygon points="60,{30+y_offset} 100,{10+y_offset} 200,{10+y_offset} 160,{30+y_offset}" fill="{fill_top}" stroke="{stroke_c}" stroke-width="2" opacity="0.85"/>'
                         svg += f'<rect x="60" y="{30+y_offset}" width="100" height="{100-y_offset}" fill="{fill_front}" stroke="{stroke_c}" stroke-width="2" opacity="0.85"/>'
                         svg += f'<polygon points="160,{30+y_offset} 200,{10+y_offset} 200,110 160,130" fill="{fill_right}" stroke="{stroke_c}" stroke-width="2" opacity="0.85"/>'
-                        
                         svg += '<polygon points="60,30 100,10 200,10 160,30" fill="none" stroke="#95a5a6" stroke-width="2"/>'
                         svg += '<line x1="60" y1="30" x2="60" y2="130" stroke="#95a5a6" stroke-width="2"/>'
                         svg += '<line x1="160" y1="30" x2="160" y2="130" stroke="#95a5a6" stroke-width="2"/>'
@@ -3353,15 +3292,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         svg += f'<rect x="60" y="50" width="100" height="80" fill="{fill_front}" stroke="{stroke_c}" stroke-width="3"/>'
                         svg += f'<polygon points="60,50 100,20 200,20 160,50" fill="{fill_top}" stroke="{stroke_c}" stroke-width="3"/>'
                         svg += f'<polygon points="160,50 200,20 200,100 160,130" fill="{fill_right}" stroke="{stroke_c}" stroke-width="3"/>'
-                        
                     svg += f'<text x="110" y="150" font-size="14" fill="#2c3e50" font-weight="bold" text-anchor="middle">{l_lbl}</text>'
                     svg += f'<text x="190" y="125" font-size="14" fill="#2c3e50" font-weight="bold">{w_lbl}</text>'
-                    
-                    if is_water:
-                        svg += f'<text x="10" y="{80+y_offset/2}" font-size="14" fill="#2980b9" font-weight="bold">{h_lbl}</text>'
-                    else:
-                        svg += f'<text x="20" y="95" font-size="14" fill="#2c3e50" font-weight="bold">{h_lbl}</text>'
-                        
+                    if is_water: svg += f'<text x="10" y="{80+y_offset/2}" font-size="14" fill="#2980b9" font-weight="bold">{h_lbl}</text>'
+                    else: svg += f'<text x="20" y="95" font-size="14" fill="#2c3e50" font-weight="bold">{h_lbl}</text>'
                     svg += '</svg></div>'
                     return svg
 
@@ -3373,10 +3307,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     h = random.randint(4, 12)
                     vol = w * l * h
                     svg = draw_prism_svg(f"{w} ซม.", f"{l} ซม.", f"{h} ซม.")
-                    
                     q = f"กล่องทรงสี่เหลี่ยมมุมฉาก กว้าง <b>{w} ซม.</b> ยาว <b>{l} ซม.</b> และสูง <b>{h} ซม.</b><br>กล่องใบนี้จะมี<b>ปริมาตร</b>ความจุกี่ลูกบาศก์เซนติเมตร?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การหาปริมาตร):</b><br><b>สูตร:</b> ปริมาตรทรงสี่เหลี่ยมมุมฉาก = กว้าง × ยาว × สูง<br>👉 แทนค่า: กว้าง = {w}, ยาว = {l}, สูง = {h}<br>👉 คำนวณ: {w} × {l} × {h} = <b>{vol:,} ลูกบาศก์เซนติเมตร</b><br><b>ตอบ: {vol:,} ลูกบาศก์เซนติเมตร</b></span>"
-                    
                 elif scenario == "tank":
                     w = random.randint(10, 20)
                     l = random.randint(20, 40)
@@ -3384,18 +3316,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     water_h = random.randint(5, h - 5)
                     vol = w * l * water_h
                     svg = draw_prism_svg(f"{w} ซม.", f"{l} ซม.", f"น้ำสูง {water_h} ซม.", is_water=True)
-                    
                     q = f"ตู้ปลาทรงสี่เหลี่ยมมุมฉาก กว้าง <b>{w} ซม.</b> ยาว <b>{l} ซม.</b> สูง <b>{h} ซม.</b><br>ถ้าเติมน้ำลงไปในตู้ปลาให้มีระดับน้ำสูง <b>{water_h} ซม.</b><br>ปริมาตรของน้ำในตู้ปลาจะเป็นกี่ลูกบาศก์เซนติเมตร?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ประยุกต์ปริมาตรน้ำ):</b><br><i>จุดระวัง: โจทย์ถามปริมาตรของ 'น้ำ' ดังนั้นเราต้องใช้ 'ความสูงของน้ำ' ไม่ใช่ความสูงของตู้ปลานะครับ!</i><br><br><b>สูตร:</b> ปริมาตรน้ำ = กว้าง × ยาว × ความสูงของน้ำ<br>👉 แทนค่า: กว้าง = {w}, ยาว = {l}, สูงของน้ำ = {water_h}<br>👉 คำนวณ: {w} × {l} × {water_h} = <b>{vol:,} ลูกบาศก์เซนติเมตร</b><br><b>ตอบ: {vol:,} ลูกบาศก์เซนติเมตร</b></span>"
 
             elif actual_sub_t in ["การบวกเศษส่วน", "การลบเศษส่วน", "การคูณเศษส่วน", "การหารเศษส่วน"]:
-                # --- เครื่องยนต์เศษส่วน (Fraction Engine V5) แสดงผลแบบสมจริง ---
                 def render_frac(n, d, w=0):
                     frac_html = f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b>{n}</b></div><div style='padding-top:2px;'><b>{d}</b></div></div>"
-                    if w != 0: 
-                        return f"<div style='display:inline-block; vertical-align:middle;'><span style='font-size:24px; font-weight:bold; color:#2c3e50; margin-right:3px;'>{w}</span>{frac_html}</div>"
+                    if w != 0: return f"<div style='display:inline-block; vertical-align:middle;'><span style='font-size:24px; font-weight:bold; color:#2c3e50; margin-right:3px;'>{w}</span>{frac_html}</div>"
                     return frac_html
-                    
                 def get_mixed(n, d):
                     if n == 0: return "0"
                     if d == 1: return str(n)
@@ -3409,118 +3337,113 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 op_sign = op_map[actual_sub_t]
                 
                 if is_challenge:
-                    d1 = random.randint(3, 9)
-                    d2 = random.randint(3, 9)
+                    d1, d2 = random.randint(3, 9), random.randint(3, 9)
                     while d1 == d2: d2 = random.randint(3, 9)
-                    n1 = random.randint(1, d1-1)
-                    n2 = random.randint(1, d2-1)
-                    w1 = random.randint(1, 5)
-                    w2 = random.randint(1, 5)
+                    n1, n2 = random.randint(1, d1-1), random.randint(1, d2-1)
+                    w1, w2 = random.randint(1, 5), random.randint(1, 5)
                     
-                    if actual_sub_t == "การลบเศษส่วน" or actual_sub_t == "การหารเศษส่วน":
-                        val1 = w1 + (n1/d1)
-                        val2 = w2 + (n2/d2)
-                        if val1 <= val2:
-                            w1, w2 = w2, w1
-                            n1, n2 = n2, n1
-                            d1, d2 = d2, d1
+                    if actual_sub_t in ["การลบเศษส่วน", "การหารเศษส่วน"]:
+                        val1, val2 = w1 + (n1/d1), w2 + (n2/d2)
+                        if val1 <= val2: w1, w2, n1, n2, d1, d2 = w2, w1, n2, n1, d2, d1
                             
-                    f1_str = render_frac(n1, d1, w1)
-                    f2_str = render_frac(n2, d2, w2)
-                    
+                    f1_str, f2_str = render_frac(n1, d1, w1), render_frac(n2, d2, w2)
                     q = f"จงหาผลลัพธ์ต่อไปนี้ให้อยู่ในรูปอย่างง่าย<br><br><div style='text-align:center; font-size:24px;'>{f1_str} <span style='color:#e74c3c; margin: 0 10px; font-size:28px; vertical-align:middle;'><b>{op_sign}</b></span> {f2_str} = ?</div>"
                     
-                    imp_n1 = (w1 * d1) + n1
-                    imp_n2 = (w2 * d2) + n2
-                    
+                    imp_n1, imp_n2 = (w1 * d1) + n1, (w2 * d2) + n2
                     step_mixed = f"<b>ขั้นที่ 1:</b> แปลงจำนวนคละให้เป็นเศษเกิน<br>👉 {f1_str} = {render_frac(imp_n1, d1)}<br>👉 {f2_str} = {render_frac(imp_n2, d2)}<br><br>"
                     
                     lcm = (d1 * d2) // math.gcd(d1, d2)
                     if actual_sub_t == "การบวกเศษส่วน":
-                        new_n1 = imp_n1 * (lcm // d1)
-                        new_n2 = imp_n2 * (lcm // d2)
-                        res_n = new_n1 + new_n2
-                        res_d = lcm
+                        new_n1, new_n2 = imp_n1 * (lcm // d1), imp_n2 * (lcm // d2)
+                        res_n, res_d = new_n1 + new_n2, lcm
                         step1 = f"<b>ขั้นที่ 2:</b> หา ค.ร.น. ของ {d1} และ {d2} คือ <b>{lcm}</b>"
                         step2 = f"<b>ขั้นที่ 3:</b> แปลงส่วนให้เท่ากัน แล้วนำเศษมาบวกกัน<br>👉 ({new_n1} + {new_n2}) / {lcm} = {render_frac(res_n, res_d)}"
                     elif actual_sub_t == "การลบเศษส่วน":
-                        new_n1 = imp_n1 * (lcm // d1)
-                        new_n2 = imp_n2 * (lcm // d2)
-                        res_n = new_n1 - new_n2
-                        res_d = lcm
+                        new_n1, new_n2 = imp_n1 * (lcm // d1), imp_n2 * (lcm // d2)
+                        res_n, res_d = new_n1 - new_n2, lcm
                         step1 = f"<b>ขั้นที่ 2:</b> หา ค.ร.น. ของ {d1} และ {d2} คือ <b>{lcm}</b>"
                         step2 = f"<b>ขั้นที่ 3:</b> แปลงส่วนให้เท่ากัน แล้วนำเศษมาลบกัน<br>👉 ({new_n1} - {new_n2}) / {lcm} = {render_frac(res_n, res_d)}"
                     elif actual_sub_t == "การคูณเศษส่วน":
-                        res_n = imp_n1 * imp_n2
-                        res_d = d1 * d2
+                        res_n, res_d = imp_n1 * imp_n2, d1 * d2
                         step1 = f"<b>ขั้นที่ 2:</b> นำ (เศษ × เศษ) และ (ส่วน × ส่วน)"
                         step2 = f"👉 คำนวณ: ({imp_n1} × {imp_n2}) / ({d1} × {d2}) = {render_frac(res_n, res_d)}"
                     elif actual_sub_t == "การหารเศษส่วน":
-                        res_n = imp_n1 * d2
-                        res_d = d1 * imp_n2
+                        res_n, res_d = imp_n1 * d2, d1 * imp_n2
                         step1 = f"<b>ขั้นที่ 2:</b> เปลี่ยนหารเป็นคูณ กลับเศษเป็นส่วนของตัวหลัง<br>👉 {render_frac(imp_n1, d1)} × {render_frac(d2, imp_n2)}"
                         step2 = f"👉 คำนวณ: ({imp_n1} × {d2}) / ({d1} × {imp_n2}) = {render_frac(res_n, res_d)}"
                         
                     g = math.gcd(abs(res_n), res_d)
-                    simp_n = res_n // g
-                    simp_d = res_d // g
-                    ans_str = get_mixed(simp_n, simp_d)
-                    
+                    ans_str = get_mixed(res_n // g, res_d // g)
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br>{step_mixed}{step1}<br>{step2}<br><br><b>ขั้นสุดท้าย:</b> ทอนเป็นเศษส่วนอย่างต่ำหรือจำนวนคละ<br>👉 คำตอบคือ <b><span style='font-size:24px; color:#e74c3c;'>{ans_str}</span></b></span>"
-
                 else:
-                    d1 = random.randint(3, 12)
-                    d2 = random.randint(3, 12)
+                    d1, d2 = random.randint(3, 12), random.randint(3, 12)
                     while d1 == d2: d2 = random.randint(3, 12) 
-                    n1 = random.randint(1, d1-1)
-                    n2 = random.randint(1, d2-1)
+                    n1, n2 = random.randint(1, d1-1), random.randint(1, d2-1)
                     
-                    if actual_sub_t == "การลบเศษส่วน" or actual_sub_t == "การหารเศษส่วน":
-                        if n1*d2 <= n2*d1:
-                            n1, n2 = n2, n1
-                            d1, d2 = d2, d1
+                    if actual_sub_t in ["การลบเศษส่วน", "การหารเศษส่วน"]:
+                        if n1*d2 <= n2*d1: n1, n2, d1, d2 = n2, n1, d2, d1
                             
-                    f1_str = render_frac(n1, d1)
-                    f2_str = render_frac(n2, d2)
-                    
+                    f1_str, f2_str = render_frac(n1, d1), render_frac(n2, d2)
                     q = f"จงหาผลลัพธ์ต่อไปนี้ให้อยู่ในรูปอย่างง่าย<br><br><div style='text-align:center; font-size:24px;'>{f1_str} <span style='color:#e74c3c; margin: 0 10px; font-size:28px; vertical-align:middle;'><b>{op_sign}</b></span> {f2_str} = ?</div>"
                     
                     lcm = (d1 * d2) // math.gcd(d1, d2)
                     if actual_sub_t == "การบวกเศษส่วน":
-                        new_n1 = n1 * (lcm // d1)
-                        new_n2 = n2 * (lcm // d2)
-                        res_n = new_n1 + new_n2
-                        res_d = lcm
+                        new_n1, new_n2 = n1 * (lcm // d1), n2 * (lcm // d2)
+                        res_n, res_d = new_n1 + new_n2, lcm
                         step1 = f"<b>ขั้นที่ 1:</b> หา ค.ร.น. ของส่วน {d1} และ {d2} คือ <b>{lcm}</b>"
                         step2 = f"<b>ขั้นที่ 2:</b> แปลงเศษส่วนให้ส่วนเท่ากัน<br>👉 {render_frac(n1, d1)} = {render_frac(new_n1, lcm)} <br>👉 {render_frac(n2, d2)} = {render_frac(new_n2, lcm)}"
                         step3 = f"<b>ขั้นที่ 3:</b> นำตัวเศษมาบวกกัน: {new_n1} + {new_n2} = {res_n} <br>ได้ผลลัพธ์คือ {render_frac(res_n, lcm)}"
                     elif actual_sub_t == "การลบเศษส่วน":
-                        new_n1 = n1 * (lcm // d1)
-                        new_n2 = n2 * (lcm // d2)
-                        res_n = new_n1 - new_n2
-                        res_d = lcm
+                        new_n1, new_n2 = n1 * (lcm // d1), n2 * (lcm // d2)
+                        res_n, res_d = new_n1 - new_n2, lcm
                         step1 = f"<b>ขั้นที่ 1:</b> หา ค.ร.น. ของส่วน {d1} และ {d2} คือ <b>{lcm}</b>"
                         step2 = f"<b>ขั้นที่ 2:</b> แปลงเศษส่วนให้ส่วนเท่ากัน<br>👉 {render_frac(n1, d1)} = {render_frac(new_n1, lcm)} <br>👉 {render_frac(n2, d2)} = {render_frac(new_n2, lcm)}"
                         step3 = f"<b>ขั้นที่ 3:</b> นำตัวเศษมาลบกัน: {new_n1} - {new_n2} = {res_n} <br>ได้ผลลัพธ์คือ {render_frac(res_n, lcm)}"
                     elif actual_sub_t == "การคูณเศษส่วน":
-                        res_n = n1 * n2
-                        res_d = d1 * d2
+                        res_n, res_d = n1 * n2, d1 * d2
                         step1 = f"<b>หลักการ:</b> การคูณเศษส่วน ให้นำ (เศษ × เศษ) และ (ส่วน × ส่วน)"
                         step2 = f"<b>ขั้นที่ 1:</b> เข้าสมการ ({n1} × {n2}) / ({d1} × {d2})"
                         step3 = f"<b>ขั้นที่ 2:</b> ได้ผลลัพธ์คือ {render_frac(res_n, res_d)}"
                     elif actual_sub_t == "การหารเศษส่วน":
-                        res_n = n1 * d2
-                        res_d = d1 * n2
+                        res_n, res_d = n1 * d2, d1 * n2
                         step1 = f"<b>หลักการ:</b> การหารเศษส่วน ให้เปลี่ยนเครื่องหมาย ÷ เป็น × แล้วกลับเศษเป็นส่วนของตัวหาร"
                         step2 = f"<b>ขั้นที่ 1:</b> จะได้ {render_frac(n1, d1)} × {render_frac(d2, n2)}"
                         step3 = f"<b>ขั้นที่ 2:</b> คำนวณ ({n1} × {d2}) / ({d1} × {n2}) = {render_frac(res_n, res_d)}"
                         
                     g = math.gcd(abs(res_n), res_d)
-                    simp_n = res_n // g
-                    simp_d = res_d // g
-                    ans_str = get_mixed(simp_n, simp_d)
-                    
+                    ans_str = get_mixed(res_n // g, res_d // g)
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>{step1}<br>{step2}<br>{step3}<br><br><b>ขั้นสุดท้าย:</b> ทอนเป็นเศษส่วนอย่างต่ำ/จำนวนคละ<br>👉 คำตอบคือ <b><span style='font-size:24px; color:#e74c3c;'>{ans_str}</span></b></span>"
+
+            elif actual_sub_t == "การเขียนเศษส่วนในรูปร้อยละ":
+                # --- เครื่องยนต์แปลงร้อยละ (Percentage Engine) ---
+                def render_frac(n, d, w=0):
+                    frac_html = f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b>{n}</b></div><div style='padding-top:2px;'><b>{d}</b></div></div>"
+                    if w != 0: return f"<div style='display:inline-block; vertical-align:middle;'><span style='font-size:24px; font-weight:bold; color:#2c3e50; margin-right:3px;'>{w}</span>{frac_html}</div>"
+                    return frac_html
+
+                if is_challenge:
+                    # 🔥 โหมดชาเลนจ์: แปลงจำนวนคละเป็นร้อยละ (เปอร์เซ็นต์จะเกิน 100%)
+                    w = random.randint(1, 3)
+                    d = random.choice([2, 4, 5, 10, 20, 25])
+                    n = random.randint(1, d-1)
+                    
+                    f_str = render_frac(n, d, w)
+                    imp_n = w * d + n
+                    m = 100 // d
+                    ans = imp_n * m
+                    
+                    q = f"จงเขียนจำนวนคละต่อไปนี้ให้อยู่ในรูป <b>ร้อยละ (เปอร์เซ็นต์)</b><br><br><div style='text-align:center; font-size:26px;'>{f_str} = <span style='color:#2980b9;'>?</span> %</div>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br><b>ขั้นที่ 1:</b> แปลงจำนวนคละเป็นเศษเกิน<br>👉 {f_str} = {render_frac(imp_n, d)}<br><br><b>ขั้นที่ 2:</b> ทำตัวส่วนให้เป็น 100 โดยหาตัวเลขมาคูณ<br>👉 พบว่า {d} × <b>{m}</b> = 100 จึงนำ {m} มาคูณทั้งเศษและส่วน<br>👉 ({imp_n} × {m}) / ({d} × {m}) = {render_frac(ans, 100)}<br><br><b>ขั้นที่ 3:</b> เมื่อส่วนเป็น 100 แล้ว ตัวเศษคือค่าร้อยละ<br>👉 ได้ <b>ร้อยละ {ans}</b> หรือ <b>{ans}%</b><br><b>ตอบ: {ans}%</b></span>"
+                else:
+                    # 🔹 โหมดปกติ: เศษส่วนแท้แปลงเป็นร้อยละ
+                    d = random.choice([2, 4, 5, 10, 20, 25, 50])
+                    n = random.randint(1, d-1)
+                    f_str = render_frac(n, d)
+                    m = 100 // d
+                    ans = n * m
+                    
+                    q = f"จงเขียนเศษส่วนต่อไปนี้ให้อยู่ในรูป <b>ร้อยละ (เปอร์เซ็นต์)</b><br><br><div style='text-align:center; font-size:26px;'>{f_str} = <span style='color:#2980b9;'>?</span> %</div>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br><b>หลักการ:</b> การทำเศษส่วนให้เป็นร้อยละ ต้องทำ <b>'ตัวส่วนให้เท่ากับ 100'</b> เสมอ<br><br><b>ขั้นที่ 1:</b> หาตัวเลขที่คูณกับส่วน {d} แล้วได้ 100<br>👉 พบว่า {d} × <b>{m}</b> = 100<br><br><b>ขั้นที่ 2:</b> นำ {m} มาคูณทั้งเศษและส่วน<br>👉 ({n} × {m}) / ({d} × {m}) = {render_frac(ans, 100)}<br><br><b>ขั้นที่ 3:</b> เมื่อส่วนเป็น 100 แล้ว ตัวเศษคือค่าร้อยละ<br>👉 ได้ <b>ร้อยละ {ans}</b> หรือ <b>{ans}%</b><br><b>ตอบ: {ans}%</b></span>"
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
