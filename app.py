@@ -2275,9 +2275,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
-            else:
-                q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
-                sol = "Error"
 
             # ตรวจสอบการซ้ำของโจทย์
             if q not in seen: 
