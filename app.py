@@ -3062,7 +3062,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
                 
-            # ตรวจสอบการซ้ำของโจทย์
+            # ==================================================
+            # ระบบเช็คโจทย์ซ้ำ (ตัวตัดลูป: ถ้าส่วนนี้หาย แอพจะหมุนค้างทันที!)
+            # ==================================================
             if q not in seen: 
                 seen.add(q)
                 questions.append({"question": q, "solution": sol})
