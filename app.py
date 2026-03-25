@@ -727,46 +727,53 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 # ----------------------------------------------------
                 # ฟังก์ชันวาดเส้นจำนวน (Number Line) สำหรับปริมาตร
                 # ----------------------------------------------------
-                def draw_vol_number_line(val_ml, max_ml=1000):
-                    width = 500
-                    height = 100
+                def draw_vol_number_line(val_ml, max_l=3):
+                    max_ml = max_l * 1000
+                    width = 550
+                    height = 120
                     svg = f'<div style="text-align:center; margin:15px 0;"><svg width="{width}" height="{height}">'
-                    svg += f'<line x1="50" y1="50" x2="450" y2="50" stroke="#34495e" stroke-width="4"/>'
+                    svg += f'<line x1="40" y1="60" x2="510" y2="60" stroke="#34495e" stroke-width="4"/>'
                     
-                    ticks = 10
-                    for i in range(ticks + 1):
-                        x = 50 + i * 40
-                        is_major = (i % 2 == 0) or (i == ticks)
-                        tick_len = 10 if is_major else 5
-                        svg += f'<line x1="{x}" y1="{50-tick_len}" x2="{x}" y2="{50+tick_len}" stroke="#34495e" stroke-width="2"/>'
+                    total_ticks = max_l * 10
+                    tick_spacing = 460 / total_ticks
+                    
+                    for i in range(total_ticks + 1):
+                        x = 40 + i * tick_spacing
+                        is_major = (i % 10 == 0)
+                        is_mid = (i % 5 == 0) and not is_major
                         
                         if is_major:
-                            lbl = int(i * (max_ml / ticks))
-                            if lbl >= 1000 and lbl % 1000 == 0:
-                                lbl_str = f"{lbl//1000}L"
-                            else:
-                                lbl_str = str(lbl)
-                            svg += f'<text x="{x}" y="80" font-family="sans-serif" font-size="14" fill="#333" text-anchor="middle">{lbl_str}</text>'
+                            tick_len, sw = 15, 3
+                        elif is_mid:
+                            tick_len, sw = 10, 2
+                        else:
+                            tick_len, sw = 6, 1
+                            
+                        svg += f'<line x1="{x}" y1="{60-tick_len}" x2="{x}" y2="{60+tick_len}" stroke="#34495e" stroke-width="{sw}"/>'
+                        
+                        if is_major:
+                            lbl_l = i // 10
+                            svg += f'<text x="{x}" y="95" font-family="sans-serif" font-size="16" font-weight="bold" fill="#333" text-anchor="middle">{lbl_l}L</text>'
                     
-                    val_x = 50 + (val_ml / max_ml) * 400
-                    svg += f'<circle cx="{val_x}" cy="50" r="6" fill="#e74c3c"/>'
-                    svg += f'<polygon points="{val_x-6},30 {val_x+6},30 {val_x},42" fill="#e74c3c"/>'
+                    val_x = 40 + (val_ml / max_ml) * 460
+                    svg += f'<circle cx="{val_x}" cy="60" r="6" fill="#e74c3c"/>'
+                    svg += f'<polygon points="{val_x-8},40 {val_x+8},40 {val_x},54" fill="#e74c3c"/>'
                     svg += '</svg></div>'
                     return svg
 
                 # ----------------------------------------------------
                 # ฟังก์ชันวาดบาร์โมเดล (Bar Model)
                 # ----------------------------------------------------
-                def draw_bar_model_svg(v1_str, v2_str, mode="add"):
-                    svg = f'<div style="text-align:center; margin:15px 0;"><svg width="500" height="150">'
+                def draw_bar_model_svg(v1_str, v2_str="", mode="add", parts=1):
+                    svg = f'<div style="text-align:center; margin:15px 0;"><svg width="550" height="160">'
                     if mode == "add":
                         svg += f'<rect x="50" y="50" width="200" height="40" fill="#3498db" stroke="#2c3e50" stroke-width="2" rx="4"/>'
                         svg += f'<text x="150" y="75" font-family="Sarabun" font-size="14" fill="#fff" font-weight="bold" text-anchor="middle" dominant-baseline="middle">{v1_str}</text>'
                         svg += f'<rect x="250" y="50" width="170" height="40" fill="#2ecc71" stroke="#2c3e50" stroke-width="2" rx="4"/>'
                         svg += f'<text x="335" y="75" font-family="Sarabun" font-size="14" fill="#fff" font-weight="bold" text-anchor="middle" dominant-baseline="middle">{v2_str}</text>'
                         svg += f'<path d="M50,40 Q50,20 235,20 T420,40" fill="none" stroke="#e74c3c" stroke-width="2"/>'
-                        svg += f'<text x="235" y="12" font-family="Sarabun" font-size="16" fill="#e74c3c" font-weight="bold" text-anchor="middle">? รวมเป็นเท่าไร ?</text>'
-                    else: # diff
+                        svg += f'<text x="235" y="15" font-family="Sarabun" font-size="16" fill="#e74c3c" font-weight="bold" text-anchor="middle">? รวมเป็นเท่าไร ?</text>'
+                    elif mode == "diff":
                         svg += f'<rect x="50" y="20" width="370" height="40" fill="#3498db" stroke="#2c3e50" stroke-width="2" rx="4"/>'
                         svg += f'<text x="235" y="45" font-family="Sarabun" font-size="14" fill="#fff" font-weight="bold" text-anchor="middle" dominant-baseline="middle">{v1_str}</text>'
                         svg += f'<rect x="50" y="70" width="220" height="40" fill="#e67e22" stroke="#2c3e50" stroke-width="2" rx="4"/>'
@@ -775,6 +782,27 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         svg += f'<line x1="270" y1="80" x2="270" y2="100" stroke="#e74c3c" stroke-width="2"/>'
                         svg += f'<line x1="420" y1="80" x2="420" y2="100" stroke="#e74c3c" stroke-width="2"/>'
                         svg += f'<text x="345" y="115" font-family="Sarabun" font-size="14" fill="#e74c3c" font-weight="bold" text-anchor="middle">? ต่างกันเท่าไร ?</text>'
+                    elif mode == "2step_total":
+                        svg += f'<rect x="50" y="20" width="300" height="40" fill="#3498db" stroke="#2c3e50" stroke-width="2" rx="4"/>'
+                        svg += f'<text x="200" y="45" font-family="Sarabun" font-size="14" fill="#fff" font-weight="bold" text-anchor="middle" dominant-baseline="middle">{v1_str}</text>'
+                        svg += f'<rect x="50" y="70" width="180" height="40" fill="#e67e22" stroke="#2c3e50" stroke-width="2" rx="4"/>'
+                        svg += f'<text x="140" y="95" font-family="Sarabun" font-size="16" fill="#fff" font-weight="bold" text-anchor="middle" dominant-baseline="middle">?</text>'
+                        svg += f'<path d="M230,90 L350,90" stroke="#e74c3c" stroke-width="2" stroke-dasharray="5,5"/>'
+                        svg += f'<line x1="230" y1="80" x2="230" y2="100" stroke="#e74c3c" stroke-width="2"/>'
+                        svg += f'<line x1="350" y1="80" x2="350" y2="100" stroke="#e74c3c" stroke-width="2"/>'
+                        svg += f'<text x="290" y="115" font-family="Sarabun" font-size="14" fill="#e74c3c" font-weight="bold" text-anchor="middle">น้อยกว่า {v2_str}</text>'
+                        svg += f'<path d="M370,20 Q390,65 370,110" fill="none" stroke="#27ae60" stroke-width="3"/>'
+                        svg += f'<text x="430" y="70" font-family="Sarabun" font-size="16" fill="#27ae60" font-weight="bold" text-anchor="middle">รวมทั้งหมด = ?</text>'
+                    elif mode == "multiply":
+                        total_w = 380
+                        part_w = total_w / parts
+                        for i in range(parts):
+                            svg += f'<rect x="{50 + i*part_w}" y="50" width="{part_w}" height="40" fill="#9b59b6" stroke="#2c3e50" stroke-width="2"/>'
+                            if i == 0: 
+                                svg += f'<text x="{50 + part_w/2}" y="70" font-family="Sarabun" font-size="11" fill="#fff" font-weight="bold" text-anchor="middle" dominant-baseline="middle">{v1_str}</text>'
+                        svg += f'<path d="M50,40 Q240,10 430,40" fill="none" stroke="#e74c3c" stroke-width="2"/>'
+                        svg += f'<text x="240" y="25" font-family="Sarabun" font-size="16" fill="#e74c3c" font-weight="bold" text-anchor="middle">รวมทั้งหมด = ?</text>'
+                        svg += f'<text x="240" y="110" font-family="Sarabun" font-size="14" fill="#333" font-weight="bold" text-anchor="middle">(แบ่งเป็น {parts} ส่วนเท่าๆ กัน)</text>'
                     svg += '</svg></div>'
                     return svg
 
@@ -826,139 +854,172 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         
                 elif q_cat == "number_line": 
                     if is_challenge:
-                        max_l = random.randint(3, 5)
-                        max_ml = max_l * 1000
-                        val_ml = random.randint(2, (max_ml//100) - 2) * 100
+                        max_l = random.randint(3, 6)
+                        val_ml = random.randint(5, (max_l * 1000 // 50) - 5) * 50
                         ans_l = val_ml // 1000
                         ans_ml = val_ml % 1000
                         ans_str = f"{ans_l} ลิตร {ans_ml} มิลลิลิตร" if ans_l > 0 else f"{ans_ml} มิลลิลิตร"
+                        if ans_ml == 0: ans_str = f"{ans_l} ลิตร"
                         
-                        svg = draw_vol_number_line(val_ml, max_ml)
+                        svg = draw_vol_number_line(val_ml, max_l)
                         q = f"จากเส้นจำนวนด้านล่าง ลูกศรชี้ที่ปริมาตรความจุเท่าใด? (ตอบเป็นลิตรและมิลลิลิตร)<br>{svg}"
                         sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - เส้นจำนวนข้ามหน่วย):</b><br>
                         <b>ขั้นที่ 1: วิเคราะห์ความกว้างของช่องสเกล</b><br>
-                        👉 เส้นจำนวนเริ่มจาก 0 ถึง {max_l}L (คือ {max_ml:,} มล.) มีขีดใหญ่ทั้งหมด 5 ช่วง<br>
-                        👉 1 ช่วงใหญ่ = {max_ml} ÷ 5 = {max_ml//5} มล. และถูกแบ่งครึ่งด้วยขีดเล็ก<br>
-                        👉 แสดงว่า 1 ขีดเล็ก มีค่าช่องละ <b>{(max_ml//5)//2} มิลลิลิตร</b><br>
+                        👉 สังเกตจาก 0L ไปถึง 1L (1,000 มล.) มีช่องเล็กทั้งหมด 10 ช่อง<br>
+                        👉 แสดงว่า 1 ช่องเล็ก มีค่าเท่ากับ 1,000 ÷ 10 = <b>100 มิลลิลิตร</b> (และขีดกลางคือ 500 มล.)<br>
                         <b>ขั้นที่ 2: อ่านค่าจากลูกศรและแปลงหน่วย</b><br>
                         👉 ลูกศรชี้อยู่ที่ตำแหน่ง <b>{val_ml:,} มล.</b><br>
-                        👉 แปลงหน่วย: นำไปหาร 1000 จะได้ <b>{ans_str}</b><br>
+                        👉 แปลงหน่วยเป็นลิตร: {val_ml:,} ÷ 1,000 จะได้ <b>{ans_str}</b><br>
                         <b>ตอบ: {ans_str}</b></span>"""
                     else:
-                        val_ml = random.randint(1, 9) * 100
-                        svg = draw_vol_number_line(val_ml, 1000)
+                        max_l = random.randint(1, 2)
+                        val_ml = random.randint(1, (max_l * 10) - 1) * 100
+                        svg = draw_vol_number_line(val_ml, max_l)
+                        
+                        ans_l = val_ml // 1000
+                        ans_ml = val_ml % 1000
+                        ans_str = f"{ans_l} ลิตร {ans_ml} มิลลิลิตร" if ans_l > 0 else f"{ans_ml} มิลลิลิตร"
+                        if ans_ml == 0: ans_str = f"{ans_l} ลิตร"
+                        
                         q = f"จากเส้นจำนวนด้านล่าง ลูกศรชี้ที่ปริมาตรความจุเท่าใด?<br>{svg}"
                         sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>
                         <b>ขั้นที่ 1: วิเคราะห์เส้นจำนวน</b><br>
-                        👉 เส้นจำนวนเริ่มจาก 0 ถึง 1000 มีขีดใหญ่ทั้งหมด 5 ช่วง (ช่วงละ 200) และมีขีดเล็กแบ่งครึ่ง<br>
-                        👉 แสดงว่า 1 ขีดเล็ก มีค่าเท่ากับ <b>100 มิลลิลิตร</b><br>
+                        👉 จาก 0L ถึง 1L ถูกแบ่งเป็น 10 ช่องย่อย<br>
+                        👉 แสดงว่า 1 ช่องย่อย มีค่าเท่ากับ <b>100 มิลลิลิตร</b><br>
                         <b>ขั้นที่ 2: อ่านค่าจากลูกศร</b><br>
-                        👉 ลูกศรชี้อยู่ที่ตำแหน่ง <b>{val_ml}</b> พอดี<br>
-                        <b>ตอบ: {val_ml} มิลลิลิตร</b></span>"""
+                        👉 นับช่องมาถึงลูกศร จะได้ <b>{val_ml:,} มิลลิลิตร</b><br>
+                        👉 คิดเป็น <b>{ans_str}</b><br>
+                        <b>ตอบ: {ans_str}</b></span>"""
 
                 elif q_cat == "bar_model": 
-                    mode = random.choice(["add", "diff"])
-                    
                     if is_challenge:
-                        v1_l, v1_ml = random.randint(12, 35), random.randint(100, 900)
-                    else:
-                        v1_l, v1_ml = random.randint(3, 8), random.randint(100, 900)
-                    
-                    if mode == "add":
-                        v2_l = random.randint(5, 20) if is_challenge else random.randint(1, 5)
-                        v2_ml = random.randint(100, 900)
-                        str1 = f"{v1_l} ลิตร {v1_ml} มล."
-                        str2 = f"{v2_l} ลิตร {v2_ml} มล."
-                        svg = draw_bar_model_svg(str1, str2, "add")
-                        q = f"จากบาร์โมเดล (Bar Model) ที่กำหนดให้ <b>ปริมาตรรวมทั้งหมด</b> คือเท่าไร?<br>{svg}"
-                        op = "+"
-                    else:
-                        v2_l = random.randint(1, v1_l-1)
-                        v2_ml = random.randint(100, 900)
-                        if v1_ml < v2_ml:
-                            v1_ml, v2_ml = v2_ml, v1_ml + 100
+                        mode = random.choice(["2step_total", "multiply"])
+                        if mode == "2step_total":
+                            v1_l, v1_ml = random.randint(12, 35), random.randint(100, 900)
+                            diff_l, diff_ml = random.randint(2, 6), random.randint(100, 900)
                             
-                        str1 = f"{v1_l} ลิตร {v1_ml} มล."
-                        str2 = f"{v2_l} ลิตร {v2_ml} มล."
-                        svg = draw_bar_model_svg(str1, str2, "diff")
-                        q = f"จากบาร์โมเดล (Bar Model) ที่กำหนดให้ ปริมาตรทั้งสองส่วน<b>ต่างกันอยู่เท่าไร</b>?<br>{svg}"
-                        op = "-"
+                            tot1_ml = v1_l * 1000 + v1_ml
+                            tot_diff_ml = diff_l * 1000 + diff_ml
+                            
+                            if tot1_ml <= tot_diff_ml: tot1_ml += tot_diff_ml + 2000
+                            
+                            tot2_ml = tot1_ml - tot_diff_ml
+                            sum_ml = tot1_ml + tot2_ml
+                            
+                            ans_l = sum_ml // 1000
+                            ans_ml = sum_ml % 1000
+                            ans_str = f"{ans_l} ลิตร {ans_ml} มล."
+                            
+                            str1 = f"{tot1_ml//1000} ลิตร {tot1_ml%1000} มล."
+                            str_diff = f"{diff_l} ลิตร {diff_ml} มล."
+                            
+                            svg = draw_bar_model_svg(str1, str_diff, "2step_total")
+                            q = f"จากบาร์โมเดล (Bar Model) ที่กำหนดให้ ถังใบที่สองมีน้ำน้อยกว่าถังใบแรก<br>จงหา <b>ปริมาตรรวมทั้งหมด</b> ของทั้งสองถัง?<br>{svg}"
+                            
+                            sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - บาร์โมเดล 2 ขั้นตอน):</b><br>
+                            <b>ขั้นที่ 1: หาปริมาตรของถังใบที่สอง (สีส้ม)</b><br>
+                            👉 ถังใบแรกมี = {tot1_ml:,} มล.<br>
+                            👉 ถังใบที่สองน้อยกว่าอยู่ = {tot_diff_ml:,} มล.<br>
+                            👉 ถังใบที่สอง = {tot1_ml:,} - {tot_diff_ml:,} = <b>{tot2_ml:,} มล.</b><br>
+                            <b>ขั้นที่ 2: หาปริมาตรรวมทั้งหมด</b><br>
+                            👉 รวม = ถังแรก + ถังที่สอง = {tot1_ml:,} + {tot2_ml:,} = <b>{sum_ml:,} มล.</b><br>
+                            👉 แปลงกลับเป็นลิตร: <b>{ans_str}</b><br>
+                            <b>ตอบ: {ans_str}</b></span>"""
+                        else: # multiply
+                            parts = random.randint(3, 6)
+                            v1_l, v1_ml = random.randint(1, 4), random.randint(100, 900)
+                            tot1_ml = v1_l * 1000 + v1_ml
+                            sum_ml = tot1_ml * parts
+                            ans_l = sum_ml // 1000
+                            ans_ml = sum_ml % 1000
+                            ans_str = f"{ans_l} ลิตร {ans_ml} มล."
+                            str1 = f"{v1_l} ลิตร {v1_ml} มล."
+                            
+                            svg = draw_bar_model_svg(str1, "", "multiply", parts)
+                            q = f"จากบาร์โมเดล (Bar Model) แสดงปริมาณน้ำที่แบ่งเท่าๆ กัน {parts} ส่วน<br>จงหา <b>ปริมาตรรวมทั้งหมด</b>?<br>{svg}"
+                            sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - บาร์โมเดลการคูณ):</b><br>
+                            <b>ขั้นที่ 1: แปลงปริมาตร 1 ส่วนให้เป็นมิลลิลิตร</b><br>
+                            👉 1 ส่วน = {v1_l} ลิตร {v1_ml} มล. = <b>{tot1_ml:,} มล.</b><br>
+                            <b>ขั้นที่ 2: คูณด้วยจำนวนส่วนทั้งหมด</b><br>
+                            👉 มีทั้งหมด {parts} ส่วน นำมาคูณ: {tot1_ml:,} × {parts} = <b>{sum_ml:,} มล.</b><br>
+                            <b>ขั้นที่ 3: แปลงกลับเป็นลิตร</b><br>
+                            👉 <b>{ans_str}</b><br>
+                            <b>ตอบ: {ans_str}</b></span>"""
+                    else:
+                        mode = random.choice(["add", "diff"])
+                        v1_l, v1_ml = random.randint(3, 8), random.randint(100, 900)
+                        
+                        if mode == "add":
+                            v2_l = random.randint(1, 5)
+                            v2_ml = random.randint(100, 900)
+                            str1 = f"{v1_l} ลิตร {v1_ml} มล."
+                            str2 = f"{v2_l} ลิตร {v2_ml} มล."
+                            svg = draw_bar_model_svg(str1, str2, "add")
+                            q = f"จากบาร์โมเดล (Bar Model) ที่กำหนดให้ <b>ปริมาตรรวมทั้งหมด</b> คือเท่าไร?<br>{svg}"
+                            op = "+"
+                        else:
+                            v2_l = random.randint(1, v1_l-1)
+                            v2_ml = random.randint(100, 900)
+                            if v1_ml < v2_ml:
+                                v1_ml, v2_ml = v2_ml, v1_ml + 100
+                                
+                            str1 = f"{v1_l} ลิตร {v1_ml} มล."
+                            str2 = f"{v2_l} ลิตร {v2_ml} มล."
+                            svg = draw_bar_model_svg(str1, str2, "diff")
+                            q = f"จากบาร์โมเดล (Bar Model) ที่กำหนดให้ ปริมาตรทั้งสองส่วน<b>ต่างกันอยู่เท่าไร</b>?<br>{svg}"
+                            op = "-"
 
-                    table_html, ans_str = generate_unit_math_html(u_major, u_minor, v1_l, v1_ml, v2_l, v2_ml, op, multiplier)
-                    sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การแก้โจทย์บาร์โมเดล):</b><br>
-                    👉 จากรูปภาพ เราต้องนำปริมาตรทั้งสองมาทำเครื่องหมาย <b>{'+' if op=='+' else '-'}</b> กัน<br>
-                    {table_html}
-                    <b>ตอบ: {ans_str}</b></span>"""
+                        table_html, ans_str = generate_unit_math_html(u_major, u_minor, v1_l, v1_ml, v2_l, v2_ml, op, multiplier)
+                        sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การแก้โจทย์บาร์โมเดล):</b><br>
+                        👉 จากรูปภาพ เราต้องนำปริมาตรทั้งสองมาทำเครื่องหมาย <b>{'+' if op=='+' else '-'}</b> กัน<br>
+                        {table_html}
+                        <b>ตอบ: {ans_str}</b></span>"""
 
                 elif q_cat == "compare":
-                    if is_challenge:
-                        vA_l, vA_ml = random.randint(2, 8), random.randint(100, 900)
-                        vB_l, vB_ml = random.randint(2, 8), random.randint(100, 900)
-                        vC_l = vA_l + vB_l + random.randint(-2, 2)
-                        vC_ml = random.randint(100, 900)
-                        
-                        tot_A_ml = vA_l * 1000 + vA_ml
-                        tot_B_ml = vB_l * 1000 + vB_ml
-                        sum_AB_ml = tot_A_ml + tot_B_ml
-                        tot_C_ml = vC_l * 1000 + vC_ml
-                        
-                        diff_ml = abs(sum_AB_ml - tot_C_ml)
-                        ans_l = diff_ml // 1000
-                        ans_ml = diff_ml % 1000
-                        ans_str = f"{ans_l} ลิตร {ans_ml} มิลลิลิตร" if ans_l > 0 else f"{ans_ml} มิลลิลิตร"
-                        if diff_ml == 0: ans_str = "เท่ากันพอดี"
-                        
-                        q = f"ถัง A มีน้ำ <b>{vA_l} ลิตร {vA_ml} มล.</b> และถัง B มีน้ำ <b>{vB_l} ลิตร {vB_ml} มล.</b><br>ถ้านำน้ำถัง A และ B มารวมกัน จะมีปริมาตร <b>มากกว่า หรือ น้อยกว่า</b> ถัง C ที่มีน้ำอยู่ <b>{vC_l} ลิตร {vC_ml} มล.</b> อยู่เท่าไร?"
-                        
-                        comp_word = "มากกว่า" if sum_AB_ml > tot_C_ml else "น้อยกว่า" if sum_AB_ml < tot_C_ml else "เท่ากับ"
-                        sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - เปรียบเทียบ 2 ขั้นตอน):</b><br>
-                        <b>ขั้นที่ 1: หาน้ำรวมของถัง A และ B (แปลงหน่วยเป็นมิลลิลิตร)</b><br>
-                        👉 ถัง A = {tot_A_ml:,} มล. | ถัง B = {tot_B_ml:,} มล.<br>
-                        👉 นำมารวมกัน = {tot_A_ml:,} + {tot_B_ml:,} = <b>{sum_AB_ml:,} มล.</b><br>
-                        <b>ขั้นที่ 2: เปรียบเทียบกับถัง C</b><br>
-                        👉 ถัง C มีน้ำ = <b>{tot_C_ml:,} มล.</b><br>
-                        👉 นำมาลบหาผลต่าง: | {sum_AB_ml:,} - {tot_C_ml:,} | = <b>{diff_ml:,} มล.</b><br>
-                        👉 พบว่าผลรวมถัง A+B <b>{comp_word}</b> ถัง C<br>
-                        <b>ตอบ: {comp_word}อยู่ {ans_str}</b></span>"""
+                    val_major = random.randint(5, 50) if is_challenge else random.randint(1, 15)
+                    val_minor = random.randint(50, 950)
+                    total_minor_1 = (val_major * multiplier) + val_minor
+                    
+                    case = random.choice(["greater", "less", "equal"])
+                    if case == "equal":
+                        total_minor_2 = total_minor_1
+                    elif case == "greater":
+                        total_minor_2 = total_minor_1 - random.randint(1, multiplier - 1)
                     else:
-                        val_major = random.randint(1, 15)
-                        val_minor = random.randint(50, 950)
-                        total_minor_1 = (val_major * multiplier) + val_minor
+                        total_minor_2 = total_minor_1 + random.randint(1, multiplier - 1)
+
+                    str_val_1 = f"{val_major} {u_major} {val_minor} {u_minor}"
+                    str_val_2 = f"{total_minor_2:,} {u_minor}"
+
+                    if random.choice([True, False]):
+                        item_A, item_B = str_val_1, str_val_2
+                        val_A, val_B = total_minor_1, total_minor_2
+                    else:
+                        item_A, item_B = str_val_2, str_val_1
+                        val_A, val_B = total_minor_2, total_minor_1
+
+                    if total_minor_1 == total_minor_2:
+                        final_ans = "จุเท่ากัน"
+                    else:
+                        final_ans = "จุมากกว่า" if val_A > val_B else "จุน้อยกว่า"
                         
-                        case = random.choice(["greater", "less", "equal"])
-                        if case == "equal":
-                            total_minor_2 = total_minor_1
-                        elif case == "greater":
-                            total_minor_2 = total_minor_1 - random.randint(1, multiplier - 1)
-                        else:
-                            total_minor_2 = total_minor_1 + random.randint(1, multiplier - 1)
+                    q = f"จงเติมคำว่า <b>จุมากกว่า, จุน้อยกว่า</b> หรือ <b>เท่ากับ</b> ลงในช่องว่างให้ถูกต้อง<br><br><span style='font-size:22px; font-weight:bold; margin-left: 20px;'>{item_A} &nbsp;&nbsp; ____________________ &nbsp;&nbsp; {item_B}</span>"
 
-                        str_val_1 = f"{val_major} {u_major} {val_minor} {u_minor}"
-                        str_val_2 = f"{total_minor_2:,} {u_minor}"
+                    sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การเปรียบเทียบความจุ):</b><br>
+                    <b>ขั้นที่ 1: สร้างสมการแปลงหน่วยให้เหมือนกัน</b><br>
+                    👉 แปลง <b>{str_val_1}</b> ให้เป็น <b>{u_minor}</b> ทั้งหมด<br>
+                    👉 เนื่องจาก 1 {u_major} = {multiplier:,} {u_minor}<br>
+                    👉 <b>สมการล่าสุด:</b> ({val_major} <b style='color:red;'>× {multiplier:,}</b>) + {val_minor} = {val_major * multiplier:,} + {val_minor} = <b>{total_minor_1:,} {u_minor}</b><br>
+                    <b>ขั้นที่ 2: เปรียบเทียบปริมาตร</b><br>"""
 
-                        if random.choice([True, False]):
-                            item_A, item_B = str_val_1, str_val_2
-                            val_A, val_B = total_minor_1, total_minor_2
-                        else:
-                            item_A, item_B = str_val_2, str_val_1
-                            val_A, val_B = total_minor_2, total_minor_1
+                    if val_A == val_B:
+                        sol += f"👉 จะเห็นว่า {total_minor_1:,} {u_minor} <b>เท่ากับ</b> {total_minor_2:,} {u_minor} พอดี!<br>"
+                    else:
+                        comp_sign = "น้อยกว่า" if val_A < val_B else "มากกว่า"
+                        sol += f"👉 เปรียบเทียบ {val_A:,} {u_minor} กับ {val_B:,} {u_minor}<br>"
+                        sol += f"👉 จะเห็นว่า {val_A:,} <b>{comp_sign}</b> {val_B:,}<br>"
 
-                        final_ans = "จุเท่ากัน" if total_minor_1 == total_minor_2 else "จุมากกว่า" if val_A > val_B else "จุน้อยกว่า"
-                            
-                        q = f"จงเติมคำว่า <b>จุมากกว่า, จุน้อยกว่า</b> หรือ <b>เท่ากับ</b> ลงในช่องว่างให้ถูกต้อง<br><br><span style='font-size:22px; font-weight:bold; margin-left: 20px;'>{item_A} &nbsp;&nbsp; ____________________ &nbsp;&nbsp; {item_B}</span>"
-
-                        sol = f"""<span style='color: #2c3e50;'><b>วิธีทำอย่างละเอียด (การเปรียบเทียบความจุ):</b><br>
-                        <b>ขั้นที่ 1: สร้างสมการแปลงหน่วยให้เหมือนกัน</b><br>
-                        👉 แปลง <b>{str_val_1}</b> ให้เป็น <b>{u_minor}</b> ทั้งหมด<br>
-                        👉 <b>สมการล่าสุด:</b> ({val_major} × {multiplier:,}) + {val_minor} = <b>{total_minor_1:,} {u_minor}</b><br>
-                        <b>ขั้นที่ 2: เปรียบเทียบปริมาตร</b><br>"""
-
-                        if val_A == val_B:
-                            sol += f"👉 จะเห็นว่า {total_minor_1:,} {u_minor} <b>เท่ากับ</b> {total_minor_2:,} {u_minor} พอดี!<br>"
-                        else:
-                            comp_sign = "น้อยกว่า" if val_A < val_B else "มากกว่า"
-                            sol += f"👉 จะเห็นว่า {val_A:,} <b>{comp_sign}</b> {val_B:,}<br>"
-                        sol += f"<b>ตอบ: {final_ans}</b></span>"
+                    sol += f"<b>ตอบ: {final_ans}</b></span>"
 
                 elif q_cat == "add_sub":
                     op = random.choice(["+", "-"])
