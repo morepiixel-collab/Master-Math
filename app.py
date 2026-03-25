@@ -3945,7 +3945,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
             elif actual_sub_t == "เรขาคณิตประยุกต์ (หาพื้นที่แรเงา)":
                 def draw_shaded_svg(scenario, W, H, p1=0):
-                    # ขยายผืนผ้าใบให้กว้างแบบ Ultra Wide (460px) เพื่อให้ตัวหนังสือมีพื้นที่หายใจเยอะๆ ไม่มีทางตกขอบครับ
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="460" height="240">'
                     max_w, max_h = 200, 140 
                     scale = min(max_w / W, max_h / H)
@@ -3993,7 +3992,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         
                         svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ม.</text>'
                         svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} ม.</text>'
-                        # เลื่อนตัวหนังสือให้ปลอดภัยยิ่งขึ้น
                         svg += f'<text x="{ox + draw_w + 10}" y="{oy + draw_h/2 + 5}" {lbl_style_sm} text-anchor="start">กว้าง {p1} ม.</text>'
 
                     elif scenario == "four_corners":
@@ -4017,7 +4015,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     elif scenario == "l_shape_path":
                         p_scale = p1 * scale
                         svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
-                        # วาดสีขาวทับเพื่อให้เหลือแต่ขอบตัว L (ด้านซ้ายและล่าง)
                         svg += f'<rect x="{ox+p_scale}" y="{oy}" width="{draw_w-p_scale}" height="{draw_h-p_scale}" fill="#ffffff" stroke="#2c3e50" stroke-width="2"/>'
                         
                         svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ม.</text>'
@@ -4066,8 +4063,20 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     ans = area_out - area_tri
                     
                     svg = draw_shaded_svg("triangle_in_rect", W, H)
+                    
+                    # ภาพประกอบสูตรลัดสามเหลี่ยม (ลากเส้นประผ่ากลาง)
+                    explain_svg = '''<div style="text-align:center; margin: 15px 0;">
+                    <svg width="240" height="140">
+                        <rect x="20" y="20" width="200" height="100" fill="#bdc3c7" stroke="#2c3e50" stroke-width="2"/>
+                        <polygon points="20,120 220,120 120,20" fill="#ffffff" stroke="#2c3e50" stroke-width="2"/>
+                        <line x1="120" y1="20" x2="120" y2="120" stroke="#e74c3c" stroke-dasharray="5,5" stroke-width="2"/>
+                        <text x="60" y="80" font-family="Sarabun" font-size="16" fill="#c0392b" font-weight="bold">เท่ากัน</text>
+                        <text x="180" y="80" font-family="Sarabun" font-size="16" fill="#c0392b" font-weight="bold">เท่ากัน</text>
+                    </svg>
+                    </div>'''
+
                     q = f"รูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} นิ้ว</b> ยาว <b>{W} นิ้ว</b><br>มีรูปสามเหลี่ยมสีขาวเจาะอยู่ด้านใน โดยที่ฐานของสามเหลี่ยมพอดีกับความยาวของสี่เหลี่ยม (ดังรูป)<br>จงหาพื้นที่ของส่วนที่แรเงา?<br>{svg}"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาพื้นที่แรเงา - สามเหลี่ยมในสี่เหลี่ยม):</b><br>👉 หลักการคิด: <b>พื้นที่ส่วนที่แรเงา = พื้นที่สี่เหลี่ยม - พื้นที่สามเหลี่ยม(สีขาว)</b><br><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมผืนผ้า (ทั้งหมด)</b><br>👉 พื้นที่ = กว้าง × ยาว = {H} × {W} = <b>{area_out} ตารางนิ้ว</b><br><br><b>ขั้นที่ 2: หาพื้นที่รูปสามเหลี่ยม (สีขาว)</b><br>👉 ฐานของสามเหลี่ยม = ความยาวสี่เหลี่ยม = {W} นิ้ว<br>👉 ความสูงของสามเหลี่ยม = ความกว้างสี่เหลี่ยม = {H} นิ้ว<br>👉 พื้นที่สามเหลี่ยม = (1/2) × ฐาน × สูง = (1/2) × {W} × {H} = <b>{area_tri} ตารางนิ้ว</b><br><br><b>ขั้นที่ 3: หาพื้นที่แรเงา</b><br>👉 พื้นที่ทั้งหมด ลบ พื้นที่สามเหลี่ยม: {area_out} - {area_tri} = <b>{ans} ตารางนิ้ว</b><br><br><div style='background-color:#fef9e7; padding:10px; border-radius:5px; border-left: 4px solid #f39c12; margin: 10px 0;'><span style='color:#d35400; font-size:15px;'><i><b>💡 ทริคข้อสอบ (สูตรลัด):</b><br>ถ้ารูปสามเหลี่ยมมี <b>ฐาน</b> และ <b>ความสูง</b> พอดีกับสี่เหลี่ยมแบบรูปนี้<br>พื้นที่ของสามเหลี่ยมจะ <b>'เท่ากับครึ่งหนึ่ง'</b> ของสี่เหลี่ยมพอดีเป๊ะ!<br>ดังนั้น พื้นที่แรเงาก็คืออีกครึ่งหนึ่งที่เหลือนั่นเองครับ ({area_out} ÷ 2 = {ans})</i></span></div><br><b>ตอบ: {ans} ตารางนิ้ว</b></span>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาพื้นที่แรเงา - สามเหลี่ยมในสี่เหลี่ยม):</b><br>👉 หลักการคิด: <b>พื้นที่ส่วนที่แรเงา = พื้นที่สี่เหลี่ยม - พื้นที่สามเหลี่ยม(สีขาว)</b><br><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมผืนผ้า (ทั้งหมด)</b><br>👉 พื้นที่ = กว้าง × ยาว = {H} × {W} = <b>{area_out} ตารางนิ้ว</b><br><br><b>ขั้นที่ 2: หาพื้นที่รูปสามเหลี่ยม (สีขาว)</b><br>👉 ฐานของสามเหลี่ยม = ความยาวสี่เหลี่ยม = {W} นิ้ว<br>👉 ความสูงของสามเหลี่ยม = ความกว้างสี่เหลี่ยม = {H} นิ้ว<br>👉 พื้นที่สามเหลี่ยม = (1/2) × ฐาน × สูง = (1/2) × {W} × {H} = <b>{area_tri} ตารางนิ้ว</b><br><br><b>ขั้นที่ 3: หาพื้นที่แรเงา</b><br>👉 พื้นที่ทั้งหมด ลบ พื้นที่สามเหลี่ยม: {area_out} - {area_tri} = <b>{ans} ตารางนิ้ว</b><br><br><div style='background-color:#fef9e7; padding:10px; border-radius:5px; border-left: 4px solid #f39c12; margin: 10px 0;'><span style='color:#d35400; font-size:15px;'><i><b>💡 ทริคข้อสอบ (ทำไมถึงเป็นครึ่งหนึ่ง?):</b><br>{explain_svg}ถ้าเราลากเส้นประผ่าครึ่งรูป จะเห็นว่าสี่เหลี่ยมถูกแบ่งเป็น 2 ฝั่ง<br>และในแต่ละฝั่ง <b>พื้นที่แรเงา จะมีขนาดเท่ากับ พื้นที่สีขาวพอดีเป๊ะ!</b><br>ดังนั้น พื้นที่แรเงารวมกันก็คือ <b>'ครึ่งหนึ่ง'</b> ของสี่เหลี่ยมใหญ่ครับ ({area_out} ÷ 2 = {ans})</i></span></div><br><b>ตอบ: {ans} ตารางนิ้ว</b></span>"
 
                 elif scenario == "cross_path":
                     W = random.randint(20, 40)
@@ -4079,8 +4088,20 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     ans = area_h + area_v - area_mid
                     
                     svg = draw_shaded_svg("cross_path", W, H, path)
+                    
+                    # ภาพประกอบอธิบายพื้นที่ทับซ้อนตรงกลาง
+                    explain_svg = '''<div style="text-align:center; margin: 15px 0;">
+                    <svg width="240" height="160">
+                        <rect x="20" y="20" width="200" height="120" fill="none" stroke="#bdc3c7" stroke-width="1"/>
+                        <rect x="20" y="60" width="200" height="40" fill="#aed6f1" stroke="none"/>
+                        <rect x="100" y="20" width="40" height="120" fill="#aed6f1" stroke="none"/>
+                        <rect x="100" y="60" width="40" height="40" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+                        <text x="120" y="85" font-family="Sarabun" font-size="14" fill="#ffffff" font-weight="bold" text-anchor="middle">ซ้ำ!</text>
+                    </svg>
+                    </div>'''
+
                     q = f"สนามหญ้ารูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} เมตร</b> ยาว <b>{W} เมตร</b><br>มีทางเดินตัดกันเป็นรูปกากบาทตรงกลาง (ส่วนที่แรเงา) โดยทางเดินมีความกว้าง <b>{path} เมตร</b> เท่ากัน<br>จงหาพื้นที่ของทางเดินทั้งหมด?<br>{svg}"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - ทางเดินตัดกัน):</b><br><div style='background-color:#fce4e4; padding:10px; border-radius:5px; border-left: 4px solid #c0392b; margin: 10px 0;'><span style='color:#c0392b; font-size:15px;'><i><b>⚠️ จุดระวัง:</b><br>น้องๆ หลายคนมักจะเอา (พื้นที่แนวนอน + พื้นที่แนวตั้ง) แล้วตอบเลย ซึ่ง <b>ผิด!</b><br>เพราะตรงกลางที่มันตัดกัน จะถูกนับซ้ำไป 2 รอบ เราจึงต้อง <b>ลบออก 1 ครั้ง</b> ครับ!</i></span></div><br><b>ขั้นที่ 1: หาพื้นที่ทางเดินแนวนอน และ แนวตั้ง</b><br>👉 ทางแนวนอน = ความยาวสนาม × ความกว้างทางเดิน = {W} × {path} = <b>{area_h} ตร.ม.</b><br>👉 ทางแนวตั้ง = ความกว้างสนาม × ความกว้างทางเดิน = {H} × {path} = <b>{area_v} ตร.ม.</b><br><br><b>ขั้นที่ 2: หาพื้นที่สี่เหลี่ยมจัตุรัสตรงกลาง (ที่ทับซ้อนกัน)</b><br>👉 พื้นที่ตรงกลาง = กว้าง × กว้าง = {path} × {path} = <b>{area_mid} ตร.ม.</b><br><br><b>ขั้นที่ 3: คำนวณพื้นที่แรเงาที่แท้จริง</b><br>👉 พื้นที่แรเงา = แนวนอน + แนวตั้ง - ส่วนที่ซ้อนทับ<br>👉 พื้นที่แรเงา = {area_h} + {area_v} - {area_mid} = <b>{ans} ตารางเมตร</b><br><br><b>ตอบ: {ans} ตารางเมตร</b></span>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - ทางเดินตัดกัน):</b><br><div style='background-color:#fce4e4; padding:10px; border-radius:5px; border-left: 4px solid #c0392b; margin: 10px 0;'><span style='color:#c0392b; font-size:15px;'><i><b>⚠️ จุดระวัง:</b> น้องๆ หลายคนมักจะเอา (พื้นที่แนวนอน + พื้นที่แนวตั้ง) แล้วตอบเลย ซึ่ง <b>ผิด!</b> ลองดูภาพด้านล่างครับ<br>{explain_svg}ตรงกลางที่ทางเดินตัดกัน (สีแดง) จะถูกนับไปแล้วตอนคิดแนวนอน และถูกนับซ้ำอีกตอนคิดแนวตั้ง เราจึงต้อง <b>ลบออก 1 ครั้ง</b> ครับ!</i></span></div><br><b>ขั้นที่ 1: หาพื้นที่ทางเดินแนวนอน และ แนวตั้ง</b><br>👉 ทางแนวนอน = ความยาวสนาม × ความกว้างทางเดิน = {W} × {path} = <b>{area_h} ตร.ม.</b><br>👉 ทางแนวตั้ง = ความกว้างสนาม × ความกว้างทางเดิน = {H} × {path} = <b>{area_v} ตร.ม.</b><br><br><b>ขั้นที่ 2: หาพื้นที่สี่เหลี่ยมจัตุรัสตรงกลาง (สีแดงที่ซ้อนทับกัน)</b><br>👉 พื้นที่ตรงกลาง = กว้างทางเดิน × กว้างทางเดิน = {path} × {path} = <b>{area_mid} ตร.ม.</b><br><br><b>ขั้นที่ 3: คำนวณพื้นที่ทางเดินที่แท้จริง</b><br>👉 พื้นที่ทางเดิน = แนวนอน + แนวตั้ง - ส่วนที่ซ้อนทับ<br>👉 พื้นที่ทางเดิน = {area_h} + {area_v} - {area_mid} = <b>{ans} ตารางเมตร</b><br><br><b>ตอบ: {ans} ตารางเมตร</b></span>"
 
                 elif scenario == "four_corners":
                     W = random.randint(15, 30)
@@ -4104,8 +4125,26 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     ans = area_out // 2
                     
                     svg = draw_shaded_svg("midpoint_rhombus", W, H)
+                    
+                    explain_svg = '''<div style="text-align:center; margin: 15px 0;">
+                    <svg width="240" height="160">
+                        <rect x="20" y="20" width="200" height="120" fill="none" stroke="#2c3e50" stroke-width="2"/>
+                        <polygon points="120,20 220,80 120,140 20,80" fill="#bdc3c7" stroke="#2c3e50" stroke-width="2"/>
+                        <line x1="120" y1="20" x2="120" y2="140" stroke="#e74c3c" stroke-dasharray="5,5" stroke-width="2"/>
+                        <line x1="20" y1="80" x2="220" y2="80" stroke="#e74c3c" stroke-dasharray="5,5" stroke-width="2"/>
+                        <text x="50" y="45" font-family="Sarabun" font-size="16" fill="#2c3e50" font-weight="bold">1</text>
+                        <text x="190" y="45" font-family="Sarabun" font-size="16" fill="#2c3e50" font-weight="bold">2</text>
+                        <text x="50" y="125" font-family="Sarabun" font-size="16" fill="#2c3e50" font-weight="bold">3</text>
+                        <text x="190" y="125" font-family="Sarabun" font-size="16" fill="#2c3e50" font-weight="bold">4</text>
+                        <text x="90" y="65" font-family="Sarabun" font-size="16" fill="#c0392b" font-weight="bold">1</text>
+                        <text x="150" y="65" font-family="Sarabun" font-size="16" fill="#c0392b" font-weight="bold">2</text>
+                        <text x="90" y="105" font-family="Sarabun" font-size="16" fill="#c0392b" font-weight="bold">3</text>
+                        <text x="150" y="105" font-family="Sarabun" font-size="16" fill="#c0392b" font-weight="bold">4</text>
+                    </svg>
+                    </div>'''
+
                     q = f"รูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} เซนติเมตร</b> ยาว <b>{W} เซนติเมตร</b><br>ถูกลากเส้นเชื่อม <b>จุดกึ่งกลาง</b> ของความยาวแต่ละด้าน เกิดเป็นรูปที่แรเงา (ดังรูป)<br>จงหาพื้นที่ของส่วนที่แรเงา?<br>{svg}"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 สี่เหลี่ยมขนมเปียกปูนแนบใน):</b><br>👉 หลักการคิดแบบตรงๆ คือ: หาพื้นที่สี่เหลี่ยมใหญ่ ลบด้วย พื้นที่สามเหลี่ยมสีขาว 4 มุม<br>👉 แต่ข้อนี้มี <b>สูตรลัดระดับเซียน!</b> ให้สังเกตครับ<br><br><div style='background-color:#fef9e7; padding:10px; border-radius:5px; border-left: 4px solid #f39c12; margin: 10px 0;'><span style='color:#d35400; font-size:15px;'><i><b>💡 ทริคข้อสอบ (สูตรลัด):</b><br>ถ้านำจุดกึ่งกลางของสี่เหลี่ยมผืนผ้ามาลากเชื่อมกัน จะเกิดเป็นรูป 'สี่เหลี่ยมขนมเปียกปูน' ที่มีพื้นที่ <b>'เท่ากับครึ่งหนึ่ง'</b> ของสี่เหลี่ยมผืนผ้าแผ่นใหญ่พอดีเป๊ะครับ!</i></span></div><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมรูปใหญ่</b><br>👉 พื้นที่ = กว้าง × ยาว = {H} × {W} = <b>{area_out} ตารางเซนติเมตร</b><br><br><b>ขั้นที่ 2: หาพื้นที่แรเงา (ใช้สูตรลัด)</b><br>👉 พื้นที่แรเงา = พื้นที่รูปใหญ่ ÷ 2<br>👉 {area_out} ÷ 2 = <b>{ans} ตารางเซนติเมตร</b><br><br><b>ตอบ: {ans} ตารางเซนติเมตร</b></span>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 สี่เหลี่ยมแนบใน):</b><br>👉 การหาพื้นที่รูปแบบนี้ ถ้าเราวาดเส้นกากบาทแบ่งครึ่งรูป จะเห็นความลับซ่อนอยู่ครับ!<br>{explain_svg}👉 <i>สังเกตจากรูป: เมื่อลากเส้นประแบ่งครึ่ง สี่เหลี่ยมใหญ่จะถูกแบ่งเป็น 4 ส่วนย่อย</i><br>👉 <i>ในแต่ละส่วนย่อย เส้นขอบของสี่เหลี่ยมแรเงาจะ <b>'ผ่าครึ่งแนวทแยงมุม'</b> พอดีเป๊ะ! (แรเงาเบอร์ 1 เท่ากับ สีขาวเบอร์ 1)</i><br>👉 สรุปได้ว่า พื้นที่สีเทา รวมกันแล้วจะเท่ากับ พื้นที่สีขาว<br>👉 ทำให้เกิดเป็นสูตรลัดคือ <b>พื้นที่ส่วนที่แรเงา จะมีขนาดเท่ากับ 'ครึ่งหนึ่ง' ของรูปใหญ่เสมอ!</b><br><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมรูปใหญ่</b><br>👉 กว้าง × ยาว = {H} × {W} = <b>{area_out} ตารางเซนติเมตร</b><br><br><b>ขั้นที่ 2: หาพื้นที่แรเงา (ใช้สูตรลัด)</b><br>👉 พื้นที่แรเงา = พื้นที่รูปใหญ่ ÷ 2<br>👉 {area_out} ÷ 2 = <b>{ans} ตารางเซนติเมตร</b><br><br><b>ตอบ: {ans} ตารางเซนติเมตร</b></span>"
 
                 elif scenario == "l_shape_path":
                     W = random.randint(15, 30)
