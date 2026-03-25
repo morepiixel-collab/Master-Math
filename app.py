@@ -3705,7 +3705,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         sol += f"<b>ขั้นที่ 2: แปลงเวลาและบวกเพิ่ม</b><br>👉 เวลาที่ต้องรอคือ {lcm_val} นาที แปลงเป็น <b>{add_h} ชั่วโมง {add_m} นาที</b><br>👉 เริ่มต้นเวลา {start_h:02d}:{start_m:02d} น. นับบวกเพิ่มไปอีก {add_h} ชม. {add_m} นาที<br>👉 จะได้เป็นเวลา <b>{end_h:02d}:{end_m:02d} น.</b><br><b>ตอบ: {end_h:02d}:{end_m:02d} น.</b></span>"
 
             elif actual_sub_t == "โจทย์ปัญหา ร้อยละ (กำไร-ขาดทุน)":
-                scenario = random.choice(["discount", "profit", "loss", "find_cost"])
+                # สุ่มโจทย์ 7 รูปแบบ (พื้นฐาน 3 + ชาเลนจ์ 4)
+                scenario = random.choice(["discount", "profit", "loss", "find_cost", "find_percent", "markup_discount", "find_original"])
                 
                 if scenario == "discount":
                     price = random.choice([500, 800, 1200, 1500, 2500, 3000, 4500])
@@ -3735,13 +3736,47 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์ขาดทุน):</b><br>👉 ขาดทุน {percent}% หมายความว่า ทุน 100 บาท ขาดทุนไป {percent} บาท (ขายไป 100 - {percent} = {100-percent} บาท)<br><br><b>ขั้นที่ 1: หาจำนวนเงินที่ขาดทุน</b><br>👉 ขาดทุน = ({percent} / 100) × {cost:,}<br>👉 ขาดทุน = <b>{loss:,} บาท</b><br><br><b>ขั้นที่ 2: หาราคาขายจริง</b><br>👉 ราคาขาย = ทุน - ขาดทุน<br>👉 ราคาขาย = {cost:,} - {loss:,} = <b>{sell:,} บาท</b><br><b>ตอบ: {sell:,} บาท</b></span>"
 
                 elif scenario == "find_cost":
-                    # ข้อสอบแข่งขัน หาต้นทุน (เด็กมักจะเอาเปอร์เซ็นต์ไปคูณราคาขาย ซึ่งผิด)
                     cost = random.choice([500, 1000, 1500, 2000, 3000, 4000, 5000])
-                    percent = random.choice([10, 20, 25, 50]) # ตัวเลขที่คำนวณง่ายสำหรับการเทียบบัญญัติไตรยางศ์
+                    percent = random.choice([10, 20, 25, 50])
                     sell = cost + (cost * percent // 100)
                     
                     q = f"ร้านค้าขายกระเป๋าใบหนึ่งไปในราคา <b>{sell:,} บาท</b> ซึ่งได้กำไร <b>{percent}%</b><br>จงหาว่าร้านค้าซื้อกระเป๋าใบนี้มาในราคาต้นทุนกี่บาท?"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - หาต้นทุน):</b><br>⚠️ <i>ระวัง! ห้ามนำ {percent}% ไปคูณกับราคาขาย ({sell:,}) เด็ดขาด! เพราะร้อยละต้องคิดจาก 'ต้นทุน' เสมอ</i><br><br><b>ขั้นที่ 1: เทียบบัญญัติไตรยางศ์จากความหมายของกำไร</b><br>👉 กำไร {percent}% หมายความว่า ถ้าราคาขาย <b>{100+percent} บาท</b> มาจากต้นทุน <b>100 บาท</b><br>👉 ถ้าราคาขาย 1 บาท มาจากต้นทุน 100 / {100+percent} บาท<br><br><b>ขั้นที่ 2: คำนวณหาต้นทุนจริง</b><br>👉 ถ้าราคาขาย <b>{sell:,} บาท</b> จะมาจากต้นทุน = (100 / {100+percent}) × {sell:,}<br>👉 ต้นทุน = <b>{cost:,} บาท</b><br><b>ตอบ: {cost:,} บาท</b></span>"
+
+                elif scenario == "find_percent":
+                    is_profit = random.choice([True, False])
+                    cost = random.choice([400, 500, 800, 1000, 1200, 1500, 2000])
+                    percent = random.choice([5, 10, 15, 20, 25, 30, 40, 50])
+                    
+                    if is_profit:
+                        sell = cost + (cost * percent // 100)
+                        q = f"พ่อซื้อจักรยานมาในราคา <b>{cost:,} บาท</b> นำไปขายต่อให้เพื่อนในราคา <b>{sell:,} บาท</b><br>พ่อขายจักรยานได้กำไรกี่เปอร์เซ็นต์?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - หาเปอร์เซ็นต์):</b><br><b>ขั้นที่ 1: หาจำนวนเงินที่ได้กำไร</b><br>👉 กำไร = ราคาขาย - ต้นทุน<br>👉 กำไร = {sell:,} - {cost:,} = <b>{sell-cost:,} บาท</b><br><br><b>ขั้นที่ 2: ทำเป็นเปอร์เซ็นต์ (เทียบกับทุนเสมอ)</b><br>👉 สูตร: (กำไร ÷ ต้นทุน) × 100<br>👉 คำนวณ: ({(sell-cost):,} ÷ {cost:,}) × 100 = <b>{percent}%</b><br><b>ตอบ: กำไร {percent}%</b></span>"
+                    else:
+                        sell = cost - (cost * percent // 100)
+                        q = f"แม่ซื้อนาฬิกามาในราคา <b>{cost:,} บาท</b> ขายต่อให้ญาติในราคา <b>{sell:,} บาท</b><br>แม่ขายนาฬิกาขาดทุนกี่เปอร์เซ็นต์?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - หาเปอร์เซ็นต์):</b><br><b>ขั้นที่ 1: หาจำนวนเงินที่ขาดทุน</b><br>👉 ขาดทุน = ต้นทุน - ราคาขาย<br>👉 ขาดทุน = {cost:,} - {sell:,} = <b>{cost-sell:,} บาท</b><br><br><b>ขั้นที่ 2: ทำเป็นเปอร์เซ็นต์ (เทียบกับทุนเสมอ)</b><br>👉 สูตร: (ขาดทุน ÷ ต้นทุน) × 100<br>👉 คำนวณ: ({(cost-sell):,} ÷ {cost:,}) × 100 = <b>{percent}%</b><br><b>ตอบ: ขาดทุน {percent}%</b></span>"
+
+                elif scenario == "markup_discount":
+                    cost = random.choice([500, 1000, 1200, 1500, 2000, 2500])
+                    markup = random.choice([30, 40, 50, 60])
+                    discount = random.choice([10, 15, 20, 25])
+                    
+                    tag_price = cost + (cost * markup // 100)
+                    discount_amt = tag_price * discount // 100
+                    sell = tag_price - discount_amt
+                    profit = sell - cost
+                    
+                    q = f"แม่ค้าซื้อเสื้อมาต้นทุน <b>{cost:,} บาท</b> นำมาติดราคาป้ายไว้โดยหวังกำไร <b>{markup}%</b><br>แต่เมื่อถึงช่วงเทศกาล แม่ค้าประกาศลดราคาให้ลูกค้า <b>{discount}% จากราคาป้าย</b><br>สรุปแล้วแม่ค้าขายเสื้อตัวนี้ได้กำไรกี่บาท?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - ร้อยละ 2 ชั้น):</b><br>⚠️ <i>ระวัง! ห้ามนำเปอร์เซ็นต์มาลบกันตรงๆ ({markup}% - {discount}%) เพราะฐานร้อยละไม่เท่ากัน!</i><br><br><b>ขั้นที่ 1: หาราคาป้ายที่แม่ค้าติดไว้</b> (คิดกำไรจากทุน)<br>👉 กำไร {markup}% ของทุน = ({markup}/100) × {cost:,} = {(cost * markup // 100):,} บาท<br>👉 ติดราคาป้าย = {cost:,} + {(cost * markup // 100):,} = <b>{tag_price:,} บาท</b><br><br><b>ขั้นที่ 2: หาราคาที่ขายจริง</b> (คิดส่วนลดจากราคาป้าย)<br>👉 ลดราคา {discount}% ของราคาป้าย = ({discount}/100) × {tag_price:,} = <b>{discount_amt:,} บาท</b><br>👉 ราคาขายจริง = {tag_price:,} - {discount_amt:,} = <b>{sell:,} บาท</b><br><br><b>ขั้นที่ 3: สรุปกำไร</b><br>👉 กำไรสุทธิ = ราคาขายจริง - ต้นทุนเดิม<br>👉 กำไรสุทธิ = {sell:,} - {cost:,} = <b>{profit:,} บาท</b><br><b>ตอบ: ได้กำไร {profit:,} บาท</b></span>"
+
+                elif scenario == "find_original":
+                    tag = random.choice([800, 1200, 1500, 2000, 2500, 3000, 4500])
+                    percent = random.choice([10, 15, 20, 25, 30])
+                    sell = tag - (tag * percent // 100)
+                    
+                    q = f"ร้านค้าติดป้ายลดราคารองเท้า <b>{percent}%</b> ทำให้ลูกค้าซื้อไปได้ในราคา <b>{sell:,} บาท</b><br>เดิมร้านค้าติดราคาป้ายรองเท้าคู่นี้ไว้กี่บาท?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - หาราคาป้าย):</b><br><b>ขั้นที่ 1: ตีความหมายของส่วนลด</b><br>👉 ลดราคา {percent}% หมายความว่า ถ้าราคาป้าย 100 บาท จะขายจริงในราคา 100 - {percent} = <b>{100-percent} บาท</b><br><br><b>ขั้นที่ 2: เทียบบัญญัติไตรยางศ์ย้อนกลับ</b><br>👉 ถ้าราคาขาย <b>{100-percent} บาท</b> มาจากราคาป้าย <b>100 บาท</b><br>👉 ถ้าราคาขาย 1 บาท มาจากราคาป้าย 100 / {100-percent} บาท<br>👉 ถ้าราคาขาย <b>{sell:,} บาท</b> มาจากราคาป้าย = (100 / {100-percent}) × {sell:,}<br>👉 คำนวณได้ = <b>{tag:,} บาท</b><br><b>ตอบ: {tag:,} บาท</b></span>"
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
