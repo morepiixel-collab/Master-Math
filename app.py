@@ -3443,7 +3443,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br><b>หลักการ:</b> การทำเศษส่วนให้เป็นร้อยละ ต้องทำ <b>'ตัวส่วนให้เท่ากับ 100'</b> เสมอ<br><br><b>ขั้นที่ 1:</b> หาตัวเลขที่คูณกับส่วน {d} แล้วได้ 100<br>👉 พบว่า {d} × <b>{m}</b> = 100<br><br><b>ขั้นที่ 2:</b> นำ {m} มาคูณทั้งเศษและส่วน<br>👉 ({n} × {m}) / ({d} × {m}) = {render_frac(ans, 100)}<br><br><b>ขั้นที่ 3:</b> เมื่อส่วนเป็น 100 แล้ว ตัวเศษคือค่าร้อยละ<br>👉 ได้ <b>ร้อยละ {ans}</b> หรือ <b>{ans}%</b><br><b>ตอบ: {ans}%</b></span>"
 
             elif actual_sub_t == "การแก้สมการ (คูณ/หาร)":
-                # --- เครื่องยนต์สมการ (Equation Engine) ---
+                def r_frac(num, den):
+                    return f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b>{num}</b></div><div style='padding-top:2px;'><b>{den}</b></div></div>"
+
                 var = random.choice(["x", "y", "a", "m", "k", "p"])
                 
                 if is_challenge:
@@ -3475,10 +3477,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         c = random.randint(5, 15)
                         d = (a * ans // b) + c
                         
-                        frac_html = f"<div style='display:inline-block; vertical-align:middle; text-align:center;'><div style='border-bottom:2px solid #333; padding:0 4px;'><b>{a}{var}</b></div><div style='padding-top:2px;'><b>{b}</b></div></div>"
-                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{frac_html} + <b>{c} = {d}</b></div>"
+                        f_html = r_frac(f"{a}{var}", b)
+                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{f_html} + <b>{c} = {d}</b></div>"
                         
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br>👉 ย้าย +{c} ไปลบอีกฝั่งก่อน<br>👉 {a}{var}/{b} = {d} - {c}<br>👉 {a}{var}/{b} = {d-c}<br>👉 ย้าย {b} ที่หารอยู่ ไปคูณ<br>👉 {a}{var} = {d-c} × {b}<br>👉 {a}{var} = {(d-c)*b}<br>👉 ย้าย {a} ไปหาร<br>👉 {var} = {(d-c)*b} ÷ {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br>👉 ย้าย +{c} ไปลบอีกฝั่งก่อน<br>👉 {f_html} = {d} - {c}<br>👉 {f_html} = {d-c}<br>👉 ย้าย {b} ที่เป็นตัวส่วน (หารอยู่) ไปคูณ<br>👉 {a}{var} = {d-c} × {b}<br>👉 {a}{var} = {(d-c)*b}<br>👉 ย้าย {a} ไปหาร<br>👉 {var} = {(d-c)*b} ÷ {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
                         
                     elif scenario == "both_sides":
                         ans = random.randint(2, 10)
@@ -3512,8 +3514,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         a = random.randint(3, 9)
                         ans = random.randint(5, 20)
                         c = a * ans
-                        frac_html = f"<div style='display:inline-block; vertical-align:middle; text-align:center;'><div style='border-bottom:2px solid #333; padding:0 4px;'><b>{var}</b></div><div style='padding-top:2px;'><b>{a}</b></div></div>"
-                        q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b>: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{frac_html} <b>= {ans}</b></div>"
+                        f_html = r_frac(var, a)
+                        q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b>: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{f_html} <b>= {ans}</b></div>"
                         sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 {a} หารอยู่กับ {var} จึงย้าย {a} ไปคูณอีกฝั่ง<br>👉 {var} = {ans} × {a}<br>👉 {var} = <b>{c}</b><br><b>ตอบ: {c}</b></span>"
                     elif scenario == "mult_add":
                         a = random.randint(2, 6)
@@ -3531,9 +3533,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             ans = a * random.randint(4, 12)
                             b = random.randint(1, 10)
                             c = (ans // a) - b
-                        frac_html = f"<div style='display:inline-block; vertical-align:middle; text-align:center;'><div style='border-bottom:2px solid #333; padding:0 4px;'><b>{var}</b></div><div style='padding-top:2px;'><b>{a}</b></div></div>"
-                        q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b>: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{frac_html} - <b>{b} = {c}</b></div>"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้าย -{b} ไปบวกอีกฝั่งก่อน<br>👉 {var}/{a} = {c} + {b}<br>👉 {var}/{a} = {c+b}<br>👉 ย้าย {a} ที่หารอยู่ไปคูณ<br>👉 {var} = {c+b} × {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+                        f_html = r_frac(var, a)
+                        q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b>: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{f_html} - <b>{b} = {c}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้าย -{b} ไปบวกอีกฝั่งก่อน<br>👉 {f_html} = {c} + {b}<br>👉 {f_html} = {c+b}<br>👉 ย้าย {a} ที่หารอยู่ไปคูณ<br>👉 {var} = {c+b} × {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
