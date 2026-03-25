@@ -3945,14 +3945,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
             elif actual_sub_t == "เรขาคณิตประยุกต์ (หาพื้นที่แรเงา)":
                 def draw_shaded_svg(scenario, W, H, p1=0):
-                    # ขยายพื้นที่ Canvas ให้กว้างขึ้นเป็น 360x220 และลดขนาดรูปลงเพื่อให้มีขอบเหลือเยอะๆ
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="360" height="220">'
                     max_w, max_h = 220, 140 
                     scale = min(max_w / W, max_h / H)
                     draw_w = W * scale
                     draw_h = H * scale
                     
-                    # คำนวณจุดกึ่งกลาง (ตอนนี้จะมีขอบด้านซ้ายอย่างน้อย 70 px ตัวหนังสือไม่มีทางล้นแน่นอน)
                     ox = (360 - draw_w) / 2
                     oy = (220 - draw_h) / 2
 
@@ -3984,11 +3982,32 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         
                         svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} นิ้ว</text>'
                         svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} นิ้ว</text>'
+
+                    elif scenario == "cross_path":
+                        p_scale = p1 * scale
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="#ffffff" stroke="none"/>'
+                        svg += f'<rect x="{ox}" y="{oy + (draw_h - p_scale)/2}" width="{draw_w}" height="{p_scale}" fill="#bdc3c7" stroke="none"/>'
+                        svg += f'<rect x="{ox + (draw_w - p_scale)/2}" y="{oy}" width="{p_scale}" height="{draw_h}" fill="#bdc3c7" stroke="none"/>'
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="none" stroke="#2c3e50" stroke-width="3"/>'
+                        
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ม.</text>'
+                        svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} ม.</text>'
+                        svg += f'<text x="{ox + draw_w + 10}" y="{oy + draw_h/2 + 5}" {lbl_style_sm} text-anchor="start">ทางกว้าง {p1} ม.</text>'
+
+                    elif scenario == "four_corners":
+                        c = p1 * scale
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="none" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>'
+                        pts = f"{ox+c},{oy} {ox+draw_w-c},{oy} {ox+draw_w-c},{oy+c} {ox+draw_w},{oy+c} {ox+draw_w},{oy+draw_h-c} {ox+draw_w-c},{oy+draw_h-c} {ox+draw_w-c},{oy+draw_h} {ox+c},{oy+draw_h} {ox+c},{oy+draw_h-c} {ox},{oy+draw_h-c} {ox},{oy+c} {ox+c},{oy+c}"
+                        svg += f'<polygon points="{pts}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
+                        
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ซม.</text>'
+                        svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} ซม.</text>'
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy - 10}" {lbl_style_sm} text-anchor="middle">ตัดมุมละ {p1}x{p1}</text>'
                         
                     svg += '</svg></div>'
                     return svg
 
-                scenario = random.choice(["frame", "corner_cut", "triangle_in_rect"])
+                scenario = random.choice(["frame", "corner_cut", "triangle_in_rect", "cross_path", "four_corners"])
                 
                 if scenario == "frame":
                     W = random.randint(15, 30)
@@ -4015,7 +4034,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     ans = area_out - area_cut
                     
                     svg = draw_shaded_svg("corner_cut", W, H, cut)
-                    q = f"กระดาษรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} เซนติเมตร</b> ยาว <b>{W} เซนติเมตร</b><br>ถูกตัดมุมออกเป็นรูปสี่เหลี่ยมจัตุรัสยาวด้านละ <b>{cut} เซนติเมตร</b> (ดังรูป)<br>จงหาพื้นที่ของกระดาษส่วนที่เหลือ (ส่วนที่แรเงา)?<br>{svg}"
+                    q = f"กระดาษรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} เซนติเมตร</b> ยาว <b>{W} เซนติเมตร</b><br>ถูกตัดมุมออก 1 มุม เป็นรูปสี่เหลี่ยมจัตุรัสยาวด้านละ <b>{cut} เซนติเมตร</b> (ดังรูป)<br>จงหาพื้นที่ของกระดาษส่วนที่เหลือ (ส่วนที่แรเงา)?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาพื้นที่แรเงา - ตัดมุม):</b><br>👉 หลักการคิด: <b>พื้นที่ส่วนที่แรเงา = พื้นที่กระดาษแผ่นเต็ม - พื้นที่ส่วนที่ถูกตัดออก</b><br><br><b>ขั้นที่ 1: หาพื้นที่กระดาษแผ่นเต็ม</b><br>👉 พื้นที่สี่เหลี่ยมผืนผ้า = กว้าง × ยาว<br>👉 พื้นที่แผ่นเต็ม = {H} × {W} = <b>{area_out} ตารางเซนติเมตร</b><br><br><b>ขั้นที่ 2: หาพื้นที่ส่วนที่ถูกตัดออก</b><br>👉 เป็นรูปสี่เหลี่ยมจัตุรัส ด้านละ {cut} ซม.<br>👉 พื้นที่ตัดออก = ด้าน × ด้าน = {cut} × {cut} = <b>{area_cut} ตารางเซนติเมตร</b><br><br><b>ขั้นที่ 3: หาพื้นที่ส่วนที่เหลือ (แรเงา)</b><br>👉 นำพื้นที่แผ่นเต็ม ลบ พื้นที่ตัดออก: {area_out} - {area_cut} = <b>{ans} ตารางเซนติเมตร</b><br><br><b>ตอบ: {ans} ตารางเซนติเมตร</b></span>"
 
                 elif scenario == "triangle_in_rect":
@@ -4029,6 +4048,32 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg = draw_shaded_svg("triangle_in_rect", W, H)
                     q = f"รูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} นิ้ว</b> ยาว <b>{W} นิ้ว</b><br>มีรูปสามเหลี่ยมสีขาวเจาะอยู่ด้านใน โดยที่ฐานของสามเหลี่ยมพอดีกับความยาวของสี่เหลี่ยม (ดังรูป)<br>จงหาพื้นที่ของส่วนที่แรเงา?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาพื้นที่แรเงา - สามเหลี่ยมในสี่เหลี่ยม):</b><br>👉 หลักการคิด: <b>พื้นที่ส่วนที่แรเงา = พื้นที่สี่เหลี่ยม - พื้นที่สามเหลี่ยม(สีขาว)</b><br><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมผืนผ้า (ทั้งหมด)</b><br>👉 พื้นที่ = กว้าง × ยาว = {H} × {W} = <b>{area_out} ตารางนิ้ว</b><br><br><b>ขั้นที่ 2: หาพื้นที่รูปสามเหลี่ยม (สีขาว)</b><br>👉 ฐานของสามเหลี่ยม = ความยาวสี่เหลี่ยม = {W} นิ้ว<br>👉 ความสูงของสามเหลี่ยม = ความกว้างสี่เหลี่ยม = {H} นิ้ว<br>👉 พื้นที่สามเหลี่ยม = (1/2) × ฐาน × สูง = (1/2) × {W} × {H} = <b>{area_tri} ตารางนิ้ว</b><br><br><b>ขั้นที่ 3: หาพื้นที่แรเงา</b><br>👉 พื้นที่ทั้งหมด ลบ พื้นที่สามเหลี่ยม: {area_out} - {area_tri} = <b>{ans} ตารางนิ้ว</b><br><br><div style='background-color:#fef9e7; padding:10px; border-radius:5px; border-left: 4px solid #f39c12; margin: 10px 0;'><span style='color:#d35400; font-size:15px;'><i><b>💡 ทริคข้อสอบ (สูตรลัด):</b><br>ถ้ารูปสามเหลี่ยมมี <b>ฐาน</b> และ <b>ความสูง</b> พอดีกับสี่เหลี่ยมแบบรูปนี้<br>พื้นที่ของสามเหลี่ยมจะ <b>'เท่ากับครึ่งหนึ่ง'</b> ของสี่เหลี่ยมพอดีเป๊ะ!<br>ดังนั้น พื้นที่แรเงาก็คืออีกครึ่งหนึ่งที่เหลือนั่นเองครับ ({area_out} ÷ 2 = {ans})</i></span></div><br><b>ตอบ: {ans} ตารางนิ้ว</b></span>"
+
+                elif scenario == "cross_path":
+                    W = random.randint(20, 40)
+                    H = random.randint(15, 25)
+                    path = random.randint(2, 4)
+                    area_h = W * path
+                    area_v = H * path
+                    area_mid = path * path
+                    ans = area_h + area_v - area_mid
+                    
+                    svg = draw_shaded_svg("cross_path", W, H, path)
+                    q = f"สนามหญ้ารูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} เมตร</b> ยาว <b>{W} เมตร</b><br>มีทางเดินตัดกันเป็นรูปกากบาทตรงกลาง (ส่วนที่แรเงา) โดยทางเดินมีความกว้าง <b>{path} เมตร</b> เท่ากัน<br>จงหาพื้นที่ของทางเดินทั้งหมด?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - ทางเดินตัดกัน):</b><br><div style='background-color:#fce4e4; padding:10px; border-radius:5px; border-left: 4px solid #c0392b; margin: 10px 0;'><span style='color:#c0392b; font-size:15px;'><i><b>⚠️ จุดระวัง:</b><br>น้องๆ หลายคนมักจะเอา (พื้นที่แนวนอน + พื้นที่แนวตั้ง) แล้วตอบเลย ซึ่ง <b>ผิด!</b><br>เพราะตรงกลางที่มันตัดกัน จะถูกนับซ้ำไป 2 รอบ เราจึงต้อง <b>ลบออก 1 ครั้ง</b> ครับ!</i></span></div><br><b>ขั้นที่ 1: หาพื้นที่ทางเดินแนวนอน และ แนวตั้ง</b><br>👉 ทางแนวนอน = ความยาวสนาม × ความกว้างทางเดิน = {W} × {path} = <b>{area_h} ตร.ม.</b><br>👉 ทางแนวตั้ง = ความกว้างสนาม × ความกว้างทางเดิน = {H} × {path} = <b>{area_v} ตร.ม.</b><br><br><b>ขั้นที่ 2: หาพื้นที่สี่เหลี่ยมจัตุรัสตรงกลาง (ที่ทับซ้อนกัน)</b><br>👉 พื้นที่ตรงกลาง = กว้าง × กว้าง = {path} × {path} = <b>{area_mid} ตร.ม.</b><br><br><b>ขั้นที่ 3: คำนวณพื้นที่แรเงาที่แท้จริง</b><br>👉 พื้นที่แรเงา = แนวนอน + แนวตั้ง - ส่วนที่ซ้อนทับ<br>👉 พื้นที่แรเงา = {area_h} + {area_v} - {area_mid} = <b>{ans} ตารางเมตร</b><br><br><b>ตอบ: {ans} ตารางเมตร</b></span>"
+
+                elif scenario == "four_corners":
+                    W = random.randint(15, 30)
+                    H = random.randint(12, 20)
+                    cut = random.randint(2, 4)
+                    area_out = W * H
+                    area_1cut = cut * cut
+                    area_4cuts = 4 * area_1cut
+                    ans = area_out - area_4cuts
+                    
+                    svg = draw_shaded_svg("four_corners", W, H, cut)
+                    q = f"กระดาษรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} เซนติเมตร</b> ยาว <b>{W} เซนติเมตร</b><br>ถูกตัดมุมออก <b>ทั้ง 4 มุม</b> เป็นรูปสี่เหลี่ยมจัตุรัสยาวด้านละ <b>{cut} เซนติเมตร</b> เพื่อนำไปพับเป็นกล่อง (ดังรูป)<br>จงหาพื้นที่ของกระดาษส่วนที่เหลือ (ส่วนที่แรเงา)?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาพื้นที่แรเงา - ตัด 4 มุม):</b><br>👉 หลักการคิด: <b>พื้นที่ส่วนที่แรเงา = พื้นที่กระดาษแผ่นเต็ม - พื้นที่ส่วนที่ถูกตัดออก (4 ชิ้น)</b><br><br><b>ขั้นที่ 1: หาพื้นที่กระดาษแผ่นเต็ม</b><br>👉 พื้นที่ = กว้าง × ยาว = {H} × {W} = <b>{area_out} ตารางเซนติเมตร</b><br><br><b>ขั้นที่ 2: หาพื้นที่ส่วนที่ถูกตัดออกทั้งหมด</b><br>👉 ตัดออก 1 มุม = ด้าน × ด้าน = {cut} × {cut} = <b>{area_1cut} ตร.ซม.</b><br>👉 แต่เราตัดออก 4 มุม จึงต้องคูณ 4 = 4 × {area_1cut} = <b>{area_4cuts} ตร.ซม.</b><br><br><b>ขั้นที่ 3: หาพื้นที่ส่วนที่เหลือ (แรเงา)</b><br>👉 นำพื้นที่แผ่นเต็ม ลบ พื้นที่ถูกตัดทั้งหมด: {area_out} - {area_4cuts} = <b>{ans} ตารางเซนติเมตร</b><br><br><b>ตอบ: {ans} ตารางเซนติเมตร</b></span>"
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
