@@ -3060,65 +3060,70 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             👉 {(perimeter - (w*2))} ÷ 2 = <b>{h} เซนติเมตร</b><br>
                             <b>ตอบ: {h} เซนติเมตร</b></span>"""
             elif actual_sub_t == "การหาขนาดของมุมที่หายไป":
-                # --- เครื่องยนต์วาดมุมแบบสมบูรณ์แบบ (Graphics Engine V3) ---
+                # --- เครื่องยนต์วาดมุมแบบสมบูรณ์แบบ (Graphics Engine V4 - ป้องกันรูปแหว่ง & เพิ่มชื่อเส้น) ---
                 def draw_angle_feature(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
-                    # คำนวณความยาวเวกเตอร์
                     len_a = math.hypot(ax - vx, ay - vy)
                     len_b = math.hypot(bx - vx, by - vy)
+                    if len_a == 0 or len_b == 0: return ""
                     
-                    # หาจุดเริ่มต้นและจุดสิ้นสุดของเส้นโค้ง (รับประกันว่าเกาะแขนมุม 100%)
                     sx = vx + (ax - vx) * r_arc / len_a
                     sy = vy + (ay - vy) * r_arc / len_a
                     ex = vx + (bx - vx) * r_arc / len_b
                     ey = vy + (by - vy) * r_arc / len_b
                     
-                    # ใช้ Cross Product เพื่อกำหนดทิศทางการกวาด (โค้งเข้าหามุมเสมอ)
                     cp = (sx - vx) * (ey - vy) - (sy - vy) * (ex - vx)
                     sweep = 1 if cp > 0 else 0
                     
-                    # วาดเส้นโค้ง
                     arc_svg = f'<path d="M {sx} {sy} A {r_arc} {r_arc} 0 0 {sweep} {ex} {ey}" fill="none" stroke="{color_arc}" stroke-width="3"/>'
                     
-                    # คำนวณพิกัดกึ่งกลางมุมสำหรับวางตัวอักษร
                     mid_x = (sx - vx)/r_arc + (ex - vx)/r_arc
                     mid_y = (sy - vy)/r_arc + (ey - vy)/r_arc
                     len_mid = math.hypot(mid_x, mid_y)
                     
-                    if len_mid == 0: # ป้องกัน Error กรณีมุมตรง
+                    if len_mid == 0: 
                         tx, ty = vx, vy - r_text
                     else:
                         tx = vx + (mid_x / len_mid) * r_text
                         ty = vy + (mid_y / len_mid) * r_text
                         
-                    ty += 4 # ปรับแกน Y เล็กน้อยให้ตัวอักษรอยู่กึ่งกลางพอดี
+                    ty += 4 
                     font_size = "16px" if is_x else "13px"
                     lbl_svg = f'<text x="{tx}" y="{ty}" font-size="{font_size}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
                     
                     return arc_svg + lbl_svg
 
                 def draw_angle_svg(mode, val1, val2, val3=""):
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="300" height="150">'
+                    # 💡 ขยายกรอบให้ใหญ่ขึ้น ป้องกันภาพล้นขอบ
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="340" height="200">'
+                    lbl_style = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
                     
                     if mode == "straight":
-                        vx, vy = 150, 120
-                        phi = val2 # องศาจริงที่สุ่มได้ นำมาสร้างรูป
+                        vx, vy = 170, 160
+                        phi = val2 
                         
-                        ax, ay = 30, 120 # แขนซ้าย
-                        cx, cy = 270, 120 # แขนขวา
-                        bx = vx + 100 * math.cos(math.radians(phi)) # แขนตัดที่คำนวณองศามาแล้ว
-                        by = vy - 100 * math.sin(math.radians(phi))
+                        ax, ay = 40, 160 
+                        cx, cy = 300, 160 
+                        bx = vx + 120 * math.cos(math.radians(phi)) 
+                        by = vy - 120 * math.sin(math.radians(phi))
                         
-                        svg += '<line x1="30" y1="120" x2="270" y2="120" stroke="#34495e" stroke-width="4"/>'
+                        svg += f'<line x1="{ax}" y1="{ay}" x2="{cx}" y2="{cy}" stroke="#34495e" stroke-width="4"/>'
                         svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#c0392b" stroke-width="3"/>'
                         svg += f'<circle cx="{bx}" cy="{by}" r="3" fill="#c0392b"/>'
                         
-                        svg += draw_angle_feature(vx, vy, ax, ay, bx, by, 25, 40, f"{val1}°", "#2ecc71", "#c0392b")
-                        svg += draw_angle_feature(vx, vy, bx, by, cx, cy, 25, 40, val2 if val3=="" else val3, "#2ecc71", "#2980b9", is_x=True)
+                        # 💡 เพิ่มชื่อเส้นตรง และจุดศูนย์กลาง
+                        svg += f'<text x="{ax-15}" y="{ay+5}" {lbl_style}>A</text>'
+                        svg += f'<text x="{cx+5}" y="{cy+5}" {lbl_style}>B</text>'
+                        svg += f'<text x="{bx-5}" y="{by-10}" {lbl_style}>C</text>'
+                        svg += f'<text x="{vx-5}" y="{vy+20}" {lbl_style}>O</text>'
+                        
+                        svg += draw_angle_feature(vx, vy, ax, ay, bx, by, 28, 45, f"{val1}°", "#2ecc71", "#c0392b")
+                        svg += draw_angle_feature(vx, vy, bx, by, cx, cy, 28, 45, val2 if val3=="" else val3, "#2ecc71", "#2980b9", is_x=True)
                         
                     elif mode == "opposite":
-                        vx, vy = 150, 80
-                        phi = val1 # องศาจริงที่สุ่มได้
-                        L = 100
+                        vx, vy = 170, 100
+                        phi = val1 
+                        L = 85 # 💡 ปรับความยาวแขนให้พอดีกับกรอบ
+                        
                         tl_x = vx + L*math.cos(math.radians(180-phi))
                         tl_y = vy - L*math.sin(math.radians(180-phi))
                         br_x = vx + L*math.cos(math.radians(-phi))
@@ -3132,33 +3137,45 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         svg += f'<line x1="{tl_x}" y1="{tl_y}" x2="{br_x}" y2="{br_y}" stroke="#34495e" stroke-width="4"/>'
                         svg += f'<line x1="{bl_x}" y1="{bl_y}" x2="{tr_x}" y2="{tr_y}" stroke="#34495e" stroke-width="4"/>'
                         
-                        lbl_style = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
-                        svg += f'<text x="{tl_x-10}" y="{tl_y}" {lbl_style}>A</text>'
-                        svg += f'<text x="{br_x+10}" y="{br_y+10}" {lbl_style}>B</text>'
-                        svg += f'<text x="{bl_x-10}" y="{bl_y+10}" {lbl_style}>C</text>'
-                        svg += f'<text x="{tr_x+10}" y="{tr_y}" {lbl_style}>D</text>'
+                        # 💡 จัดตำแหน่งตัวอักษรให้ห่างจากปลายเส้นอย่างสวยงาม (ป้องกันตกขอบ)
+                        svg += f'<text x="{tl_x-15}" y="{tl_y-5}" {lbl_style}>A</text>'
+                        svg += f'<text x="{br_x+5}" y="{br_y+15}" {lbl_style}>B</text>'
+                        svg += f'<text x="{bl_x-15}" y="{bl_y+15}" {lbl_style}>C</text>'
+                        svg += f'<text x="{tr_x+5}" y="{tr_y-5}" {lbl_style}>D</text>'
                         
                         svg += draw_angle_feature(vx, vy, tl_x, tl_y, tr_x, tr_y, 25, 42, f"{val1}°", "#2ecc71", "#c0392b")
                         svg += draw_angle_feature(vx, vy, bl_x, bl_y, br_x, br_y, 25, 42, val2 if val3=="" else val3, "#2ecc71", "#2980b9", is_x=True)
                         
                     elif mode == "triangle":
-                        base_y = 120
-                        p1x, p1y = 80, base_y
-                        p2x, p2y = 220, base_y
-                        L = 140 # ฐานยาว
-                        
-                        # คำนวณจุดยอดของสามเหลี่ยมตามองศาจริงที่สุ่มได้! (รูปจะตรงกับตัวเลขเสมอ)
+                        base_y = 160
+                        L = 160 # ความยาวฐานเริ่มต้น
                         rad1 = math.radians(val1)
                         rad2 = math.radians(val2)
-                        h = L / (1/math.tan(rad1) + 1/math.tan(rad2))
-                        top_x = p1x + h / math.tan(rad1)
+                        
+                        # 💡 ระบบ Auto-scale: ถ้าสามเหลี่ยมสูงเกินไป จะย่อขนาดลงอัตโนมัติ
+                        raw_h = L / (1/math.tan(rad1) + 1/math.tan(rad2))
+                        if raw_h > 120:
+                            scale = 120 / raw_h
+                            L = L * scale
+                            h = 120
+                        else:
+                            h = raw_h
+                            
+                        p1x = 170 - L/2
+                        p2x = 170 + L/2
                         top_y = base_y - h
+                        top_x = p1x + h / math.tan(rad1)
                         
-                        svg += f'<polygon points="{p1x},{p1y} {p2x},{p2y} {top_x},{top_y}" fill="#fef9e7" stroke="#f39c12" stroke-width="3" stroke-linejoin="round"/>'
+                        svg += f'<polygon points="{p1x},{base_y} {p2x},{base_y} {top_x},{top_y}" fill="#fef9e7" stroke="#f39c12" stroke-width="3" stroke-linejoin="round"/>'
                         
-                        svg += draw_angle_feature(p1x, p1y, p2x, p2y, top_x, top_y, 22, 38, f"{val1}°", "#2ecc71", "#c0392b")
-                        svg += draw_angle_feature(p2x, p2y, top_x, top_y, p1x, p1y, 22, 38, f"{val2}°", "#2ecc71", "#c0392b")
-                        svg += draw_angle_feature(top_x, top_y, p1x, p1y, p2x, p2y, 22, 38, val3, "#2ecc71", "#2980b9", is_x=True)
+                        # 💡 เพิ่มชื่อจุดยอดสามเหลี่ยม
+                        svg += f'<text x="{top_x}" y="{top_y-10}" {lbl_style} text-anchor="middle">A</text>'
+                        svg += f'<text x="{p1x-15}" y="{base_y+5}" {lbl_style}>B</text>'
+                        svg += f'<text x="{p2x+5}" y="{base_y+5}" {lbl_style}>C</text>'
+                        
+                        svg += draw_angle_feature(p1x, base_y, p2x, base_y, top_x, top_y, 25, 40, f"{val1}°", "#2ecc71", "#c0392b")
+                        svg += draw_angle_feature(p2x, base_y, top_x, top_y, p1x, base_y, 25, 40, f"{val2}°", "#2ecc71", "#c0392b")
+                        svg += draw_angle_feature(top_x, top_y, p1x, base_y, p2x, base_y, 25, 42, val3, "#2ecc71", "#2980b9", is_x=True)
                         
                     svg += '</svg></div>'
                     return svg
