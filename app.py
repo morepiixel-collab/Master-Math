@@ -2892,9 +2892,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     dh = h_val * scale
                     svg = f'<div style="text-align:center; margin: 15px 0;"><svg width="300" height="200">'
                     svg += f'<rect x="{150 - dw/2}" y="{100 - dh/2}" width="{dw}" height="{dh}" fill="{fill_color}" stroke="#2980b9" stroke-width="3"/>'
-                    # labels
                     svg += f'<text x="150" y="{100 - dh/2 - 10}" font-family="Sarabun" font-size="16" font-weight="bold" fill="#c0392b" text-anchor="middle">{w_lbl}</text>'
-                    svg += f'<text x="{150 + dw/2 + 10}" y="105" font-family="Sarabun" font-size="16" font-weight="bold" fill="#c0392b" text-anchor="start" dominant-baseline="middle">{h_lbl}</text>'
+                    svg += f'<text x="{150 + dw/2 + 10}" y="100" font-family="Sarabun" font-size="16" font-weight="bold" fill="#c0392b" text-anchor="start" dominant-baseline="middle">{h_lbl}</text>'
                     svg += '</svg></div>'
                     return svg
 
@@ -2905,14 +2904,19 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     dw_i = w_in * scale
                     dh_i = h_in * scale
                     svg = f'<div style="text-align:center; margin: 15px 0;"><svg width="300" height="200">'
+                    # สี่เหลี่ยมใหญ่ด้านนอก
                     svg += f'<rect x="{150 - dw_o/2}" y="{100 - dh_o/2}" width="{dw_o}" height="{dh_o}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
+                    # สี่เหลี่ยมเล็กด้านใน (สระน้ำ)
                     svg += f'<rect x="{150 - dw_i/2}" y="{100 - dh_i/2}" width="{dw_i}" height="{dh_i}" fill="#85c1e9" stroke="#2c3e50" stroke-width="2" stroke-dasharray="4,4"/>'
                     
+                    # ตัวเลขด้านนอก
                     svg += f'<text x="150" y="{100 - dh_o/2 - 10}" font-family="Sarabun" font-size="14" font-weight="bold" fill="#c0392b" text-anchor="middle">{w_lbl}</text>'
                     svg += f'<text x="{150 + dw_o/2 + 10}" y="100" font-family="Sarabun" font-size="14" font-weight="bold" fill="#c0392b" text-anchor="start" dominant-baseline="middle">{h_lbl}</text>'
-                    svg += f'<text x="150" y="{100 - dh_i/2 + 15}" font-family="Sarabun" font-size="12" font-weight="bold" fill="#2c3e50" text-anchor="middle">{in_w_lbl}</text>'
-                    svg += f'<text x="{150 - dw_i/2 + 15}" y="100" font-family="Sarabun" font-size="12" font-weight="bold" fill="#2c3e50" text-anchor="start" dominant-baseline="middle">{in_h_lbl}</text>'
-                    svg += f'<text x="150" y="100" font-family="Sarabun" font-size="16" font-weight="bold" fill="#fff" text-anchor="middle" dominant-baseline="middle">สระน้ำ</text>'
+                    
+                    # 💡 แก้ไข: เอาคำว่า "สระน้ำ" ออก และจัดวางตำแหน่งตัวเลขด้านในให้ชัดเจน ไม่ทับกัน
+                    svg += f'<text x="150" y="{100 - dh_i/2 + 18}" font-family="Sarabun" font-size="14" font-weight="bold" fill="#154360" text-anchor="middle">{in_w_lbl}</text>'
+                    svg += f'<text x="{150 + dw_i/2 - 8}" y="100" font-family="Sarabun" font-size="14" font-weight="bold" fill="#154360" text-anchor="end" dominant-baseline="middle">{in_h_lbl}</text>'
+                    
                     svg += '</svg></div>'
                     return svg
                 
@@ -2939,8 +2943,13 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         
                     elif scenario == "shaded_area":
                         path_w = random.randint(2, 4)
-                        in_w = random.randint(8, 15)
-                        in_h = random.randint(5, 10)
+                        
+                        # 💡 แก้ไข: บังคับให้แนวนอน (ยาว) มีค่ามากกว่าแนวตั้ง (กว้าง) เสมอ
+                        side_a = random.randint(5, 10)
+                        side_b = random.randint(11, 16)
+                        in_w = max(side_a, side_b) # แนวนอน (ยาว)
+                        in_h = min(side_a, side_b) # แนวตั้ง (กว้าง)
+                        
                         out_w = in_w + (2 * path_w)
                         out_h = in_h + (2 * path_w)
                         
@@ -2950,7 +2959,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         
                         svg = draw_frame_svg(out_w, out_h, in_w, in_h, f"{out_w} ม.", f"{out_h} ม.", f"{in_w} ม.", f"{in_h} ม.")
                         
-                        q = f"สวนสาธารณะรูปสี่เหลี่ยมผืนผ้า กว้าง {out_h} ม. ยาว {out_w} ม.<br>มีสระน้ำอยู่ตรงกลาง กว้าง {in_h} ม. ยาว {in_w} ม. ดังรูป<br>จงหาพื้นที่ของ <b>ทางเดินรอบสระน้ำ</b> (พื้นที่แรเงาสีเทา) ว่ามีกี่ตารางเมตร?<br>{svg}"
+                        q = f"สวนสาธารณะรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{out_h} ม.</b> ยาว <b>{out_w} ม.</b><br>มีสระน้ำอยู่ตรงกลาง กว้าง <b>{in_h} ม.</b> ยาว <b>{in_w} ม.</b> ดังรูป<br>จงหาพื้นที่ของ <b>ทางเดินรอบสระน้ำ</b> (พื้นที่แรเงาสีเทา) ว่ามีกี่ตารางเมตร?<br>{svg}"
                         
                         sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - พื้นที่แรเงา):</b><br>
                         <i>หลักการ: พื้นที่ทางเดิน = พื้นที่รูปใหญ่ (ทั้งหมด) - พื้นที่รูปเล็ก (สระน้ำ)</i><br><br>
@@ -2966,7 +2975,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         
                     elif scenario == "cost_calc":
                         w = random.randint(8, 15)
-                        h = random.randint(12, 25)
+                        h = random.randint(16, 25)
                         area = w * h
                         rate = random.choice([250, 350, 450, 500])
                         total_cost = area * rate
@@ -3049,7 +3058,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             👉 ด้านยาวมี 2 ด้าน จึงต้องแบ่งครึ่งความยาวที่เหลือ<br>
                             👉 {(perimeter - (w*2))} ÷ 2 = <b>{h} เซนติเมตร</b><br>
                             <b>ตอบ: {h} เซนติเมตร</b></span>"""
-
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
