@@ -2082,195 +2082,321 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         <div style="font-size: 18px; font-weight: bold; color: #d35400;">{amount_str}</div>
                     </div>
                     """
+
+                def draw_inverse_step(emoji1, val1, unit1, emoji2, val2, unit2, is_target=False):
+                    bg_color = "#fdf2e9" if is_target else "#f4f6f7"
+                    border_color = "#e67e22" if is_target else "#7f8c8d"
+                    box_style = f"border: 2px dashed {border_color}; border-radius: 8px; padding: 10px; display: inline-block; text-align: center; margin: 5px; background-color: {bg_color}; min-width: 120px; vertical-align: top;"
+                    return f"""
+                    <div style="{box_style}">
+                        <div style="font-size:20px; font-weight:bold; color:#2c3e50;">{emoji1} {val1} {unit1}</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #7f8c8d; margin: 5px 0;">{"ใช้เวลา" if "วัน" in unit2 or "ชั่วโมง" in unit2 else "อยู่ได้"}</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #d35400;">{emoji2} {val2} {unit2}</div>
+                    </div>
+                    """
+
+                def draw_shadow_step(obj_name, h_val, s_val, is_target=False):
+                    bg_color = "#fdf2e9" if is_target else "#eaf2f8"
+                    border_color = "#e67e22" if is_target else "#2980b9"
+                    box_style = f"border: 2px dashed {border_color}; border-radius: 8px; padding: 10px; display: inline-block; text-align: center; margin: 5px; background-color: {bg_color}; min-width: 120px; vertical-align: top;"
+                    return f"""
+                    <div style="{box_style}">
+                        <div style="font-size:18px; font-weight:bold; color:#2c3e50;">{obj_name}</div>
+                        <div style="font-size: 16px; font-weight: bold; color: #27ae60; margin-top: 5px;">สูง {h_val}</div>
+                        <div style="font-size: 16px; font-weight: bold; color: #8e44ad;">เงายาว {s_val}</div>
+                    </div>
+                    """
                 # ----------------------------------------
                 
                 name = random.choice(NAMES)
                 
                 if is_challenge:
-                    scenario = random.choice(["buy_change", "recipe_convert"])
-                    
-                    if scenario == "buy_change":
-                        item = random.choice(["ส้ม", "แอปเปิล", "มะม่วง", "ไข่ไก่", "โดนัท", "คัพเค้ก"])
-                        unit = "ผล" if item in ["ส้ม", "แอปเปิล", "มะม่วง"] else ("ฟอง" if item == "ไข่ไก่" else "ชิ้น")
-                        emoji = {"ส้ม":"🍊", "แอปเปิล":"🍎", "มะม่วง":"🥭", "ไข่ไก่":"🥚", "โดนัท":"🍩", "คัพเค้ก":"🧁"}[item]
-                        
-                        unit_price = random.randint(7, 25)
-                        A = random.randint(4, 12) * 5 
-                        B = A * unit_price 
-                        
-                        C_budget = (random.randint(15, 40) * 10 * unit_price) + random.randint(1, unit_price - 1)
-                        max_items = C_budget // unit_price
-                        rem_money = C_budget % unit_price
-                        
-                        q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> <div style='display:inline-block; border: 2px solid #e67e22; border-radius:8px; padding:15px; background:#fdf2e9; vertical-align:top; min-width:120px;'><div style='font-size:24px;'>💰</div><div style='font-size:16px; font-weight:bold; color:#2c3e50;'>มีเงินทั้งหมด</div><div style='font-size:18px; font-weight:bold; color:#e74c3c;'>{C_budget:,} บาท</div></div></div>"
-                        sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {A}<br>➔</div> {draw_unitary_step(emoji, 1, f'{unit_price:,} บาท', unit, True)}</div>"
-                        
-                        q = f"แม่ค้าติดป้ายขาย{item} <b>{A} {unit}</b> ในราคา <b>{B:,} บาท</b> <br>ถ้า{name}มีเงินในกระเป๋า <b>{C_budget:,} บาท</b> จะสามารถซื้อ{item}ได้อย่างมากที่สุดกี่{unit} และจะเหลือเงินทอนกี่บาท?<br>{q_graphic}"
-                        
-                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - หารมีเศษ):</b><br>
-                        <b>ขั้นที่ 1: หาค่าของ 1 หน่วย</b><br>
-                        {sol_graphic}
-                        👉 นำเงินราคาเซ็ต ({B:,}) หารด้วยจำนวนของ ({A})<br>
-                        👉 <b>{B:,} ÷ {A} = {unit_price:,} บาท/ชิ้น</b><br><br>
-                        
-                        <b>ขั้นที่ 2: คำนวณจำนวนชิ้นที่จะซื้อได้จากเงินที่มี</b><br>
-                        👉 นำเงินทั้งหมดมาแบ่งจ่ายออกทีละ {unit_price:,} บาท<br>
-                        👉 ตั้งหาร: <b>{C_budget:,} ÷ {unit_price:,}</b><br>
-                        👉 ได้ผลหารคือ <b>{max_items:,}</b> และเหลือเศษ <b>{rem_money:,}</b><br><br>
-                        
-                        <b>ขั้นที่ 3: สรุปคำตอบ</b><br>
-                        👉 ซื้อได้เต็มๆ {max_items:,} {unit} และเศษคือเงินทอนที่เหลือ<br>
-                        <b>ตอบ: ซื้อได้ {max_items:,} {unit} เหลือเงินทอน {rem_money:,} บาท</b></span>"""
-                        
-                    else: # recipe_convert
-                        item = random.choice(["เนื้อหมู", "เนื้อไก่", "กุ้งสด", "ปลาหมึก"])
-                        emoji = {"เนื้อหมู":"🥩", "เนื้อไก่":"🍗", "กุ้งสด":"🦐", "ปลาหมึก":"🦑"}[item]
-                        
-                        people_A = random.randint(4, 10)
-                        grams_per_person = random.randint(120, 350)
-                        total_grams_A = people_A * grams_per_person
-                        
-                        people_C = random.randint(25, 80)
-                        total_grams_C = people_C * grams_per_person
-                        ans_kg = total_grams_C // 1000
-                        ans_g = total_grams_C % 1000
-                        ans_str = f"{ans_kg} กิโลกรัม {ans_g} กรัม" if ans_g > 0 else f"{ans_kg} กิโลกรัม"
-                        
-                        q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_recipe_step(emoji, people_A, f'{total_grams_A:,} กรัม')} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> {draw_recipe_step(emoji, people_C, '? กิโลกรัม', True)}</div>"
-                        sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_recipe_step(emoji, people_A, f'{total_grams_A:,} กรัม')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {people_A}<br>➔</div> {draw_recipe_step(emoji, 1, f'{grams_per_person:,} กรัม')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>คูณ {people_C}<br>➔</div> {draw_recipe_step(emoji, people_C, f'{total_grams_C:,} กรัม', True)}</div>"
-                        
-                        q = f"การทำอาหารเลี้ยงคน <b>{people_A} คน</b> จะต้องเตรียม{item}น้ำหนักรวม <b>{total_grams_A:,} กรัม</b><br>ถ้า{name}ต้องการทำอาหารเลี้ยงคนจำนวน <b>{people_C} คน</b> จะต้องเตรียม{item}ทั้งหมด <b>กี่กิโลกรัม กี่กรัม</b>?<br>{q_graphic}"
-                        
-                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - บัญญัติไตรยางศ์ข้ามหน่วย):</b><br>
-                        <b>ขั้นที่ 1: หาปริมาณที่ใช้ต่อคน 1 คน</b><br>
-                        {sol_graphic}
-                        👉 นำปริมาณเนื้อทั้งหมด ({total_grams_A:,} กรัม) หารด้วยจำนวนคน ({people_A})<br>
-                        👉 <b>{total_grams_A:,} ÷ {people_A} = {grams_per_person:,} กรัม/คน</b><br><br>
-                        
-                        <b>ขั้นที่ 2: คำนวณปริมาณรวมสำหรับ {people_C} คน</b><br>
-                        👉 นำปริมาณต่อคนไปคูณกับจำนวนคนที่ต้องการ<br>
-                        👉 <b>{grams_per_person:,} × {people_C} = {total_grams_C:,} กรัม</b><br><br>
-                        
-                        <b>ขั้นที่ 3: แปลงหน่วยเป็นกิโลกรัมและกรัม</b><br>
-                        👉 1 กิโลกรัม = 1,000 กรัม<br>
-                        👉 นำ {total_grams_C:,} ÷ 1,000 จะได้ <b>{ans_kg} กิโลกรัม</b> เศษ <b>{ans_g} กรัม</b><br>
-                        <b>ตอบ: {ans_str}</b></span>"""
-
+                    scenario = random.choice(["buy_change", "recipe_convert", "inverse_work", "inverse_food", "shadow_height"])
                 else:
                     scenario = random.choice(["buy", "distance", "work_time", "find_qty"])
                     
-                    if scenario == "buy":
-                        item = random.choice(["สมุด", "ปากกา", "ดินสอ", "ยางลบ", "ไม้บรรทัด"])
-                        unit = "เล่ม" if item == "สมุด" else ("ด้าม" if item == "ปากกา" else "แท่ง" if item == "ดินสอ" else "อัน")
-                        emoji = {"สมุด":"📓", "ปากกา":"🖊️", "ดินสอ":"✏️", "ยางลบ":"🧽", "ไม้บรรทัด":"📏"}[item]
-                        
-                        A = random.randint(3, 12) 
-                        unit_price = random.randint(5, 30) * random.choice([1, 2, 5])
-                        B = A * unit_price 
-                        C = random.randint(15, 50) 
-                        while C == A: C = random.randint(15, 50)
-                        ans = C * unit_price
-                        
-                        q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> {draw_unitary_step(emoji, C, '? บาท', unit, True)}</div>"
-                        sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {A}<br>➔</div> {draw_unitary_step(emoji, 1, f'{unit_price:,} บาท', unit)} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>คูณ {C}<br>➔</div> {draw_unitary_step(emoji, C, f'{ans:,} บาท', unit, True)}</div>"
-                        
-                        q = f"ร้านค้าสหกรณ์ขาย{item} <b>{A} {unit}</b> ในราคา <b>{B:,} บาท</b> <br>ถ้าคุณครูต้องการสั่งซื้อ{item}แบบเดียวกันจำนวน <b>{C} {unit}</b> จะต้องจ่ายเงินทั้งหมดกี่บาท?<br>{q_graphic}"
-                        
-                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (บัญญัติไตรยางศ์ แบบหาค่า 1 หน่วย):</b><br>
-                        หลักการของบัญญัติไตรยางศ์คือ "หารให้เป็น 1 ก่อน แล้วค่อยนำไปคูณจำนวนที่ต้องการ"<br>
-                        {sol_graphic}
-                        <b>ขั้นที่ 1: หาค่าของ 1 หน่วย (หัวใจสำคัญ)</b><br>
-                        👉 เราต้องรู้ให้ได้ก่อนว่า {item} <b>แค่ 1 {unit}</b> ราคาเท่าไร?<br>
-                        👉 คำนวณ: <b>{B:,} ÷ {A} = {unit_price:,} บาท</b><br><br>
-                        
-                        <b>ขั้นที่ 2: คำนวณหาสิ่งที่โจทย์ถาม</b><br>
-                        👉 นำราคาต่อ 1 {unit} (คือ <b>{unit_price:,}</b>) มาคูณกับจำนวนที่ต้องการซื้อ ({C})<br>
-                        👉 คำนวณ: <b>{unit_price:,} × {C} = {ans:,} บาท</b><br>
-                        <b>ตอบ: {ans:,} บาท</b></span>"""
-                        
-                    elif scenario == "distance":
-                        vehicle = random.choice(["รถยนต์", "รถตู้", "รถกระบะ"])
-                        emoji = {"รถยนต์":"🚗", "รถตู้":"🚐", "รถกระบะ":"🛻"}[vehicle]
-                        A = random.randint(5, 15) 
-                        dist_per_liter = random.randint(12, 22)
-                        B = A * dist_per_liter 
-                        C = random.randint(20, 60)
-                        while C == A: C = random.randint(20, 60)
-                        ans = C * dist_per_liter
-                        
-                        q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_fuel_step(emoji, A, f'{B:,} กม.')} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> {draw_fuel_step(emoji, C, '? กม.', True)}</div>"
-                        sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_fuel_step(emoji, A, f'{B:,} กม.')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {A}<br>➔</div> {draw_fuel_step(emoji, 1, f'{dist_per_liter:,} กม.')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>คูณ {C}<br>➔</div> {draw_fuel_step(emoji, C, f'{ans:,} กม.', True)}</div>"
-                        
-                        q = f"<b>{vehicle}</b>คันหนึ่งใช้น้ำมัน <b>{A} ลิตร</b> สามารถแล่นได้ระยะทาง <b>{B:,} กิโลเมตร</b> <br>ถ้าในถังมีน้ำมัน <b>{C} ลิตร</b> {vehicle}คันนี้จะแล่นได้ระยะทางทั้งหมดกี่กิโลเมตร?<br>{q_graphic}"
-                        
-                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (บัญญัติไตรยางศ์ อัตราส่วนระยะทาง):</b><br>
-                        {sol_graphic}
-                        <b>ขั้นที่ 1: หาค่าของ 1 หน่วย (น้ำมัน 1 ลิตร วิ่งได้ไกลแค่ไหน?)</b><br>
-                        👉 นำระยะทางทั้งหมด ({B:,}) มาหารแบ่งด้วยจำนวนลิตรน้ำมัน ({A})<br>
-                        👉 คำนวณ: <b>{B:,} ÷ {A} = {dist_per_liter:,} กม./ลิตร</b><br><br>
-                        
-                        <b>ขั้นที่ 2: คำนวณระยะทางจากน้ำมันที่โจทย์กำหนด</b><br>
-                        👉 นำระยะทางต่อ 1 ลิตร (<b>{dist_per_liter:,}</b>) มาคูณกับน้ำมันที่มี (<b>{C}</b>)<br>
-                        👉 คำนวณ: <b>{dist_per_liter:,} × {C} = {ans:,} กม.</b><br>
-                        <b>ตอบ: {ans:,} กิโลเมตร</b></span>"""
+                if scenario == "buy_change":
+                    item = random.choice(["ส้ม", "แอปเปิล", "มะม่วง", "ไข่ไก่", "โดนัท", "คัพเค้ก"])
+                    unit = "ผล" if item in ["ส้ม", "แอปเปิล", "มะม่วง"] else ("ฟอง" if item == "ไข่ไก่" else "ชิ้น")
+                    emoji = {"ส้ม":"🍊", "แอปเปิล":"🍎", "มะม่วง":"🥭", "ไข่ไก่":"🥚", "โดนัท":"🍩", "คัพเค้ก":"🧁"}[item]
+                    
+                    unit_price = random.randint(7, 25)
+                    A = random.randint(4, 12) * 5 
+                    B = A * unit_price 
+                    
+                    C_budget = (random.randint(15, 40) * 10 * unit_price) + random.randint(1, unit_price - 1)
+                    max_items = C_budget // unit_price
+                    rem_money = C_budget % unit_price
+                    
+                    q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> <div style='display:inline-block; border: 2px solid #e67e22; border-radius:8px; padding:15px; background:#fdf2e9; vertical-align:top; min-width:120px;'><div style='font-size:24px;'>💰</div><div style='font-size:16px; font-weight:bold; color:#2c3e50;'>มีเงินทั้งหมด</div><div style='font-size:18px; font-weight:bold; color:#e74c3c;'>{C_budget:,} บาท</div></div></div>"
+                    sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {A}<br>➔</div> {draw_unitary_step(emoji, 1, f'{unit_price:,} บาท', unit, True)}</div>"
+                    
+                    q = f"แม่ค้าติดป้ายขาย{item} <b>{A} {unit}</b> ในราคา <b>{B:,} บาท</b> <br>ถ้า{name}มีเงินในกระเป๋า <b>{C_budget:,} บาท</b> จะสามารถซื้อ{item}ได้อย่างมากที่สุดกี่{unit} และจะเหลือเงินทอนกี่บาท?<br>{q_graphic}"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - หารมีเศษ):</b><br>
+                    <b>ขั้นที่ 1: หาค่าของ 1 หน่วย</b><br>
+                    {sol_graphic}
+                    👉 นำเงินราคาเซ็ต ({B:,}) หารด้วยจำนวนของ ({A})<br>
+                    👉 <b>{B:,} ÷ {A} = {unit_price:,} บาท/ชิ้น</b><br><br>
+                    
+                    <b>ขั้นที่ 2: คำนวณจำนวนชิ้นที่จะซื้อได้จากเงินที่มี</b><br>
+                    👉 นำเงินทั้งหมดมาแบ่งจ่ายออกทีละ {unit_price:,} บาท<br>
+                    👉 ตั้งหาร: <b>{C_budget:,} ÷ {unit_price:,}</b><br>
+                    👉 ได้ผลหารคือ <b>{max_items:,}</b> และเหลือเศษ <b>{rem_money:,}</b><br><br>
+                    
+                    <b>ขั้นที่ 3: สรุปคำตอบ</b><br>
+                    👉 ซื้อได้เต็มๆ {max_items:,} {unit} และเศษคือเงินทอนที่เหลือ<br>
+                    <b>ตอบ: ซื้อได้ {max_items:,} {unit} เหลือเงินทอน {rem_money:,} บาท</b></span>"""
+                    
+                elif scenario == "recipe_convert":
+                    item = random.choice(["เนื้อหมู", "เนื้อไก่", "กุ้งสด", "ปลาหมึก"])
+                    emoji = {"เนื้อหมู":"🥩", "เนื้อไก่":"🍗", "กุ้งสด":"🦐", "ปลาหมึก":"🦑"}[item]
+                    
+                    people_A = random.randint(4, 10)
+                    grams_per_person = random.randint(120, 350)
+                    total_grams_A = people_A * grams_per_person
+                    
+                    people_C = random.randint(25, 80)
+                    total_grams_C = people_C * grams_per_person
+                    ans_kg = total_grams_C // 1000
+                    ans_g = total_grams_C % 1000
+                    ans_str = f"{ans_kg} กิโลกรัม {ans_g} กรัม" if ans_g > 0 else f"{ans_kg} กิโลกรัม"
+                    
+                    q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_recipe_step(emoji, people_A, f'{total_grams_A:,} กรัม')} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> {draw_recipe_step(emoji, people_C, '? กิโลกรัม', True)}</div>"
+                    sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_recipe_step(emoji, people_A, f'{total_grams_A:,} กรัม')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {people_A}<br>➔</div> {draw_recipe_step(emoji, 1, f'{grams_per_person:,} กรัม')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>คูณ {people_C}<br>➔</div> {draw_recipe_step(emoji, people_C, f'{total_grams_C:,} กรัม', True)}</div>"
+                    
+                    q = f"การทำอาหารเลี้ยงคน <b>{people_A} คน</b> จะต้องเตรียม{item}น้ำหนักรวม <b>{total_grams_A:,} กรัม</b><br>ถ้า{name}ต้องการทำอาหารเลี้ยงคนจำนวน <b>{people_C} คน</b> จะต้องเตรียม{item}ทั้งหมด <b>กี่กิโลกรัม กี่กรัม</b>?<br>{q_graphic}"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - บัญญัติไตรยางศ์ข้ามหน่วย):</b><br>
+                    <b>ขั้นที่ 1: หาปริมาณที่ใช้ต่อคน 1 คน</b><br>
+                    {sol_graphic}
+                    👉 นำปริมาณเนื้อทั้งหมด ({total_grams_A:,} กรัม) หารด้วยจำนวนคน ({people_A})<br>
+                    👉 <b>{total_grams_A:,} ÷ {people_A} = {grams_per_person:,} กรัม/คน</b><br><br>
+                    
+                    <b>ขั้นที่ 2: คำนวณปริมาณรวมสำหรับ {people_C} คน</b><br>
+                    👉 นำปริมาณต่อคนไปคูณกับจำนวนคนที่ต้องการ<br>
+                    👉 <b>{grams_per_person:,} × {people_C} = {total_grams_C:,} กรัม</b><br><br>
+                    
+                    <b>ขั้นที่ 3: แปลงหน่วยเป็นกิโลกรัมและกรัม</b><br>
+                    👉 1 กิโลกรัม = 1,000 กรัม<br>
+                    👉 นำ {total_grams_C:,} ÷ 1,000 จะได้ <b>{ans_kg} กิโลกรัม</b> เศษ <b>{ans_g} กรัม</b><br>
+                    <b>ตอบ: {ans_str}</b></span>"""
 
-                    elif scenario == "work_time":
-                        item = random.choice(["ขวดน้ำ", "ตุ๊กตา", "ลูกอม", "กระป๋อง"])
-                        unit = "ขวด" if item == "ขวดน้ำ" else ("ตัว" if item == "ตุ๊กตา" else "เม็ด" if item == "ลูกอม" else "ใบ")
-                        emoji = {"ขวดน้ำ":"🍾", "ตุ๊กตา":"🧸", "ลูกอม":"🍬", "กระป๋อง":"🥫"}[item]
-                        
-                        time_A = random.randint(2, 10)
-                        rate = random.randint(15, 60) 
-                        amount_A = time_A * rate
-                        
-                        time_C = random.randint(15, 45)
-                        while time_C == time_A: time_C = random.randint(15, 45)
-                        ans = time_C * rate
-                        
-                        q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_time_step(emoji, time_A, 'นาที', f'{amount_A:,} {unit}')} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> {draw_time_step(emoji, time_C, 'นาที', f'? {unit}', True)}</div>"
-                        sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_time_step(emoji, time_A, 'นาที', f'{amount_A:,} {unit}')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {time_A}<br>➔</div> {draw_time_step(emoji, 1, 'นาที', f'{rate:,} {unit}')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>คูณ {time_C}<br>➔</div> {draw_time_step(emoji, time_C, 'นาที', f'{ans:,} {unit}', True)}</div>"
-                        
-                        q = f"เครื่องจักรในโรงงานใช้เวลา <b>{time_A} นาที</b> สามารถผลิต{item}ได้ <b>{amount_A:,} {unit}</b><br>ถ้าเปิดเครื่องจักรทำงานต่อเนื่องเป็นเวลา <b>{time_C} นาที</b> จะสามารถผลิต{item}ได้ทั้งหมดกี่{unit}?<br>{q_graphic}"
-                        
-                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (บัญญัติไตรยางศ์ งานและเวลา):</b><br>
-                        {sol_graphic}
-                        <b>ขั้นที่ 1: หาว่า 1 นาที ผลิตได้กี่ชิ้น</b><br>
-                        👉 นำจำนวน{item}ทั้งหมด ({amount_A:,}) หารด้วยเวลาที่ใช้ ({time_A} นาที)<br>
-                        👉 คำนวณ: <b>{amount_A:,} ÷ {time_A} = {rate:,} {unit}/นาที</b><br><br>
-                        
-                        <b>ขั้นที่ 2: คำนวณผลผลิตตามเวลาที่ต้องการ</b><br>
-                        👉 นำกำลังการผลิตต่อนาที (<b>{rate:,}</b>) มาคูณกับเวลาใหม่ (<b>{time_C}</b>)<br>
-                        👉 คำนวณ: <b>{rate:,} × {time_C} = {ans:,} {unit}</b><br>
-                        <b>ตอบ: {ans:,} {unit}</b></span>"""
+                elif scenario == "inverse_work":
+                    job = random.choice(["ทาสีบ้าน", "สร้างกำแพง", "เกี่ยวข้าว", "ขุดบ่อ", "ปูพื้นกระเบื้อง"])
+                    A_workers = random.randint(4, 15)
+                    B_days = random.randint(4, 20)
+                    total_man_days = A_workers * B_days
+                    
+                    factors = [i for i in range(2, total_man_days + 1) if total_man_days % i == 0 and i != A_workers]
+                    if not factors:
+                        A_workers, B_days = 5, 12
+                        total_man_days = 60
+                        factors = [2, 3, 4, 6, 10, 15, 20, 30]
+                    C_workers = random.choice(factors)
+                    ans_days = total_man_days // C_workers
+                    
+                    q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_inverse_step('👷‍♂️', A_workers, 'คน', '⏳', B_days, 'วัน')} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> {draw_inverse_step('👷‍♂️', C_workers, 'คน', '⏳', '?', 'วัน', True)}</div>"
+                    sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_inverse_step('👷‍♂️', A_workers, 'คน', '⏳', B_days, 'วัน')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#c0392b; font-weight:bold; margin:0 5px;'>คูณ {A_workers}<br>(งานเท่าเดิม คนลดลง)<br>➔</div> {draw_inverse_step('👨‍🔧', 1, 'คน', '⏳', total_man_days, 'วัน')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#27ae60; font-weight:bold; margin:0 5px;'>หาร {C_workers}<br>(ช่วยกันทำ)<br>➔</div> {draw_inverse_step('👷‍♂️', C_workers, 'คน', '⏳', ans_days, 'วัน', True)}</div>"
+                    
+                    q = f"ในการรับเหมา<b>{job}</b> ถ้าใช้คนงาน <b>{A_workers} คน</b> จะทำงานเสร็จในเวลา <b>{B_days} วัน</b> <br>ถ้าผู้รับเหมาต้องการเปลี่ยนแผน โดยใช้คนงาน <b>{C_workers} คน</b> งานนี้จะเสร็จในเวลากี่วัน?<br>{q_graphic}"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🚨 บัญญัติไตรยางศ์ส่วนกลับ):</b><br>
+                    <i>ข้อควรระวัง: ข้อนี้ไม่สามารถ "หารแล้วค่อยคูณ" ได้ เพราะยิ่งใช้คนช่วยทำงานเยอะ งานก็จะยิ่งเสร็จเร็วขึ้น (เวลาลดลง) ดังนั้นเราจะใช้การ "คูณก่อน แล้วค่อยหาร"</i><br>
+                    {sol_graphic}
+                    <b>ขั้นที่ 1: หาปริมาณงานทั้งหมด (ถ้าใช้คนแค่ 1 คนทำ)</b><br>
+                    👉 คนงาน {A_workers} คน ทำงานเสร็จใน {B_days} วัน<br>
+                    👉 ถ้าให้คนทำแค่ 1 คน จะต้องใช้เวลานานขึ้น จึงต้องนำไปคูณ: <b>{A_workers} × {B_days} = {total_man_days} วัน</b><br><br>
+                    
+                    <b>ขั้นที่ 2: คำนวณเวลาเมื่อใช้คนงาน {C_workers} คน</b><br>
+                    👉 งานทั้งหมดต้องใช้เวลาทำ {total_man_days} วัน (สำหรับ 1 คน)<br>
+                    👉 ถ้านำคนมาช่วยกัน {C_workers} คน เวลาจะลดลง จึงนำไปหาร: <b>{total_man_days} ÷ {C_workers} = {ans_days} วัน</b><br>
+                    <b>ตอบ: {ans_days} วัน</b></span>"""
 
-                    elif scenario == "find_qty":
-                        item = random.choice(["สมุด", "ปากกา", "แฟ้ม", "กรรไกร"])
-                        unit = "เล่ม" if item in ["สมุด", "แฟ้ม"] else ("ด้าม" if item == "ปากกา" else "อัน")
-                        emoji = {"สมุด":"📓", "ปากกา":"🖊️", "แฟ้ม":"📁", "กรรไกร":"✂️"}[item]
+                elif scenario == "inverse_food":
+                    animal = random.choice(["วัว", "ไก่", "หมู", "เป็ด", "แพะ"])
+                    emoji = {"วัว":"🐄", "ไก่":"🐔", "หมู":"🐖", "เป็ด":"🦆", "แพะ":"🐐"}[animal]
+                    A_animals = random.randint(10, 40)
+                    B_days = random.randint(10, 30)
+                    total_animal_days = A_animals * B_days
+                    
+                    action = random.choice(["buy", "sell"])
+                    if action == "buy":
+                        valid_C = [i for i in range(A_animals + 1, total_animal_days + 1) if total_animal_days % i == 0]
+                        if not valid_C:
+                            A_animals, B_days = 20, 15
+                            total_animal_days = 300
+                            valid_C = [25, 30, 50, 60]
+                        C_animals = random.choice(valid_C)
+                        diff = C_animals - A_animals
+                        action_text = f"ชาวฟาร์ม<b>ซื้อ{animal}มาเพิ่มอีก {diff} ตัว</b>"
+                    else:
+                        valid_C = [i for i in range(2, A_animals) if total_animal_days % i == 0]
+                        if not valid_C:
+                            A_animals, B_days = 20, 15
+                            total_animal_days = 300
+                            valid_C = [10, 12, 15]
+                        C_animals = random.choice(valid_C)
+                        diff = A_animals - C_animals
+                        action_text = f"ชาวฟาร์ม<b>ขาย{animal}ออกไป {diff} ตัว</b>"
                         
-                        A = random.randint(3, 10) 
-                        unit_price = random.randint(12, 45)
-                        B = A * unit_price 
-                        
-                        ans_qty = random.randint(15, 60)
-                        while ans_qty == A: ans_qty = random.randint(15, 60)
-                        C_budget = ans_qty * unit_price
-                        
-                        q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> <div style='display:inline-block; border: 2px dashed #e67e22; border-radius:8px; padding:10px; background:#fdf2e9; min-width:120px; vertical-align:top;'><div style='font-size:24px;'>❓ {unit}</div><div style='font-size:16px; font-weight:bold; color:#2c3e50; margin-top:5px;'>จ่ายเงินไป</div><div style='font-size:18px; font-weight:bold; color:#e74c3c;'>{C_budget:,} บาท</div></div></div>"
-                        sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {A}<br>➔</div> {draw_unitary_step(emoji, 1, f'{unit_price:,} บาท', unit)} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>เงิน {C_budget:,} บ.<br>หาร {unit_price:,}<br>➔</div> <div style='display:inline-block; border: 2px dashed #e67e22; border-radius:8px; padding:10px; background:#fdf2e9; min-width:120px; vertical-align:top;'><div style='font-size:24px;'>✔️ {ans_qty} {unit}</div><div style='font-size:16px; font-weight:bold; color:#2c3e50; margin-top:5px;'>จ่ายเงินไป</div><div style='font-size:18px; font-weight:bold; color:#e74c3c;'>{C_budget:,} บาท</div></div></div>"
-                        
-                        q = f"ร้านค้าขาย{item} <b>{A} {unit}</b> ในราคา <b>{B:,} บาท</b> <br>ถ้า{name}จ่ายเงินซื้อ{item}ไปทั้งหมด <b>{C_budget:,} บาท</b> เขาจะได้{item}กี่{unit}?<br>{q_graphic}"
-                        
-                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (บัญญัติไตรยางศ์ แบบย้อนหาจำนวน):</b><br>
-                        {sol_graphic}
-                        <b>ขั้นที่ 1: หาว่า 1 {unit} ราคาเท่าไร</b><br>
-                        👉 นำราคาตั้ง ({B:,}) หารด้วยจำนวนชิ้น ({A})<br>
-                        👉 คำนวณ: <b>{B:,} ÷ {A} = {unit_price:,} บาท/{unit}</b><br><br>
-                        
-                        <b>ขั้นที่ 2: นำเงินที่มีไปหารราคาต่อชิ้น</b><br>
-                        👉 {name}จ่ายเงินไป {C_budget:,} บาท และของราคาชิ้นละ {unit_price:,} บาท<br>
-                        👉 คำนวณ: <b>{C_budget:,} ÷ {unit_price:,} = {ans_qty:,} {unit}</b><br>
-                        <b>ตอบ: {ans_qty:,} {unit}</b></span>"""
+                    ans_days = total_animal_days // C_animals
+                    
+                    q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_inverse_step(emoji, A_animals, 'ตัว', '🥣', B_days, 'วัน')} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> {draw_inverse_step(emoji, C_animals, 'ตัว', '🥣', '?', 'วัน', True)}</div>"
+                    sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_inverse_step(emoji, A_animals, 'ตัว', '🥣', B_days, 'วัน')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#c0392b; font-weight:bold; margin:0 5px;'>คูณ {A_animals}<br>➔</div> {draw_inverse_step(emoji, 1, 'ตัว', '🥣', total_animal_days, 'วัน')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#27ae60; font-weight:bold; margin:0 5px;'>หาร {C_animals}<br>➔</div> {draw_inverse_step(emoji, C_animals, 'ตัว', '🥣', ans_days, 'วัน', True)}</div>"
+                    
+                    q = f"ชาวฟาร์มแห่งหนึ่งมีอาหารสัตว์พอสำหรับเลี้ยง{animal} <b>{A_animals} ตัว</b> ได้นาน <b>{B_days} วัน</b> <br>ถ้าต่อมา {action_text} (ทำให้มี{animal}รวมเป็น <b>{C_animals} ตัว</b>) อาหารสัตว์ที่มีอยู่จะเลี้ยง{animal}ได้นานกี่วัน?<br>{q_graphic}"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🚨 บัญญัติไตรยางศ์ส่วนกลับ):</b><br>
+                    <i>ข้อควรระวัง: ยิ่งมีสัตว์เยอะขึ้น อาหารก็จะยิ่งหมดเร็วขึ้น (จำนวนวันลดลง) ดังนั้นต้อง "คูณก่อน แล้วค่อยหาร"</i><br>
+                    {sol_graphic}
+                    <b>ขั้นที่ 1: หาปริมาณอาหารทั้งหมด (สำหรับสัตว์ 1 ตัว)</b><br>
+                    👉 {animal} {A_animals} ตัว กินอาหารหมดใน {B_days} วัน<br>
+                    👉 ถ้ามี{animal}แค่ 1 ตัว อาหารจะอยู่ได้นานขึ้น: <b>{A_animals} × {B_days} = {total_animal_days} วัน</b><br><br>
+                    
+                    <b>ขั้นที่ 2: คำนวณจำนวนวันสำหรับสัตว์ {C_animals} ตัว</b><br>
+                    👉 อาหารทั้งหมดกินได้ {total_animal_days} วัน (สำหรับ 1 ตัว)<br>
+                    👉 นำมาแบ่งให้{animal} {C_animals} ตัว จำนวนวันจะลดลง: <b>{total_animal_days} ÷ {C_animals} = {ans_days} วัน</b><br>
+                    <b>ตอบ: {ans_days} วัน</b></span>"""
+
+                elif scenario == "shadow_height":
+                    obj1 = random.choice(["ต้นไม้", "เสาธง", "ตึก", "เสาไฟฟ้า"])
+                    mult = random.randint(2, 6)
+                    s1 = random.randint(2, 6)
+                    h1 = s1 * mult
+                    
+                    s2 = random.randint(8, 25)
+                    while s2 == s1: s2 += 1
+                    h2 = s2 * mult
+                    
+                    q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_shadow_step('🧍 ไม้เมตร', f'{mult} เมตร', '1 เมตร')} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> {draw_shadow_step(obj1, '? เมตร', f'{s2} เมตร', True)}</div>"
+                    sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_shadow_step('ไม้เมตร', f'{mult} เมตร', '1 เมตร')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>คูณ {s2}<br>➔</div> {draw_shadow_step(obj1, f'{h2} เมตร', f'{s2} เมตร', True)}</div>"
+                    
+                    q = f"ในเวลาเดียวกันของวันหนึ่ง ถ้านำไม้เมตรความยาว <b>{mult} เมตร</b> มาตั้งตรง จะทอดเงายาว <b>1 เมตร</b> พอดี<br>ถ้า<b>{obj1}</b>ที่อยู่ใกล้เคียงกันทอดเงายาว <b>{s2} เมตร</b> {obj1}นี้จะมีความสูงกี่เมตร?<br>{q_graphic}"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - สัดส่วนเงากับความสูง):</b><br>
+                    {sol_graphic}
+                    <b>ขั้นที่ 1: หาอัตราส่วนของความสูงต่อเงา 1 เมตร</b><br>
+                    👉 โจทย์บอกว่าเงายาว 1 เมตร มาจากของที่สูง {mult} เมตร (นี่คือค่าของ 1 หน่วยแล้ว!)<br><br>
+                    
+                    <b>ขั้นที่ 2: คำนวณความสูงของ{obj1}</b><br>
+                    👉 {obj1}ทอดเงายาว {s2} เมตร<br>
+                    👉 นำความยาวเงาไปคูณกับความสูงต่อเงา 1 เมตร<br>
+                    👉 คำนวณ: <b>{s2} × {mult} = {h2} เมตร</b><br>
+                    <b>ตอบ: {h2} เมตร</b></span>"""
+
+                elif scenario == "buy":
+                    item = random.choice(["สมุด", "ปากกา", "ดินสอ", "ยางลบ", "ไม้บรรทัด", "แฟ้ม"])
+                    unit = "เล่ม" if item in ["สมุด", "แฟ้ม"] else ("ด้าม" if item == "ปากกา" else "แท่ง" if item == "ดินสอ" else "อัน")
+                    emoji = {"สมุด":"📓", "ปากกา":"🖊️", "ดินสอ":"✏️", "ยางลบ":"🧽", "ไม้บรรทัด":"📏", "แฟ้ม":"📁"}[item]
+                    
+                    A = random.randint(3, 12) 
+                    unit_price = random.randint(5, 30) * random.choice([1, 2, 5])
+                    B = A * unit_price 
+                    C = random.randint(15, 50) 
+                    while C == A: C = random.randint(15, 50)
+                    ans = C * unit_price
+                    
+                    q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> {draw_unitary_step(emoji, C, '? บาท', unit, True)}</div>"
+                    sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {A}<br>➔</div> {draw_unitary_step(emoji, 1, f'{unit_price:,} บาท', unit)} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>คูณ {C}<br>➔</div> {draw_unitary_step(emoji, C, f'{ans:,} บาท', unit, True)}</div>"
+                    
+                    q = f"ร้านค้าสหกรณ์ขาย{item} <b>{A} {unit}</b> ในราคา <b>{B:,} บาท</b> <br>ถ้าคุณครูต้องการสั่งซื้อ{item}แบบเดียวกันจำนวน <b>{C} {unit}</b> จะต้องจ่ายเงินทั้งหมดกี่บาท?<br>{q_graphic}"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (บัญญัติไตรยางศ์ แบบหาค่า 1 หน่วย):</b><br>
+                    หลักการของบัญญัติไตรยางศ์คือ "หารให้เป็น 1 ก่อน แล้วค่อยนำไปคูณจำนวนที่ต้องการ"<br>
+                    {sol_graphic}
+                    <b>ขั้นที่ 1: หาค่าของ 1 หน่วย (หัวใจสำคัญ)</b><br>
+                    👉 เราต้องรู้ให้ได้ก่อนว่า {item} <b>แค่ 1 {unit}</b> ราคาเท่าไร?<br>
+                    👉 คำนวณ: <b>{B:,} ÷ {A} = {unit_price:,} บาท</b><br><br>
+                    
+                    <b>ขั้นที่ 2: คำนวณหาสิ่งที่โจทย์ถาม</b><br>
+                    👉 นำราคาต่อ 1 {unit} (คือ <b>{unit_price:,}</b>) มาคูณกับจำนวนที่ต้องการซื้อ ({C})<br>
+                    👉 คำนวณ: <b>{unit_price:,} × {C} = {ans:,} บาท</b><br>
+                    <b>ตอบ: {ans:,} บาท</b></span>"""
+                    
+                elif scenario == "distance":
+                    vehicle = random.choice(["รถยนต์", "รถตู้", "รถกระบะ"])
+                    emoji = {"รถยนต์":"🚗", "รถตู้":"🚐", "รถกระบะ":"🛻"}[vehicle]
+                    A = random.randint(5, 15) 
+                    dist_per_liter = random.randint(12, 22)
+                    B = A * dist_per_liter 
+                    C = random.randint(20, 60)
+                    while C == A: C = random.randint(20, 60)
+                    ans = C * dist_per_liter
+                    
+                    q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_fuel_step(emoji, A, f'{B:,} กม.')} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> {draw_fuel_step(emoji, C, '? กม.', True)}</div>"
+                    sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_fuel_step(emoji, A, f'{B:,} กม.')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {A}<br>➔</div> {draw_fuel_step(emoji, 1, f'{dist_per_liter:,} กม.')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>คูณ {C}<br>➔</div> {draw_fuel_step(emoji, C, f'{ans:,} กม.', True)}</div>"
+                    
+                    q = f"<b>{vehicle}</b>คันหนึ่งใช้น้ำมัน <b>{A} ลิตร</b> สามารถแล่นได้ระยะทาง <b>{B:,} กิโลเมตร</b> <br>ถ้าในถังมีน้ำมัน <b>{C} ลิตร</b> {vehicle}คันนี้จะแล่นได้ระยะทางทั้งหมดกี่กิโลเมตร?<br>{q_graphic}"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (บัญญัติไตรยางศ์ อัตราส่วนระยะทาง):</b><br>
+                    {sol_graphic}
+                    <b>ขั้นที่ 1: หาค่าของ 1 หน่วย (น้ำมัน 1 ลิตร วิ่งได้ไกลแค่ไหน?)</b><br>
+                    👉 นำระยะทางทั้งหมด ({B:,}) มาหารแบ่งด้วยจำนวนลิตรน้ำมัน ({A})<br>
+                    👉 คำนวณ: <b>{B:,} ÷ {A} = {dist_per_liter:,} กม./ลิตร</b><br><br>
+                    
+                    <b>ขั้นที่ 2: คำนวณระยะทางจากน้ำมันที่โจทย์กำหนด</b><br>
+                    👉 นำระยะทางต่อ 1 ลิตร (<b>{dist_per_liter:,}</b>) มาคูณกับน้ำมันที่มี (<b>{C}</b>)<br>
+                    👉 คำนวณ: <b>{dist_per_liter:,} × {C} = {ans:,} กม.</b><br>
+                    <b>ตอบ: {ans:,} กิโลเมตร</b></span>"""
+
+                elif scenario == "work_time":
+                    item = random.choice(["ขวดน้ำ", "ตุ๊กตา", "ลูกอม", "กระป๋อง"])
+                    unit = "ขวด" if item == "ขวดน้ำ" else ("ตัว" if item == "ตุ๊กตา" else "เม็ด" if item == "ลูกอม" else "ใบ")
+                    emoji = {"ขวดน้ำ":"🍾", "ตุ๊กตา":"🧸", "ลูกอม":"🍬", "กระป๋อง":"🥫"}[item]
+                    
+                    time_A = random.randint(2, 10)
+                    rate = random.randint(15, 60) 
+                    amount_A = time_A * rate
+                    
+                    time_C = random.randint(15, 45)
+                    while time_C == time_A: time_C = random.randint(15, 45)
+                    ans = time_C * rate
+                    
+                    q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_time_step(emoji, time_A, 'นาที', f'{amount_A:,} {unit}')} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> {draw_time_step(emoji, time_C, 'นาที', f'? {unit}', True)}</div>"
+                    sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_time_step(emoji, time_A, 'นาที', f'{amount_A:,} {unit}')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {time_A}<br>➔</div> {draw_time_step(emoji, 1, 'นาที', f'{rate:,} {unit}')} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>คูณ {time_C}<br>➔</div> {draw_time_step(emoji, time_C, 'นาที', f'{ans:,} {unit}', True)}</div>"
+                    
+                    q = f"เครื่องจักรในโรงงานใช้เวลา <b>{time_A} นาที</b> สามารถผลิต{item}ได้ <b>{amount_A:,} {unit}</b><br>ถ้าเปิดเครื่องจักรทำงานต่อเนื่องเป็นเวลา <b>{time_C} นาที</b> จะสามารถผลิต{item}ได้ทั้งหมดกี่{unit}?<br>{q_graphic}"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (บัญญัติไตรยางศ์ งานและเวลา):</b><br>
+                    {sol_graphic}
+                    <b>ขั้นที่ 1: หาว่า 1 นาที ผลิตได้กี่ชิ้น</b><br>
+                    👉 นำจำนวน{item}ทั้งหมด ({amount_A:,}) หารด้วยเวลาที่ใช้ ({time_A} นาที)<br>
+                    👉 คำนวณ: <b>{amount_A:,} ÷ {time_A} = {rate:,} {unit}/นาที</b><br><br>
+                    
+                    <b>ขั้นที่ 2: คำนวณผลผลิตตามเวลาที่ต้องการ</b><br>
+                    👉 นำกำลังการผลิตต่อนาที (<b>{rate:,}</b>) มาคูณกับเวลาใหม่ (<b>{time_C}</b>)<br>
+                    👉 คำนวณ: <b>{rate:,} × {time_C} = {ans:,} {unit}</b><br>
+                    <b>ตอบ: {ans:,} {unit}</b></span>"""
+
+                elif scenario == "find_qty":
+                    item = random.choice(["สมุด", "ปากกา", "แฟ้ม", "กรรไกร"])
+                    unit = "เล่ม" if item in ["สมุด", "แฟ้ม"] else ("ด้าม" if item == "ปากกา" else "อัน")
+                    emoji = {"สมุด":"📓", "ปากกา":"🖊️", "แฟ้ม":"📁", "กรรไกร":"✂️"}[item]
+                    
+                    A = random.randint(3, 10) 
+                    unit_price = random.randint(12, 45)
+                    B = A * unit_price 
+                    
+                    ans_qty = random.randint(15, 60)
+                    while ans_qty == A: ans_qty = random.randint(15, 60)
+                    C_budget = ans_qty * unit_price
+                    
+                    q_graphic = f"<div style='text-align:center; margin:10px 0;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <span style='font-size:30px; vertical-align:middle; color:#bdc3c7; margin:0 10px;'>➔</span> <div style='display:inline-block; border: 2px dashed #e67e22; border-radius:8px; padding:10px; background:#fdf2e9; min-width:120px; vertical-align:top;'><div style='font-size:24px;'>❓ {unit}</div><div style='font-size:16px; font-weight:bold; color:#2c3e50; margin-top:5px;'>จ่ายเงินไป</div><div style='font-size:18px; font-weight:bold; color:#e74c3c;'>{C_budget:,} บาท</div></div></div>"
+                    sol_graphic = f"<div style='text-align:center; margin:10px 0; background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;'>{draw_unitary_step(emoji, A, f'{B:,} บาท', unit)} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>หาร {A}<br>➔</div> {draw_unitary_step(emoji, 1, f'{unit_price:,} บาท', unit)} <div style='display:inline-block; vertical-align:middle; font-size:14px; color:#7f8c8d; font-weight:bold; margin:0 5px;'>เงิน {C_budget:,} บ.<br>หาร {unit_price:,}<br>➔</div> <div style='display:inline-block; border: 2px dashed #e67e22; border-radius:8px; padding:10px; background:#fdf2e9; min-width:120px; vertical-align:top;'><div style='font-size:24px;'>✔️ {ans_qty:,} {unit}</div><div style='font-size:16px; font-weight:bold; color:#2c3e50; margin-top:5px;'>จ่ายเงินไป</div><div style='font-size:18px; font-weight:bold; color:#e74c3c;'>{C_budget:,} บาท</div></div></div>"
+                    
+                    q = f"ร้านค้าขาย{item} <b>{A} {unit}</b> ในราคา <b>{B:,} บาท</b> <br>ถ้า{name}จ่ายเงินซื้อ{item}ไปทั้งหมด <b>{C_budget:,} บาท</b> เขาจะได้{item}กี่{unit}?<br>{q_graphic}"
+                    
+                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (บัญญัติไตรยางศ์ แบบย้อนหาจำนวน):</b><br>
+                    {sol_graphic}
+                    <b>ขั้นที่ 1: หาว่า 1 {unit} ราคาเท่าไร</b><br>
+                    👉 นำราคาตั้ง ({B:,}) หารด้วยจำนวนชิ้น ({A})<br>
+                    👉 คำนวณ: <b>{B:,} ÷ {A} = {unit_price:,} บาท/{unit}</b><br><br>
+                    
+                    <b>ขั้นที่ 2: นำเงินที่มีไปหารราคาต่อชิ้น</b><br>
+                    👉 {name}จ่ายเงินไป {C_budget:,} บาท และของราคาชิ้นละ {unit_price:,} บาท<br>
+                    👉 คำนวณ: <b>{C_budget:,} ÷ {unit_price:,} = {ans_qty:,} {unit}</b><br>
+                    <b>ตอบ: {ans_qty:,} {unit}</b></span>"""
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
