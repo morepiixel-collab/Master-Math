@@ -2625,14 +2625,17 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
             elif actual_sub_t == "ความน่าจะเป็นเบื้องต้น (สุ่มหยิบของ)":
                 
-                # --- ฟังก์ชันวาดกล่องลูกแก้ว ---
+                # --- ฟังก์ชันวาดกล่องลูกแก้ว (VERSION 2 - ขยายร่าง!) ---
                 def draw_marbles_box_svg(color_counts):
                     color_map = {"สีแดง": "#e74c3c", "สีฟ้า": "#3498db", "สีเขียว": "#2ecc71", "สีเหลือง": "#f1c40f", "สีม่วง": "#9b59b6"}
-                    width = 400
-                    height = 180
-                    svg = f'<div style="text-align:center; margin: 15px 0;"><svg width="{width}" height="{height}">'
-                    svg += f'<rect x="50" y="20" width="300" height="140" fill="#ecf0f1" stroke="#34495e" stroke-width="4" rx="15"/>'
-                    svg += f'<path d="M 50 60 L 350 60" stroke="#bdc3c7" stroke-width="2" stroke-dasharray="5,5"/>'
+                    width = 500  # ขยายความกว้าง
+                    height = 250 # ขยายความสูง
+                    svg = f'<div style="text-align:center; margin: 20px 0;"><svg width="{width}" height="{height}">'
+                    
+                    # ตัวกล่อง (ใหญ่ขึ้น)
+                    svg += f'<rect x="25" y="20" width="450" height="210" fill="#ecf0f1" stroke="#34495e" stroke-width="5" rx="20"/>'
+                    # เส้นแบ่งครึ่ง (dash)
+                    svg += f'<path d="M 25 80 L 475 80" stroke="#bdc3c7" stroke-width="2" stroke-dasharray="5,5"/>'
                     
                     marbles = []
                     for c_name, count in color_counts.items():
@@ -2640,35 +2643,128 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             marbles.append(color_map[c_name])
                     random.shuffle(marbles)
                     
-                    cols = 6
+                    cols = 8 # เพิ่มจำนวนคอลัมน์
+                    marble_r = 20 # เพิ่มขนาดลูกแก้ว (รัศมี)
+                    
                     for i, color in enumerate(marbles):
                         r = i // cols
                         c = i % cols
-                        cx = 85 + c * 46
-                        cy = 60 + r * 50
-                        svg += f'<circle cx="{cx}" cy="{cy}" r="16" fill="{color}" stroke="#2c3e50" stroke-width="3"/>'
-                        svg += f'<circle cx="{cx-5}" cy="{cy-5}" r="4" fill="#ffffff" opacity="0.5"/>'
+                        # คำนวณตำแหน่งใหม่ให้ดูไม่อัดกัน
+                        cx = 60 + c * 52 
+                        cy = 80 + r * 55
+                        
+                        # วาดลูกแก้วพร้อมเงาสวยงาม
+                        svg += f'<circle cx="{cx}" cy="{cy}" r="{marble_r}" fill="{color}" stroke="#2c3e50" stroke-width="3"/>'
+                        svg += f'<circle cx="{cx-7}" cy="{cy-7}" r="6" fill="#ffffff" opacity="0.6"/>'
                         
                     svg += '</svg></div>'
                     return svg
 
                 colors_avail = ["สีแดง", "สีฟ้า", "สีเขียว", "สีเหลือง", "สีม่วง"]
+                name = random.choice(NAMES)
                 
                 if is_challenge:
-                    q_type = random.choice(["fraction", "most_likely"])
-                    num_colors = random.randint(2, 4)
-                    chosen_colors = random.sample(colors_avail, num_colors)
-                    color_counts = {}
-                    total_marbles = 0
+                    # 🔥 โหมดชาเลนจ์ (3 แนวสอบเข้า ม.1)
+                    q_type = random.choice(["fraction", "not_color", "inverse"])
                     
-                    for c in chosen_colors:
-                        count = random.randint(2, 6)
-                        color_counts[c] = count
-                        total_marbles += count
+                    if q_type == "inverse":
+                        # แบบย้อนกลับ: บอกความน่าจะเป็น ให้หาจำนวนสี
+                        den = random.choice([3, 4, 5, 8, 10]) # ส่วน
+                        while True:
+                            num = random.randint(1, den - 1) # เศษ
+                            if math.gcd(num, den) == 1: break # ต้องเป็นเศษส่วนอย่างต่ำ
                         
-                    svg = draw_marbles_box_svg(color_counts)
-                    
-                    if q_type == "fraction":
+                        mult = random.choice([2, 3, 4, 5])
+                        target_count = num * mult
+                        total_marbles = den * mult
+                        
+                        target_color = random.choice(colors_avail)
+                        other_colors = [c for c in colors_avail if c != target_color]
+                        
+                        # สร้างลูกแก้วสีอื่นๆ ที่เหลือให้ครบ
+                        color_counts = {target_color: target_count}
+                        rem_count = total_marbles - target_count
+                        
+                        n_others = random.randint(1, min(rem_count, len(other_colors)))
+                        chosen_others = random.sample(other_colors, n_others)
+                        
+                        temp_rem = rem_count
+                        for i, oc in enumerate(chosen_others):
+                            if i == n_others - 1:
+                                color_counts[oc] = temp_rem
+                            else:
+                                c_count = random.randint(1, temp_rem - (n_others - 1 - i))
+                                color_counts[oc] = c_count
+                                temp_rem -= c_count
+                                
+                        svg = draw_marbles_box_svg(color_counts)
+                        
+                        q = f"ในกล่องใบหนึ่งมีลูกแก้วสีต่างๆ รวมกัน <b>{total_marbles} ลูก</b> ดังรูป<br>{svg}<b style='color:#e67e22;'>รู้เพียงว่า</b> โอกาสที่จะสุ่มหยิบได้ <b>ลูกแก้ว{target_color}</b> คือ เศษ {num} ส่วน {den} ( <b>{num}/{den}</b> )<br>จงหาว่า ในกล่องมีลูกแก้ว{target_color}อยู่ทั้งหมดกี่ลูก?"
+                        
+                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - โจทย์ย้อนกลับ):</b><br>
+                        <b>หลักการ:</b> เราสามารถขยายเศษส่วนความน่าจะเป็น เพื่อให้ส่วนเท่ากับจำนวนทั้งหมดได้<br><br>
+                        <b>ขั้นที่ 1: วิเคราะห์เศษส่วนความน่าจะเป็นที่โจทย์กำหนด</b><br>
+                        👉 โอกาสหยิบได้{target_color} = {num}/{den}<br>
+                        👉 ตัวเลข <b>เศษ {num}</b> หมายถึง ถ้ามีของ {den} ลูก จะเป็น{target_color} {num} ลูก<br>
+                        👉 ตัวเลข <b>ส่วน {den}</b> หมายถึง จำนวนทั้งหมดในสัดส่วนขั้นต่ำ<br><br>
+                        <b>ขั้นที่ 2: เปรียบเทียบกับจำนวนจริง</b><br>
+                        👉 จำนวนลูกแก้วทั้งหมดในกล่องจริงๆ คือ <b>{total_marbles} ลูก</b><br>
+                        👉 เราต้องหาว่าต้องคูณอะไรเข้าที่ 'ส่วน {den}' ถึงจะได้ {total_marbles}?<br>
+                        👉 คำนวณ: {total_marbles} ÷ {den} = <b>{mult}</b> (นี่คือตัวคูณ)<br><br>
+                        <b>ขั้นที่ 3: คำนวณจำนวนลูกแก้ว{target_color}จริง</b><br>
+                        👉 นำตัวคูณ ({mult}) ไปคูณทั้งเศษและส่วน<br>
+                        👉 {num}/{den} x {mult}/{mult} = <b>{target_count}/{total_marbles}</b><br>
+                        👉 ตัวเลขด้านบน (เศษ) คือจำนวนสีที่ต้องการ<br>
+                        <b>ตอบ: ในกล่องมีลูกแก้ว{target_color}อยู่ {target_count} ลูก</b></span>"""
+                        
+                    elif q_type == "not_color":
+                        # แนวที่ 2: โอกาสที่จะ 'ไม่หยิบได้' สีที่กำหนด (Complementary)
+                        num_colors = random.randint(3, 5)
+                        chosen_colors = random.sample(colors_avail, num_colors)
+                        color_counts = {}
+                        total_marbles = 0
+                        for c in chosen_colors:
+                            count = random.randint(2, 6)
+                            color_counts[c] = count
+                            total_marbles += count
+                        
+                        svg = draw_marbles_box_svg(color_counts)
+                        
+                        not_target = random.choice(chosen_colors)
+                        not_target_count = color_counts[not_target]
+                        interested_count = total_marbles - not_target_count # คือจำนวนของสีที่ 'ไม่ใช่' เป้าหมาย
+                        
+                        g = math.gcd(interested_count, total_marbles)
+                        num = interested_count // g
+                        den = total_marbles // g
+                        
+                        q = f"ในกล่องมีลูกแก้วสีต่างๆ ดังรูป<br>{svg}ถ้า{name}หลับตาสุ่มหยิบลูกแก้ว 1 ลูก โอกาสที่จะ <b><span style='color:#e74c3c;'>ไม่</span>หยิบได้</b> <b>ลูกแก้ว{not_target}</b> คิดเป็นเศษส่วนเท่าใด?"
+                        
+                        colors_other_text = ", ".join([c for c in chosen_colors if c != not_target])
+                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - โอกาสที่จะ 'ไม่'):</b><br>
+                        <b>หลักการ:</b> โอกาสที่จะ <span style='color:#e74c3c;'>ไม่</span> หยิบได้สีA หมายถึง โอกาสที่จะหยิบได้สีอื่นๆ ทั้งหมดที่ไม่ใช่สีA!<br><br>
+                        <b>ขั้นที่ 1: นับจำนวนลูกแก้วทั้งหมดในกล่อง</b><br>
+                        👉 ในกล่องมีลูกแก้วรวมทั้งหมด <b>{total_marbles} ลูก</b><br><br>
+                        <b>ขั้นที่ 2: หาจำนวนลูกแก้วสีที่เราสนใจ (คือไม่ใช่สี{not_target})</b><br>
+                        👉 <b>วิธีที่ 1:</b> นับสีอื่นๆ รวมกัน ({colors_other_text}) = {interested_count} ลูก<br>
+                        👉 <b>วิธีที่ 2 (เร็วกว่า):</b> เอาทั้งหมด - จำนวนสีที่ไม่ต้องการ ({total_marbles} - {not_target_count}) = <b>{interested_count} ลูก</b><br><br>
+                        <b>ขั้นที่ 3: เขียนเป็นเศษส่วนอย่างต่ำ</b><br>
+                        👉 โอกาสคือ เศษ {interested_count} ส่วน {total_marbles} ( <b>{interested_count}/{total_marbles}</b> )<br>
+                        👉 ทอนเป็นเศษส่วนอย่างต่ำ โดยนำ {g} มาหาร จะได้ <b>{num}/{den}</b><br>
+                        <b>ตอบ: เศษ {num} ส่วน {den}</b></span>"""
+
+                    else: # fraction (ของเดิม)
+                        num_colors = random.randint(2, 4)
+                        chosen_colors = random.sample(colors_avail, num_colors)
+                        color_counts = {}
+                        total_marbles = 0
+                        for c in chosen_colors:
+                            count = random.randint(2, 6)
+                            color_counts[c] = count
+                            total_marbles += count
+                        
+                        svg = draw_marbles_box_svg(color_counts)
+                        
                         target_color = random.choice(chosen_colors)
                         target_count = color_counts[target_color]
                         
@@ -2688,56 +2784,93 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         👉 โอกาสหยิบได้ คือ เศษ {target_count} ส่วน {total_marbles} ( <b>{target_count}/{total_marbles}</b> )<br>
                         👉 ทอนเป็นเศษส่วนอย่างต่ำ โดยนำ {g} มาหารทั้งเศษและส่วน จะได้ <b>{num}/{den}</b><br>
                         <b>ตอบ: เศษ {num} ส่วน {den}</b></span>"""
-                    else:
-                        max_count = max(color_counts.values())
-                        most_colors = [k for k, v in color_counts.items() if v == max_count]
-                        ans_color = " และ ".join(most_colors)
-                        count_details = " ".join([f"{k} {v} ลูก," for k, v in color_counts.items()])
-                        
-                        q = f"ในกล่องมีลูกแก้วสีต่างๆ ดังรูป<br>{svg}ถ้าหลับตาสุ่มหยิบลูกแก้ว 1 ลูก โอกาสที่จะหยิบได้ลูกแก้ว <b>สีใดมีมากที่สุด</b>?"
-                        
-                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - เปรียบเทียบโอกาส):</b><br>
-                        <i>หลักการ: สีที่มีจำนวนลูกแก้วมากที่สุดในกล่อง จะมีโอกาสถูกสุ่มหยิบได้มากที่สุด!</i><br><br>
-                        <b>ขั้นที่ 1: นับจำนวนลูกแก้วแต่ละสี</b><br>
-                        👉 พบว่ามี {count_details[:-1]}<br><br>
-                        <b>ขั้นที่ 2: เปรียบเทียบจำนวน</b><br>
-                        👉 จะเห็นได้ชัดเจนว่า <b>{ans_color}</b> มีจำนวนมากที่สุด คือ {max_count} ลูก<br>
-                        👉 ดังนั้น จึงมีโอกาสหยิบถูกสีนี้มากที่สุดเช่นกัน<br>
-                        <b>ตอบ: {ans_color}</b></span>"""
 
                 else:
-                    # ป.5 ปกติ: แน่นอน, อาจจะ, ไม่เกิด
-                    scenario_type = random.choice(["certain", "impossible", "possible"])
-                    chosen_colors = random.sample(colors_avail, 2)
-                    color_counts = {}
+                    # 🔹 โหมดปกติ ป.5 สสวท. (2 แนว)
+                    q_type_std = random.choice(["qualitative", "comparison"])
                     
-                    if scenario_type == "certain":
-                        target_color = chosen_colors[0]
-                        color_counts[target_color] = random.randint(6, 12)
-                        ans = "เกิดขึ้นอย่างแน่นอน"
-                        reason = f"ในกล่องมีแต่ลูกแก้ว{target_color}เพียงสีเดียว ไม่มีลูกแก้วสีอื่นปนอยู่เลย"
-                    elif scenario_type == "impossible":
-                        color_counts[chosen_colors[0]] = random.randint(3, 6)
-                        color_counts[chosen_colors[1]] = random.randint(3, 6)
-                        target_color = [c for c in colors_avail if c not in chosen_colors][0]
-                        ans = "ไม่เกิดขึ้นอย่างแน่นอน"
-                        reason = f"ในกล่องไม่มีลูกแก้ว{target_color}อยู่เลยแม้แต่ลูกเดียว"
-                    else:
-                        color_counts[chosen_colors[0]] = random.randint(3, 6)
-                        color_counts[chosen_colors[1]] = random.randint(3, 6)
-                        target_color = chosen_colors[0]
-                        ans = "อาจจะเกิดขึ้นหรือไม่ก็ได้"
-                        reason = f"ในกล่องมีลูกแก้ว{target_color}ปนอยู่กับสีอื่นด้วย จึงมีโอกาสที่จะหยิบได้สีนี้ หรืออาจจะไปหยิบโดนสีอื่นก็ได้"
+                    if q_type_std == "comparison":
+                        # แนวใหม่: เปรียบเทียบโอกาส (มากที่สุด/น้อยที่สุด)
+                        num_colors = random.randint(3, 4)
+                        chosen_colors = random.sample(colors_avail, num_colors)
+                        color_counts = {}
+                        # สุ่มให้มีสีหนึ่งมากสุด และอีกสีหนึ่งน้อยสุดแบบเห็นชัด
+                        target_type = random.choice(["most_likely", "least_likely"])
                         
-                    svg = draw_marbles_box_svg(color_counts)
-                    q = f"ในกล่องมีลูกแก้วสีต่างๆ ดังรูป<br>{svg}ถ้าหลับตาสุ่มหยิบลูกแก้ว 1 ลูก โอกาสที่จะหยิบได้ <b>ลูกแก้ว{target_color}</b> จะเป็นอย่างไร?<br><br><span style='font-size:18px; color:#7f8c8d;'>(ตัวเลือก: <b>เกิดขึ้นอย่างแน่นอน</b> / <b>อาจจะเกิดขึ้นหรือไม่ก็ได้</b> / <b>ไม่เกิดขึ้นอย่างแน่นอน</b>)</span>"
-                    
-                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ความน่าจะเป็นเบื้องต้น):</b><br>
-                    <b>พิจารณาสิ่งที่อยู่ในกล่อง:</b><br>
-                    👉 โอกาสที่จะหยิบได้ลูกแก้ว <b>{target_color}</b> คือ <b>"{ans}"</b><br>
-                    👉 <b>เหตุผล:</b> เพราะ{reason}<br>
-                    <b>ตอบ: {ans}</b></span>"""
-
+                        count_arr = []
+                        if target_type == "most_likely":
+                            count_arr.append(random.randint(6, 9)) # สีที่มากสุด
+                            for _ in range(num_colors - 1):
+                                count_arr.append(random.randint(2, 5))
+                        else:
+                            count_arr.append(random.randint(2, 3)) # สีที่น้อยสุด
+                            for _ in range(num_colors - 1):
+                                count_arr.append(random.randint(5, 8))
+                                
+                        random.shuffle(count_arr)
+                        for c in chosen_colors:
+                            color_counts[c] = count_arr.pop(0)
+                        
+                        svg = draw_marbles_box_svg(color_counts)
+                        
+                        if target_type == "most_likely":
+                            q_text = "มีโอกาสถูกหยิบได้ <b>'มากที่สุด'</b>"
+                            ans_val = max(color_counts.values())
+                            ans_colors = [k for k, v in color_counts.items() if v == ans_val]
+                            reason = f"มีจำนวนมากที่สุดในกล่อง ({ans_val} ลูก)"
+                        else:
+                            q_text = "มีโอกาสถูกหยิบได้ <b>'น้อยที่สุด'</b>"
+                            ans_val = min(color_counts.values())
+                            ans_colors = [k for k, v in color_counts.items() if v == ans_val]
+                            reason = f"มีจำนวนน้อยที่สุดในกล่อง ({ans_val} ลูก)"
+                            
+                        ans_text = " และ ".join(ans_colors)
+                        count_details = ", ".join([f"{k} {v} ลูก" for k, v in color_counts.items()])
+                        
+                        q = f"ในกล่องมีลูกแก้วสีต่างๆ ดังรูป<br>{svg}ถ้าหลับตาสุ่มหยิบลูกแก้ว 1 ลูก ลูกแก้ว <b>สีใด</b> {q_text}?"
+                        
+                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การเปรียบเทียบโอกาส):</b><br>
+                        <b>หลักการ:</b> สีที่มีจำนวน <span style='color:#e74c3c;'>'มากที่สุด'</span> จะมีโอกาสถูกหยิบโดน <span style='color:#e74c3c;'>'มากที่สุด'</span> <br>
+                        ในทางกลับกัน สีที่มีจำนวน <span style='color:#e74c3c;'>'น้อยที่สุด'</span> ก็จะมีโอกาส <span style='color:#e74c3c;'>'น้อยที่สุด'</span> เช่นกัน<br><br>
+                        <b>ขั้นที่ 1: นับจำนวนลูกแก้วแต่ละสีจากรูปภาพ</b><br>
+                        👉 {count_details}<br><br>
+                        <b>ขั้นที่ 2: พิจารณาหาสิ่งที่โจทย์ถาม</b><br>
+                        👉 โจทย์ถามหาสีที่ {q_text}<br>
+                        👉 จากการนับ พบว่า <b>{ans_text}</b> {reason}<br>
+                        <b>ตอบ: {ans_text}</b></span>"""
+                        
+                    else:
+                        # จำแนกเหตุการณ์ (แน่นอน, อาจจะ, ไม่เกิด) -> (ของเดิม)
+                        scenario_type = random.choice(["certain", "impossible", "possible"])
+                        chosen_colors = random.sample(colors_avail, 2)
+                        color_counts = {}
+                        
+                        if scenario_type == "certain":
+                            target_color = chosen_colors[0]
+                            color_counts[target_color] = random.randint(8, 16) # เพิ่มจำนวนให้เต็มกล่องใหม่
+                            ans = "เกิดขึ้นอย่างแน่นอน"
+                            reason = f"ในกล่องมีแต่ลูกแก้ว{target_color}เพียงสีเดียว ไม่มีลูกแก้วสีอื่นปนอยู่เลย"
+                        elif scenario_type == "impossible":
+                            color_counts[chosen_colors[0]] = random.randint(4, 8)
+                            color_counts[chosen_colors[1]] = random.randint(4, 8)
+                            target_color = [c for c in colors_avail if c not in chosen_colors][0]
+                            ans = "ไม่เกิดขึ้นอย่างแน่นอน"
+                            reason = f"ในกล่องไม่มีลูกแก้ว{target_color}อยู่เลยแม้แต่ลูกเดียว"
+                        else:
+                            color_counts[chosen_colors[0]] = random.randint(4, 8)
+                            color_counts[chosen_colors[1]] = random.randint(4, 8)
+                            target_color = chosen_colors[0]
+                            ans = "อาจจะเกิดขึ้นหรือไม่ก็ได้"
+                            reason = f"ในกล่องมีลูกแก้ว{target_color}ปนอยู่กับสีอื่นด้วย จึงมีโอกาสที่จะหยิบได้สีนี้ หรืออาจจะไปหยิบโดนสีอื่นก็ได้"
+                            
+                        svg = draw_marbles_box_svg(color_counts)
+                        q = f"ในกล่องมีลูกแก้วสีต่างๆ ดังรูป<br>{svg}ถ้าหลับตาสุ่มหยิบลูกแก้ว 1 ลูก เหตุการณ์ที่จะหยิบได้ <b>ลูกแก้ว{target_color}</b> เป็นอย่างไร?<br><br><span style='font-size:18px; color:#7f8c8d;'>(ตัวเลือก: <b>เกิดขึ้นอย่างแน่นอน</b> / <b>อาจจะเกิดขึ้นหรือไม่ก็ได้</b> / <b>ไม่เกิดขึ้นอย่างแน่นอน</b>)</span>"
+                        
+                        sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ความน่าจะเป็นเบื้องต้น):</b><br>
+                        <b>พิจารณาสิ่งที่อยู่ในกล่อง:</b><br>
+                        👉 จากรูปภาพ เหตุการณ์ที่จะหยิบได้ลูกแก้ว <b>{target_color}</b> คือ <b>"{ans}"</b><br>
+                        👉 <b>เหตุผล:</b> เพราะ{reason}<br>
+                        <b>ตอบ: {ans}</b></span>"""
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
