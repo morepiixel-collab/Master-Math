@@ -1774,17 +1774,33 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             elif actual_sub_t == "การคูณและการหารทศนิยม":
                 
                 # ----------------------------------------------------
-                # ฟังก์ชันวาดตารางตั้งหารยาวสำหรับทศนิยม
+                # ฟังก์ชันวาดตารางตั้งหารยาวสำหรับทศนิยม (ย้ายลบไปขวา + อธิบายเศษ)
                 # ----------------------------------------------------
-                def get_decimal_long_div_html(divisor, dividend_str):
+                def get_decimal_long_div_html(divisor, dividend_str, max_dp=2):
                     div_chars = list(dividend_str)
                     ans_chars = []
                     steps = []
                     curr_val = 0
                     
-                    for i, char in enumerate(div_chars):
+                    i = 0
+                    dp_count = 0
+                    
+                    while True:
+                        if i < len(div_chars):
+                            char = div_chars[i]
+                        else:
+                            if '.' not in div_chars:
+                                div_chars.append('.')
+                                ans_chars.append('.')
+                                i += 1
+                                continue
+                            char = '0'
+                            div_chars.append('0')
+                            
                         if char == '.':
-                            ans_chars.append('.')
+                            if '.' not in ans_chars:
+                                ans_chars.append('.')
+                            i += 1
                             continue
                             
                         curr_val = curr_val * 10 + int(char)
@@ -1794,36 +1810,53 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         mul = q * divisor
                         rem = curr_val - mul
                         
-                        if q > 0 or i == len(div_chars) - 1:
+                        if q > 0 or i >= len(dividend_str) - 1:
                             steps.append({'col': i, 'curr': curr_val, 'mul': mul, 'rem': rem})
+                            
                         curr_val = rem
                         
-                    first_nonzero = False
-                    for i in range(len(ans_chars)):
-                        if ans_chars[i] == '.':
-                            if not first_nonzero and i > 0: ans_chars[i-1] = '0'
-                            break
-                        if ans_chars[i] != '0': first_nonzero = True
-                        elif not first_nonzero: ans_chars[i] = ''
+                        if '.' in ans_chars:
+                            dp_count = len(ans_chars) - ans_chars.index('.') - 1
                             
+                        i += 1
+                        
+                        # เงื่อนไขการหยุดหาร
+                        if i >= len(dividend_str) and curr_val == 0:
+                            break
+                        if dp_count >= max_dp:
+                            break
+                            
+                    # ลบเลข 0 ส่วนเกินด้านหน้าผลลัพธ์
+                    first_nonzero = False
+                    for j in range(len(ans_chars)):
+                        if ans_chars[j] == '.':
+                            if not first_nonzero and j > 0: ans_chars[j-1] = '0'
+                            break
+                        if ans_chars[j] != '0': first_nonzero = True
+                        elif not first_nonzero: ans_chars[j] = ''
+                            
+                    final_quotient = "".join(ans_chars).strip()
+                    if final_quotient.startswith('.'): final_quotient = '0' + final_quotient
+                    if final_quotient.endswith('.'): final_quotient = final_quotient[:-1]
+                    
                     html = "<div style='margin: 15px 40px; font-family: \"Sarabun\", sans-serif; font-size: 24px;'>"
                     html += "<table style='border-collapse: collapse; text-align: center;'>"
                     
-                    # Ans row
+                    # แถวผลลัพธ์ (ด้านบนสุด)
                     html += "<tr><td style='border: none;'></td>"
                     for c in ans_chars:
                         html += f"<td style='padding: 2px 10px; color: #c0392b; font-weight: bold;'>{c}</td>"
-                    html += "</tr>"
+                    html += "<td style='border: none;'></td></tr>" # คอลัมน์เผื่อเครื่องหมายลบ
                     
-                    # Divisor & Dividend
+                    # แถวตัวหาร & ตัวตั้ง
                     html += f"<tr><td style='padding: 2px 15px; font-weight: bold; text-align: right;'>{divisor}</td>"
-                    for i, c in enumerate(div_chars):
+                    for j, c in enumerate(div_chars):
                         bt = "border-top: 2px solid #333;"
-                        bl = "border-left: 2px solid #333;" if i == 0 else ""
+                        bl = "border-left: 2px solid #333;" if j == 0 else ""
                         html += f"<td style='{bt} {bl} padding: 2px 10px; font-weight: bold;'>{c}</td>"
-                    html += "</tr>"
+                    html += "<td style='border: none;'></td></tr>"
                     
-                    # Steps
+                    # แถวแสดงสเต็ปการลบดึงตัวเลข
                     for idx, step in enumerate(steps):
                         if step['mul'] == 0 and step['curr'] == 0 and idx != len(steps)-1: continue
                         
@@ -1836,8 +1869,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                                 if div_chars[c_ptr] != '.': cols.append(c_ptr)
                                 c_ptr -= 1
                             cols.reverse()
-                            for i in range(len(div_chars)):
-                                if i in cols: html += f"<td style='padding: 2px 10px;'>{cv_str[cols.index(i)]}</td>"
+                            for j in range(len(div_chars) + 1):
+                                if j in cols: html += f"<td style='padding: 2px 10px;'>{cv_str[cols.index(j)]}</td>"
                                 else: html += "<td style='border: none;'></td>"
                             html += "</tr>"
                             
@@ -1849,13 +1882,15 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             if div_chars[c_ptr] != '.': cols.append(c_ptr)
                             c_ptr -= 1
                         cols.reverse()
-                        for i in range(len(div_chars)):
-                            if i in cols:
+                        for j in range(len(div_chars) + 1):
+                            if j in cols:
                                 bb = "border-bottom: 2px solid #333;"
-                                html += f"<td style='{bb} padding: 2px 10px;'>{mul_str[cols.index(i)]}</td>"
-                            elif len(cols) > 0 and i == cols[0] - 1:
-                                html += "<td style='padding: 2px 10px;'>-</td>"
-                            else: html += "<td style='border: none;'></td>"
+                                html += f"<td style='{bb} padding: 2px 10px;'>{mul_str[cols.index(j)]}</td>"
+                            elif len(cols) > 0 and j == cols[-1] + 1:
+                                # ย้ายเครื่องหมายลบมาอยู่ด้านขวาตรงนี้ครับ!
+                                html += "<td style='padding: 2px 10px; font-weight: bold; color: #e74c3c;'>-</td>"
+                            else: 
+                                html += "<td style='border: none;'></td>"
                         html += "</tr>"
                         
                     if len(steps) > 0:
@@ -1867,15 +1902,29 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             if div_chars[c_ptr] != '.': cols.append(c_ptr)
                             c_ptr -= 1
                         cols.reverse()
-                        for i in range(len(div_chars)):
-                            if i in cols:
+                        for j in range(len(div_chars) + 1):
+                            if j in cols:
                                 bb = "border-bottom: 4px double #333;"
-                                html += f"<td style='{bb} padding: 2px 10px;'>{rem_str[cols.index(i)]}</td>"
-                            else: html += "<td style='border: none;'></td>"
+                                html += f"<td style='{bb} padding: 2px 10px;'>{rem_str[cols.index(j)]}</td>"
+                            else: 
+                                html += "<td style='border: none;'></td>"
                         html += "</tr>"
                         
                     html += "</table></div>"
-                    return html
+                    
+                    # เพิ่มกล่องอธิบายเหตุผลการค้างเศษ (วงสีเหลือง)
+                    if steps and steps[-1]['rem'] != 0:
+                        html += f"<div style='margin: 10px 40px; padding: 10px; background: #fdf2e9; border-left: 4px solid #e67e22; font-size: 16px;'>"
+                        html += f"<b>💡 ทำไมถึงมีเศษค้างไว้ ไม่หารต่อให้หมด?</b><br>"
+                        html += f"เนื่องจากการหารข้อนี้ไม่ลงตัว หรือโจทย์ต้องการผลลัพธ์ทศนิยม <b>{max_dp} ตำแหน่ง</b> "
+                        html += f"เราจึงสามารถหยุดหารแค่นี้ได้เลยครับ (โดยเศษ <b>{steps[-1]['rem']}</b> ที่เหลืออยู่ คือเศษที่อยู่ในหลักทศนิยมถัดไปนั่นเอง)"
+                        html += "</div>"
+                    elif steps and steps[-1]['rem'] == 0:
+                        html += f"<div style='margin: 10px 40px; padding: 10px; background: #eaeded; border-left: 4px solid #3498db; font-size: 16px;'>"
+                        html += f"<b>💡 ข้อสังเกต:</b> เศษเป็น 0 แสดงว่าการหารนี้ <b>ลงตัวพอดี</b> ไม่เหลือเศษ"
+                        html += "</div>"
+                        
+                    return html, final_quotient
 
                 op = random.choice(["×", "÷"])
                 
@@ -1915,19 +1964,27 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     dp_ans = random.choice([1, 2])
                     dp_b = random.choice([1, 2])
                     
-                    if is_challenge:
-                        ans_val = round(random.uniform(5.0, 50.0), dp_ans)
-                        b = round(random.uniform(2.0, 15.0), dp_b)
-                    else:
-                        ans_val = round(random.uniform(1.0, 12.0), dp_ans)
-                        b = round(random.choice([0.2, 0.4, 0.5, 1.2, 1.5, 2.5, 3.2]), dp_b)
-                        
-                    a = round(ans_val * b, dp_ans + dp_b)
+                    # สุ่มว่าข้อนี้จะเป็นหารลงตัว หรือ หารค้างเศษ
+                    is_exact = random.choice([True, False])
                     
-                    # ตัดเลข 0 ส่วนเกินด้านหลังทิ้งเพื่อความสวยงาม
+                    if is_exact:
+                        if is_challenge:
+                            ans_val = round(random.uniform(5.0, 50.0), dp_ans)
+                            b = round(random.uniform(2.0, 15.0), dp_b)
+                        else:
+                            ans_val = round(random.uniform(1.0, 12.0), dp_ans)
+                            b = round(random.choice([0.2, 0.4, 0.5, 1.2, 1.5, 2.5, 3.2]), dp_b)
+                        a = round(ans_val * b, dp_ans + dp_b)
+                    else:
+                        if is_challenge:
+                            a = round(random.uniform(20.0, 99.0), 1)
+                            b = round(random.choice([0.3, 0.7, 0.9, 1.1, 1.3]), 1)
+                        else:
+                            a = round(random.uniform(5.0, 25.0), 1)
+                            b = round(random.choice([0.3, 0.6, 1.5, 2.5]), 1)
+                            
                     a_str = f"{a:g}"
                     b_str = f"{b:g}"
-                    ans_str = f"{ans_val:g}"
                     
                     b_parts = b_str.split('.')
                     b_dp = len(b_parts[1]) if len(b_parts) > 1 else 0
@@ -1937,12 +1994,21 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     b_shift = int(round(b * mult_factor))
                     a_shift_str = f"{a_shift:g}" 
                     
-                    div_table_html = get_decimal_long_div_html(b_shift, a_shift_str)
+                    max_dp = dp_ans if is_exact else random.choice([2, 3])
+                    div_table_html, ans_str = get_decimal_long_div_html(b_shift, a_shift_str, max_dp)
                     
                     q = f"จงหาผลลัพธ์ของ <b>{a_str} ÷ {b_str}</b>"
                     
                     if b_dp > 0:
                         sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การหารทศนิยม):</b><br>
+                        <b>ขั้นที่ 1:</b> สังเกตตัวหาร ({b_str}) ว่าเป็นทศนิยมกี่ตำแหน่ง<br>
+                        👉 ตัวหารเป็นทศนิยม {b_dp} ตำแหน่ง เราต้องเลื่อนจุดเพื่อให้ตัวหารกลายเป็น <b>จำนวนเต็ม</b> เสมอ<br>
+                        <b>ขั้นที่ 2:</b> นำ <b>{mult_factor:,}</b> มาคูณทั้งตัวตั้งและตัวหาร (เพื่อเลื่อนจุดทศนิยมไปทางขวา {b_dp} ตำแหน่ง)<br>
+                        👉 ตัวตั้ง: {a_str} × {mult_factor:,} = <b>{a_shift_str}</b><br>
+                        👉 ตัวหาร: {b_str} × {mult_factor:,} = <b>{b_shift:,}</b><br>
+                        <b>ขั้นที่ 3:</b> นำมาตั้งหารยาวด้วยโจทย์ใหม่ที่ได้<br>
+                        {div_table_html}
+                        <b>ตอบ: ประมาณ {ans_str}</b></span>""" if not is_exact else f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การหารทศนิยม):</b><br>
                         <b>ขั้นที่ 1:</b> สังเกตตัวหาร ({b_str}) ว่าเป็นทศนิยมกี่ตำแหน่ง<br>
                         👉 ตัวหารเป็นทศนิยม {b_dp} ตำแหน่ง เราต้องเลื่อนจุดเพื่อให้ตัวหารกลายเป็น <b>จำนวนเต็ม</b> เสมอ<br>
                         <b>ขั้นที่ 2:</b> นำ <b>{mult_factor:,}</b> มาคูณทั้งตัวตั้งและตัวหาร (เพื่อเลื่อนจุดทศนิยมไปทางขวา {b_dp} ตำแหน่ง)<br>
@@ -1957,8 +2023,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         👉 โดยวางจุดทศนิยมของผลลัพธ์ (ด้านบน) ให้ตรงกับจุดทศนิยมของตัวตั้ง (ด้านล่าง)<br>
                         <b>ขั้นที่ 2:</b> ตั้งหารยาว<br>
                         {div_table_html}
+                        <b>ตอบ: ประมาณ {ans_str}</b></span>""" if not is_exact else f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การหารทศนิยม):</b><br>
+                        <b>ขั้นที่ 1:</b> สังเกตตัวหาร ({b_str}) พบว่าเป็นจำนวนเต็มแล้ว สามารถตั้งหารยาวได้เลย<br>
+                        👉 โดยวางจุดทศนิยมของผลลัพธ์ (ด้านบน) ให้ตรงกับจุดทศนิยมของตัวตั้ง (ด้านล่าง)<br>
+                        <b>ขั้นที่ 2:</b> ตั้งหารยาว<br>
+                        {div_table_html}
                         <b>ตอบ: {ans_str}</b></span>"""
-
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
