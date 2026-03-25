@@ -3415,14 +3415,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>{step1}<br>{step2}<br>{step3}<br><br><b>ขั้นสุดท้าย:</b> ทอนเป็นเศษส่วนอย่างต่ำ/จำนวนคละ<br>👉 คำตอบคือ <b><span style='font-size:24px; color:#e74c3c;'>{ans_str}</span></b></span>"
 
             elif actual_sub_t == "การเขียนเศษส่วนในรูปร้อยละ":
-                # --- เครื่องยนต์แปลงร้อยละ (Percentage Engine) ---
                 def render_frac(n, d, w=0):
                     frac_html = f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b>{n}</b></div><div style='padding-top:2px;'><b>{d}</b></div></div>"
                     if w != 0: return f"<div style='display:inline-block; vertical-align:middle;'><span style='font-size:24px; font-weight:bold; color:#2c3e50; margin-right:3px;'>{w}</span>{frac_html}</div>"
                     return frac_html
 
                 if is_challenge:
-                    # 🔥 โหมดชาเลนจ์: แปลงจำนวนคละเป็นร้อยละ (เปอร์เซ็นต์จะเกิน 100%)
                     w = random.randint(1, 3)
                     d = random.choice([2, 4, 5, 10, 20, 25])
                     n = random.randint(1, d-1)
@@ -3435,7 +3433,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     q = f"จงเขียนจำนวนคละต่อไปนี้ให้อยู่ในรูป <b>ร้อยละ (เปอร์เซ็นต์)</b><br><br><div style='text-align:center; font-size:26px;'>{f_str} = <span style='color:#2980b9;'>?</span> %</div>"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br><b>ขั้นที่ 1:</b> แปลงจำนวนคละเป็นเศษเกิน<br>👉 {f_str} = {render_frac(imp_n, d)}<br><br><b>ขั้นที่ 2:</b> ทำตัวส่วนให้เป็น 100 โดยหาตัวเลขมาคูณ<br>👉 พบว่า {d} × <b>{m}</b> = 100 จึงนำ {m} มาคูณทั้งเศษและส่วน<br>👉 ({imp_n} × {m}) / ({d} × {m}) = {render_frac(ans, 100)}<br><br><b>ขั้นที่ 3:</b> เมื่อส่วนเป็น 100 แล้ว ตัวเศษคือค่าร้อยละ<br>👉 ได้ <b>ร้อยละ {ans}</b> หรือ <b>{ans}%</b><br><b>ตอบ: {ans}%</b></span>"
                 else:
-                    # 🔹 โหมดปกติ: เศษส่วนแท้แปลงเป็นร้อยละ
                     d = random.choice([2, 4, 5, 10, 20, 25, 50])
                     n = random.randint(1, d-1)
                     f_str = render_frac(n, d)
@@ -3444,6 +3441,99 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     q = f"จงเขียนเศษส่วนต่อไปนี้ให้อยู่ในรูป <b>ร้อยละ (เปอร์เซ็นต์)</b><br><br><div style='text-align:center; font-size:26px;'>{f_str} = <span style='color:#2980b9;'>?</span> %</div>"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br><b>หลักการ:</b> การทำเศษส่วนให้เป็นร้อยละ ต้องทำ <b>'ตัวส่วนให้เท่ากับ 100'</b> เสมอ<br><br><b>ขั้นที่ 1:</b> หาตัวเลขที่คูณกับส่วน {d} แล้วได้ 100<br>👉 พบว่า {d} × <b>{m}</b> = 100<br><br><b>ขั้นที่ 2:</b> นำ {m} มาคูณทั้งเศษและส่วน<br>👉 ({n} × {m}) / ({d} × {m}) = {render_frac(ans, 100)}<br><br><b>ขั้นที่ 3:</b> เมื่อส่วนเป็น 100 แล้ว ตัวเศษคือค่าร้อยละ<br>👉 ได้ <b>ร้อยละ {ans}</b> หรือ <b>{ans}%</b><br><b>ตอบ: {ans}%</b></span>"
+
+            elif actual_sub_t == "การแก้สมการ (คูณ/หาร)":
+                # --- เครื่องยนต์สมการ (Equation Engine) ---
+                var = random.choice(["x", "y", "a", "m", "k", "p"])
+                
+                if is_challenge:
+                    scenario = random.choice(["distributive", "fractional_coef", "both_sides", "word_problem"])
+                    
+                    if scenario == "distributive":
+                        a = random.randint(2, 6)
+                        ans = random.randint(3, 12)
+                        b = random.randint(1, 10)
+                        is_plus = random.choice([True, False])
+                        
+                        if is_plus:
+                            c = a * (ans + b)
+                            q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a}({var} + {b}) = {c}</b></div>"
+                            sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br>👉 นำ {a} ที่คูณอยู่หน้าวงเล็บ ย้ายไปหารอีกฝั่ง<br>👉 {var} + {b} = {c} ÷ {a}<br>👉 {var} + {b} = {c//a}<br>👉 ย้าย +{b} ไปลบ<br>👉 {var} = {c//a} - {b}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+                        else:
+                            while ans <= b: 
+                                ans = random.randint(5, 15)
+                                b = random.randint(1, 5)
+                            c = a * (ans - b)
+                            q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a}({var} - {b}) = {c}</b></div>"
+                            sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br>👉 นำ {a} ที่คูณอยู่หน้าวงเล็บ ย้ายไปหารอีกฝั่ง<br>👉 {var} - {b} = {c} ÷ {a}<br>👉 {var} - {b} = {c//a}<br>👉 ย้าย -{b} ไปบวก<br>👉 {var} = {c//a} + {b}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+                            
+                    elif scenario == "fractional_coef":
+                        a = random.randint(2, 5)
+                        b = random.randint(3, 7)
+                        while math.gcd(a, b) != 1: b = random.randint(3, 7)
+                        ans = b * random.randint(1, 5) 
+                        c = random.randint(5, 15)
+                        d = (a * ans // b) + c
+                        
+                        frac_html = f"<div style='display:inline-block; vertical-align:middle; text-align:center;'><div style='border-bottom:2px solid #333; padding:0 4px;'><b>{a}{var}</b></div><div style='padding-top:2px;'><b>{b}</b></div></div>"
+                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{frac_html} + <b>{c} = {d}</b></div>"
+                        
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br>👉 ย้าย +{c} ไปลบอีกฝั่งก่อน<br>👉 {a}{var}/{b} = {d} - {c}<br>👉 {a}{var}/{b} = {d-c}<br>👉 ย้าย {b} ที่หารอยู่ ไปคูณ<br>👉 {a}{var} = {d-c} × {b}<br>👉 {a}{var} = {(d-c)*b}<br>👉 ย้าย {a} ไปหาร<br>👉 {var} = {(d-c)*b} ÷ {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+                        
+                    elif scenario == "both_sides":
+                        ans = random.randint(2, 10)
+                        c = random.randint(2, 5)
+                        a = c + random.randint(1, 4)
+                        diff_a = a - c
+                        diff_val = diff_a * ans
+                        b = random.randint(1, 10)
+                        d = diff_val + b
+                        
+                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a}{var} + {b} = {c}{var} + {d}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - ตัวแปรสองฝั่ง):</b><br>👉 ย้ายตัวแปรให้อยู่ฝั่งเดียวกัน และย้ายตัวเลขไปอีกฝั่ง<br>👉 ย้าย {c}{var} ไปลบ และย้าย +{b} ไปลบอีกฝั่ง<br>👉 {a}{var} - {c}{var} = {d} - {b}<br>👉 {diff_a}{var} = {d-b}<br>👉 {var} = {d-b} ÷ {diff_a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+
+                    elif scenario == "word_problem":
+                        ans = random.randint(5, 20)
+                        mult = random.randint(2, 5)
+                        sub = random.randint(2, 10)
+                        res = (mult * ans) - sub
+                        q = f"<b>{mult} เท่า</b> ของจำนวนจำนวนหนึ่ง หักออกด้วย <b>{sub}</b> จะมีค่าเท่ากับ <b>{res}</b><br>จงหาจำนวนนั้น?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - ตีโจทย์ปัญหา):</b><br>👉 กำหนดให้จำนวนนั้นคือ <b>{var}</b><br>👉 สร้างสมการได้เป็น: <b>{mult}{var} - {sub} = {res}</b><br>👉 ย้าย -{sub} ไปบวกอีกฝั่ง: {mult}{var} = {res} + {sub}<br>👉 {mult}{var} = {res+sub}<br>👉 ย้าย {mult} ไปหาร: {var} = {res+sub} ÷ {mult}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+
+                else:
+                    scenario = random.choice(["mult", "div", "mult_add", "div_sub"])
+                    if scenario == "mult":
+                        a = random.randint(4, 15)
+                        ans = random.randint(3, 12)
+                        b = a * ans
+                        q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b>: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a}{var} = {b}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 {a} คูณอยู่กับ {var} จึงย้าย {a} ไปหารอีกฝั่ง<br>👉 {var} = {b} ÷ {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+                    elif scenario == "div":
+                        a = random.randint(3, 9)
+                        ans = random.randint(5, 20)
+                        c = a * ans
+                        frac_html = f"<div style='display:inline-block; vertical-align:middle; text-align:center;'><div style='border-bottom:2px solid #333; padding:0 4px;'><b>{var}</b></div><div style='padding-top:2px;'><b>{a}</b></div></div>"
+                        q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b>: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{frac_html} <b>= {ans}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 {a} หารอยู่กับ {var} จึงย้าย {a} ไปคูณอีกฝั่ง<br>👉 {var} = {ans} × {a}<br>👉 {var} = <b>{c}</b><br><b>ตอบ: {c}</b></span>"
+                    elif scenario == "mult_add":
+                        a = random.randint(2, 6)
+                        ans = random.randint(3, 10)
+                        b = random.randint(1, 15)
+                        c = (a * ans) + b
+                        q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b>: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a}{var} + {b} = {c}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้าย +{b} ไปลบอีกฝั่งก่อน<br>👉 {a}{var} = {c} - {b}<br>👉 {a}{var} = {c-b}<br>👉 ย้าย {a} ที่คูณอยู่ไปหาร<br>👉 {var} = {c-b} ÷ {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+                    elif scenario == "div_sub":
+                        a = random.randint(2, 6)
+                        ans = a * random.randint(4, 12)
+                        b = random.randint(1, 10)
+                        c = (ans // a) - b
+                        while c <= 0:
+                            ans = a * random.randint(4, 12)
+                            b = random.randint(1, 10)
+                            c = (ans // a) - b
+                        frac_html = f"<div style='display:inline-block; vertical-align:middle; text-align:center;'><div style='border-bottom:2px solid #333; padding:0 4px;'><b>{var}</b></div><div style='padding-top:2px;'><b>{a}</b></div></div>"
+                        q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b>: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{frac_html} - <b>{b} = {c}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้าย -{b} ไปบวกอีกฝั่งก่อน<br>👉 {var}/{a} = {c} + {b}<br>👉 {var}/{a} = {c+b}<br>👉 ย้าย {a} ที่หารอยู่ไปคูณ<br>👉 {var} = {c+b} × {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
@@ -3463,7 +3553,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             attempts += 1  
             
     return questions
-
 # ==========================================
 # UI Rendering
 # ==========================================
