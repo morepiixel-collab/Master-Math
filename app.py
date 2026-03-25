@@ -686,7 +686,7 @@ curriculum_db = {
     },
     "ป.5": {
         "เศษส่วน": ["การบวกเศษส่วน", "การลบเศษส่วน", "การคูณเศษส่วน", "การหารเศษส่วน"],
-        "ทศนิยม": ["การบวกและการลบทศนิยม", "การคูณและการหารทศนิยม"],
+        "ทศนิยม": ["การบวกและการลบทศนิยม", "การคูณทศนิยม"],
         "ร้อยละและเปอร์เซ็นต์": ["การเขียนเศษส่วนในรูปร้อยละ"],
         "สมการ": ["การแก้สมการ (คูณ/หาร)"]
     },
@@ -1751,186 +1751,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         <b>ขั้นที่ 2:</b> หาผลต่างของจำนวนรูป: {counts[d1]} - {counts[d2]} = {diff_counts} รูป<br>
                         <b>ขั้นที่ 3:</b> นำผลต่างของรูป × {pic_val} ผล ➔ {diff_counts} × {pic_val} = <b>{ans} ผล</b><br>
                         <b>ตอบ: {ans} ผล</b></span>"""
-elif actual_sub_t == "การบวกและการลบทศนิยม":
-                op = random.choice(["+", "-"])
-                dp1 = random.choice([1, 2, 3])
-                dp2 = random.choice([1, 2, 3])
-                
-                if op == "+":
-                    a = round(random.uniform(1.0, 500.0), dp1)
-                    b = round(random.uniform(1.0, 500.0), dp2)
-                else:
-                    a = round(random.uniform(50.0, 500.0), dp1)
-                    b = round(random.uniform(1.0, a - 1.0), dp2)
-                
-                q_base = f"จงหาผลลัพธ์ของ <b>{a} {op} {b}</b>"
-                table_html = generate_decimal_vertical_html(a, b, op, is_key=False)
-                table_key = generate_decimal_vertical_html(a, b, op, is_key=True)
-                
-                q = f"{q_base}<br>{table_html}"
-                sol = f"{q_base}<br>{table_key}"
-
-            elif actual_sub_t == "การคูณและการหารทศนิยม":
-                op = random.choice(["×", "÷"])
-                
-                if op == "×":
-                    dp1 = random.choice([1, 2])
-                    dp2 = random.choice([1, 2])
-                    
-                    if is_challenge:
-                        a = round(random.uniform(10.0, 99.99), dp1)
-                        b = round(random.uniform(5.0, 50.99), dp2)
-                    else:
-                        a = round(random.uniform(1.0, 15.9), dp1)
-                        b = round(random.uniform(1.0, 9.9), dp2)
-                        
-                    ans = round(a * b, dp1 + dp2)
-                    
-                    a_str = f"{a:.{dp1}f}"
-                    b_str = f"{b:.{dp2}f}"
-                    ans_str = f"{ans:.{dp1+dp2}f}"
-                    
-                    a_int = int(a_str.replace(".", ""))
-                    b_int = int(b_str.replace(".", ""))
-                    
-                    q = f"จงหาผลลัพธ์ของ <b>{a_str} × {b_str}</b>"
-                    sol = f"""{q}<div class="sol-text"><span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การคูณทศนิยม):</b><br>
-                    <b>ขั้นที่ 1:</b> นับตำแหน่งทศนิยมของตัวตั้งและตัวคูณ<br>
-                    👉 ตัวตั้ง ({a_str}) มีทศนิยม {dp1} ตำแหน่ง<br>
-                    👉 ตัวคูณ ({b_str}) มีทศนิยม {dp2} ตำแหน่ง<br>
-                    👉 ผลลัพธ์จะต้องมีทศนิยมรวม = {dp1} + {dp2} = <b>{dp1+dp2} ตำแหน่ง</b><br>
-                    <b>ขั้นที่ 2:</b> นำตัวเลขมาคูณกันแบบจำนวนนับ (โดยเอาเครื่องหมายจุดออกก่อน)<br>
-                    👉 {a_int:,} × {b_int:,} = <b>{a_int * b_int:,}</b><br>
-                    <b>ขั้นที่ 3:</b> ใส่จุดทศนิยมกลับเข้าไปให้ครบ {dp1+dp2} ตำแหน่ง (โดยนับจากหลังสุดมาข้างหน้า)<br>
-                    👉 จะได้ <b>{ans_str}</b><br>
-                    <b>ตอบ: {ans_str}</b></span></div>"""
-                    
-                else: # การหาร
-                    dp_ans = random.choice([1, 2])
-                    dp_b = random.choice([1, 2])
-                    
-                    if is_challenge:
-                        ans_val = round(random.uniform(5.0, 50.0), dp_ans)
-                        b = round(random.uniform(2.0, 15.0), dp_b)
-                    else:
-                        ans_val = round(random.uniform(1.0, 12.0), dp_ans)
-                        b = round(random.choice([0.2, 0.4, 0.5, 1.2, 1.5, 2.5, 3.2]), dp_b)
-                        
-                    a = round(ans_val * b, dp_ans + dp_b)
-                    
-                    # ตัดเลข 0 ส่วนเกินด้านหลังทิ้ง
-                    a_str = f"{a:g}"
-                    b_str = f"{b:g}"
-                    ans_str = f"{ans_val:g}"
-                    
-                    b_parts = b_str.split('.')
-                    b_dp = len(b_parts[1]) if len(b_parts) > 1 else 0
-                    
-                    mult_factor = 10 ** b_dp
-                    a_shift = round(a * mult_factor, 4)
-                    b_shift = int(round(b * mult_factor))
-                    a_shift_str = f"{a_shift:g}" 
-                    
-                    q = f"จงหาผลลัพธ์ของ <b>{a_str} ÷ {b_str}</b>"
-                    sol = f"""{q}<div class="sol-text"><span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การหารทศนิยม):</b><br>
-                    <b>ขั้นที่ 1:</b> สังเกตตัวหาร ({b_str}) ว่าเป็นทศนิยมกี่ตำแหน่ง<br>
-                    👉 ตัวหารเป็นทศนิยม {b_dp} ตำแหน่ง เราต้องเลื่อนจุดเพื่อให้ตัวหารกลายเป็น <b>จำนวนเต็ม</b> เสมอ<br>
-                    <b>ขั้นที่ 2:</b> นำ <b>{mult_factor:,}</b> มาคูณทั้งตัวตั้งและตัวหาร (เพื่อเลื่อนจุดทศนิยมไปทางขวา {b_dp} ตำแหน่ง)<br>
-                    👉 ตัวตั้ง: {a_str} × {mult_factor:,} = <b>{a_shift_str}</b><br>
-                    👉 ตัวหาร: {b_str} × {mult_factor:,} = <b>{b_shift:,}</b><br>
-                    <b>ขั้นที่ 3:</b> นำมาตั้งหารด้วยโจทย์ใหม่ที่ได้<br>
-                    👉 {a_shift_str} ÷ {b_shift:,} = <b>{ans_str}</b><br>
-                    <b>ตอบ: {ans_str}</b></span></div>"""
-            elif actual_sub_t == "การบวกและการลบทศนิยม":
-                op = random.choice(["+", "-"])
-                dp1 = random.choice([1, 2, 3])
-                dp2 = random.choice([1, 2, 3])
-                
-                if op == "+":
-                    a = round(random.uniform(1.0, 500.0), dp1)
-                    b = round(random.uniform(1.0, 500.0), dp2)
-                else:
-                    a = round(random.uniform(50.0, 500.0), dp1)
-                    b = round(random.uniform(1.0, a - 1.0), dp2)
-                
-                q_base = f"จงหาผลลัพธ์ของ <b>{a} {op} {b}</b>"
-                table_html = generate_decimal_vertical_html(a, b, op, is_key=False)
-                table_key = generate_decimal_vertical_html(a, b, op, is_key=True)
-                
-                q = f"{q_base}<br>{table_html}"
-                sol = f"{q_base}<br>{table_key}"
-
-            elif actual_sub_t == "การคูณและการหารทศนิยม":
-                op = random.choice(["×", "÷"])
-                
-                if op == "×":
-                    dp1 = random.choice([1, 2])
-                    dp2 = random.choice([1, 2])
-                    
-                    if is_challenge:
-                        a = round(random.uniform(10.0, 99.99), dp1)
-                        b = round(random.uniform(5.0, 50.99), dp2)
-                    else:
-                        a = round(random.uniform(1.0, 15.9), dp1)
-                        b = round(random.uniform(1.0, 9.9), dp2)
-                        
-                    ans = round(a * b, dp1 + dp2)
-                    
-                    a_str = f"{a:.{dp1}f}"
-                    b_str = f"{b:.{dp2}f}"
-                    ans_str = f"{ans:.{dp1+dp2}f}"
-                    
-                    a_int = int(a_str.replace(".", ""))
-                    b_int = int(b_str.replace(".", ""))
-                    
-                    q = f"จงหาผลลัพธ์ของ <b>{a_str} × {b_str}</b>"
-                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การคูณทศนิยม):</b><br>
-                    <b>ขั้นที่ 1:</b> นับตำแหน่งทศนิยมของตัวตั้งและตัวคูณ<br>
-                    👉 ตัวตั้ง ({a_str}) มีทศนิยม {dp1} ตำแหน่ง<br>
-                    👉 ตัวคูณ ({b_str}) มีทศนิยม {dp2} ตำแหน่ง<br>
-                    👉 ผลลัพธ์จะต้องมีทศนิยมรวม = {dp1} + {dp2} = <b>{dp1+dp2} ตำแหน่ง</b><br>
-                    <b>ขั้นที่ 2:</b> นำตัวเลขมาคูณกันแบบจำนวนนับ (โดยเอาเครื่องหมายจุดออกก่อน)<br>
-                    👉 {a_int:,} × {b_int:,} = <b>{a_int * b_int:,}</b><br>
-                    <b>ขั้นที่ 3:</b> ใส่จุดทศนิยมกลับเข้าไปให้ครบ {dp1+dp2} ตำแหน่ง (โดยนับจากหลังสุดมาข้างหน้า)<br>
-                    👉 จะได้ <b>{ans_str}</b><br>
-                    <b>ตอบ: {ans_str}</b></span>"""
-                    
-                else: # การหาร
-                    dp_ans = random.choice([1, 2])
-                    dp_b = random.choice([1, 2])
-                    
-                    if is_challenge:
-                        ans_val = round(random.uniform(5.0, 50.0), dp_ans)
-                        b = round(random.uniform(2.0, 15.0), dp_b)
-                    else:
-                        ans_val = round(random.uniform(1.0, 12.0), dp_ans)
-                        b = round(random.choice([0.2, 0.4, 0.5, 1.2, 1.5, 2.5, 3.2]), dp_b)
-                        
-                    a = round(ans_val * b, dp_ans + dp_b)
-                    
-                    # ตัดเลข 0 ส่วนเกินด้านหลังทิ้ง
-                    a_str = f"{a:g}"
-                    b_str = f"{b:g}"
-                    ans_str = f"{ans_val:g}"
-                    
-                    b_parts = b_str.split('.')
-                    b_dp = len(b_parts[1]) if len(b_parts) > 1 else 0
-                    
-                    mult_factor = 10 ** b_dp
-                    a_shift = round(a * mult_factor, 4)
-                    b_shift = int(round(b * mult_factor))
-                    a_shift_str = f"{a_shift:g}" 
-                    
-                    q = f"จงหาผลลัพธ์ของ <b>{a_str} ÷ {b_str}</b>"
-                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การหารทศนิยม):</b><br>
-                    <b>ขั้นที่ 1:</b> สังเกตตัวหาร ({b_str}) ว่าเป็นทศนิยมกี่ตำแหน่ง<br>
-                    👉 ตัวหารเป็นทศนิยม {b_dp} ตำแหน่ง เราต้องเลื่อนจุดเพื่อให้ตัวหารกลายเป็น <b>จำนวนเต็ม</b> เสมอ<br>
-                    <b>ขั้นที่ 2:</b> นำ <b>{mult_factor:,}</b> มาคูณทั้งตัวตั้งและตัวหาร (เพื่อเลื่อนจุดทศนิยมไปทางขวา {b_dp} ตำแหน่ง)<br>
-                    👉 ตัวตั้ง: {a_str} × {mult_factor:,} = <b>{a_shift_str}</b><br>
-                    👉 ตัวหาร: {b_str} × {mult_factor:,} = <b>{b_shift:,}</b><br>
-                    <b>ขั้นที่ 3:</b> นำมาตั้งหารด้วยโจทย์ใหม่ที่ได้<br>
-                    👉 {a_shift_str} ÷ {b_shift:,} = <b>{ans_str}</b><br>
-                    <b>ตอบ: {ans_str}</b></span>"""
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
@@ -1986,7 +1806,7 @@ def create_page(grade, sub_t, questions, is_key=False, q_margin="20px", ws_heigh
     for i, item in enumerate(questions, 1):
         html += f'<div class="q-box"><b>ข้อที่ {i}.</b> '
         if is_key:
-            if "(แบบตั้งหลัก)" in sub_t or "หารยาว" in sub_t or "การคูณและการหารทศนิยม" in sub_t or "การบวกและการลบทศนิยม" in sub_t: 
+            if "(แบบตั้งหลัก)" in sub_t or "หารยาว" in sub_t or "การคูณทศนิยม" in sub_t or "การบวกและการลบทศนิยม" in sub_t: 
                 html += f'{item["solution"]}'
             else: 
                 html += f'{item["question"]}<div class="sol-text">{item["solution"]}</div>'
