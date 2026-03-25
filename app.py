@@ -3704,79 +3704,74 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     else:
                         sol += f"<b>ขั้นที่ 2: แปลงเวลาและบวกเพิ่ม</b><br>👉 เวลาที่ต้องรอคือ {lcm_val} นาที แปลงเป็น <b>{add_h} ชั่วโมง {add_m} นาที</b><br>👉 เริ่มต้นเวลา {start_h:02d}:{start_m:02d} น. นับบวกเพิ่มไปอีก {add_h} ชม. {add_m} นาที<br>👉 จะได้เป็นเวลา <b>{end_h:02d}:{end_m:02d} น.</b><br><b>ตอบ: {end_h:02d}:{end_m:02d} น.</b></span>"
 
-            elif actual_sub_t == "โจทย์ปัญหา ร้อยละ (กำไร-ขาดทุน)":
-                # สุ่มโจทย์ 7 รูปแบบ (พื้นฐาน 3 + ชาเลนจ์ 4)
-                scenario = random.choice(["discount", "profit", "loss", "find_cost", "find_percent", "markup_discount", "find_original"])
-                
-                if scenario == "discount":
-                    price = random.choice([500, 800, 1200, 1500, 2500, 3000, 4500])
-                    percent = random.choice([10, 15, 20, 25, 30, 40])
-                    discount = price * percent // 100
-                    sell = price - discount
-                    
-                    q = f"ร้านค้าติดราคาขายพัดลมไว้ <b>{price:,} บาท</b><br>ประกาศลดราคา <b>{percent}%</b> ของราคาที่ติดไว้<br>ร้านค้าขายพัดลมไปในราคาเท่าใด?"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์ลดราคา):</b><br>👉 ลดราคา {percent}% หมายความว่า ถ้าราคาป้าย 100 บาท จะลดให้ {percent} บาท<br><br><b>ขั้นที่ 1: หาจำนวนเงินที่ลดราคา</b><br>👉 ลดราคา = ({percent} / 100) × {price:,}<br>👉 ลดราคา = <b>{discount:,} บาท</b><br><br><b>ขั้นที่ 2: หาราคาขายจริง</b><br>👉 ราคาขาย = ราคาป้าย - ส่วนลด<br>👉 ราคาขาย = {price:,} - {discount:,} = <b>{sell:,} บาท</b><br><b>ตอบ: {sell:,} บาท</b></span>"
-                    
-                elif scenario == "profit":
-                    cost = random.choice([400, 600, 1000, 2000, 4500, 5000])
-                    percent = random.choice([5, 10, 12, 15, 20, 25])
-                    profit = cost * percent // 100
-                    sell = cost + profit
-                    
-                    q = f"พ่อค้าซื้อจักรยานมาในราคาต้นทุน <b>{cost:,} บาท</b><br>นำไปขายต่อได้กำไร <b>{percent}%</b><br>พ่อค้าขายจักรยานไปในราคาเท่าใด?"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์กำไร):</b><br>👉 กำไร {percent}% หมายความว่า ทุน 100 บาท ได้กำไร {percent} บาท (ขายไป 100 + {percent} = {100+percent} บาท)<br><br><b>ขั้นที่ 1: หาจำนวนเงินกำไร</b><br>👉 กำไร = ({percent} / 100) × {cost:,}<br>👉 กำไร = <b>{profit:,} บาท</b><br><br><b>ขั้นที่ 2: หาราคาขายรวม</b><br>👉 ราคาขาย = ทุน + กำไร<br>👉 ราคาขาย = {cost:,} + {profit:,} = <b>{sell:,} บาท</b><br><b>ตอบ: {sell:,} บาท</b></span>"
+            elif actual_sub_t == "โจทย์ปัญหาคลาสสิก (สมการประยุกต์)":
+                scenario = random.choice(["legs", "age", "coins", "consecutive", "fraction_money"])
 
-                elif scenario == "loss":
-                    cost = random.choice([800, 1500, 2400, 3500, 6000, 8500])
-                    percent = random.choice([5, 10, 15, 20, 25, 30])
-                    loss = cost * percent // 100
-                    sell = cost - loss
-                    
-                    q = f"แม่ซื้อโทรศัพท์มือถือมาในราคา <b>{cost:,} บาท</b><br>แต่ใช้ไปสักพักจึงนำไปขายต่อ ขาดทุน <b>{percent}%</b><br>แม่ขายโทรศัพท์มือถือไปในราคาเท่าใด?"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์ขาดทุน):</b><br>👉 ขาดทุน {percent}% หมายความว่า ทุน 100 บาท ขาดทุนไป {percent} บาท (ขายไป 100 - {percent} = {100-percent} บาท)<br><br><b>ขั้นที่ 1: หาจำนวนเงินที่ขาดทุน</b><br>👉 ขาดทุน = ({percent} / 100) × {cost:,}<br>👉 ขาดทุน = <b>{loss:,} บาท</b><br><br><b>ขั้นที่ 2: หาราคาขายจริง</b><br>👉 ราคาขาย = ทุน - ขาดทุน<br>👉 ราคาขาย = {cost:,} - {loss:,} = <b>{sell:,} บาท</b><br><b>ตอบ: {sell:,} บาท</b></span>"
+                if scenario == "legs":
+                    pigs = random.randint(5, 25)
+                    chickens = random.randint(10, 35)
+                    heads = pigs + chickens
+                    legs = (pigs * 4) + (chickens * 2)
 
-                elif scenario == "find_cost":
-                    cost = random.choice([500, 1000, 1500, 2000, 3000, 4000, 5000])
-                    percent = random.choice([10, 20, 25, 50])
-                    sell = cost + (cost * percent // 100)
-                    
-                    q = f"ร้านค้าขายกระเป๋าใบหนึ่งไปในราคา <b>{sell:,} บาท</b> ซึ่งได้กำไร <b>{percent}%</b><br>จงหาว่าร้านค้าซื้อกระเป๋าใบนี้มาในราคาต้นทุนกี่บาท?"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - หาต้นทุน):</b><br>⚠️ <i>ระวัง! ห้ามนำ {percent}% ไปคูณกับราคาขาย ({sell:,}) เด็ดขาด! เพราะร้อยละต้องคิดจาก 'ต้นทุน' เสมอ</i><br><br><b>ขั้นที่ 1: เทียบบัญญัติไตรยางศ์จากความหมายของกำไร</b><br>👉 กำไร {percent}% หมายความว่า ถ้าราคาขาย <b>{100+percent} บาท</b> มาจากต้นทุน <b>100 บาท</b><br>👉 ถ้าราคาขาย 1 บาท มาจากต้นทุน 100 / {100+percent} บาท<br><br><b>ขั้นที่ 2: คำนวณหาต้นทุนจริง</b><br>👉 ถ้าราคาขาย <b>{sell:,} บาท</b> จะมาจากต้นทุน = (100 / {100+percent}) × {sell:,}<br>👉 ต้นทุน = <b>{cost:,} บาท</b><br><b>ตอบ: {cost:,} บาท</b></span>"
+                    q = f"ฟาร์มแห่งหนึ่งมี <b>หมู</b> และ <b>ไก่</b> รวมกัน <b>{heads} ตัว</b><br>ถ้านับขาสัตว์รวมกันได้ <b>{legs} ขา</b><br>ฟาร์มแห่งนี้มีหมูกี่ตัว?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์ขาสัตว์):</b><br>👉 กำหนดให้ มีหมู <b>x</b> ตัว (หมู 1 ตัวมี 4 ขา จะได้ขาหมู 4x ขา)<br>👉 มีสัตว์รวม {heads} ตัว ดังนั้นจะมีไก่ <b>{heads} - x</b> ตัว (ไก่ 1 ตัวมี 2 ขา จะได้ขาไก่ 2({heads}-x) ขา)<br><br><b>ขั้นที่ 1: สร้างสมการจากจำนวนขา</b><br>👉 ขาหมู + ขาไก่ = {legs}<br>👉 4x + 2({heads} - x) = {legs}<br><br><b>ขั้นที่ 2: แก้สมการ</b><br>👉 4x + {heads*2} - 2x = {legs}<br>👉 2x + {heads*2} = {legs}<br>👉 2x = {legs} - {heads*2}<br>👉 2x = {legs - (heads*2)}<br>👉 x = {(legs - (heads*2))} ÷ 2<br>👉 x = <b>{pigs}</b><br><br><b>ตอบ: ฟาร์มนี้มีหมู {pigs} ตัว</b> (และมีไก่ {chickens} ตัว)</span>"
 
-                elif scenario == "find_percent":
-                    is_profit = random.choice([True, False])
-                    cost = random.choice([400, 500, 800, 1000, 1200, 1500, 2000])
-                    percent = random.choice([5, 10, 15, 20, 25, 30, 40, 50])
-                    
-                    if is_profit:
-                        sell = cost + (cost * percent // 100)
-                        q = f"พ่อซื้อจักรยานมาในราคา <b>{cost:,} บาท</b> นำไปขายต่อให้เพื่อนในราคา <b>{sell:,} บาท</b><br>พ่อขายจักรยานได้กำไรกี่เปอร์เซ็นต์?"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - หาเปอร์เซ็นต์):</b><br><b>ขั้นที่ 1: หาจำนวนเงินที่ได้กำไร</b><br>👉 กำไร = ราคาขาย - ต้นทุน<br>👉 กำไร = {sell:,} - {cost:,} = <b>{sell-cost:,} บาท</b><br><br><b>ขั้นที่ 2: ทำเป็นเปอร์เซ็นต์ (เทียบกับทุนเสมอ)</b><br>👉 สูตร: (กำไร ÷ ต้นทุน) × 100<br>👉 คำนวณ: ({(sell-cost):,} ÷ {cost:,}) × 100 = <b>{percent}%</b><br><b>ตอบ: กำไร {percent}%</b></span>"
+                elif scenario == "age":
+                    son_now = random.randint(8, 15)
+                    future_y = random.randint(3, 10)
+                    son_future = son_now + future_y
+                    M = random.choice([2, 3]) 
+                    dad_future = son_future * M
+                    dad_now = dad_future - future_y
+                    diff = dad_now - son_now
+
+                    q = f"ปัจจุบัน พ่อมีอายุมากกว่าลูก <b>{diff} ปี</b><br>อีก <b>{future_y} ปีข้างหน้า</b> พ่อจะมีอายุเป็น <b>{M} เท่า</b> ของลูก<br>ปัจจุบันลูกอายุเท่าไหร่?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์อายุ):</b><br>👉 กำหนดให้ ปัจจุบันลูกอายุ <b>x</b> ปี<br>👉 ปัจจุบันพ่ออายุมากกว่าลูก {diff} ปี ดังนั้นพ่ออายุ <b>x + {diff}</b> ปี<br><br><b>ขั้นที่ 1: วิเคราะห์อายุในอีก {future_y} ปีข้างหน้า</b><br>👉 ลูกจะอายุ: x + {future_y} ปี<br>👉 พ่อจะอายุ: (x + {diff}) + {future_y} = x + {diff + future_y} ปี<br><br><b>ขั้นที่ 2: สร้างสมการ</b> (พ่อจะเป็น {M} เท่าของลูก)<br>👉 อายุพ่ออนาคต = {M} × อายุลูกอนาคต<br>👉 x + {diff + future_y} = {M}(x + {future_y})<br><br><b>ขั้นที่ 3: แก้สมการ</b><br>👉 x + {diff + future_y} = {M}x + {M * future_y}<br>👉 ย้ายตัวแปร x ไปฝั่งเดียวกัน: {diff + future_y} - {M * future_y} = {M}x - x<br>👉 {diff + future_y - (M * future_y)} = {(M-1)}x<br>👉 x = {diff + future_y - (M * future_y)} ÷ {(M-1)}<br>👉 x = <b>{son_now}</b><br><br><b>ตอบ: ปัจจุบันลูกอายุ {son_now} ปี</b> (พ่ออายุ {dad_now} ปี)</span>"
+
+                elif scenario == "coins":
+                    c10 = random.randint(5, 20)
+                    c5 = random.randint(8, 25)
+                    total_coins = c10 + c5
+                    total_val = (c10 * 10) + (c5 * 5)
+
+                    q = f"กระปุกออมสินมี <b>เหรียญสิบบาท</b> และ <b>เหรียญห้าบาท</b> รวมกัน <b>{total_coins} เหรียญ</b><br>เมื่อนำเงินมานับรวมกันได้ทั้งหมด <b>{total_val} บาท</b><br>กระปุกออมสินนี้มีเหรียญสิบบาทกี่เหรียญ?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์นับเหรียญ):</b><br>👉 กำหนดให้ มีเหรียญสิบบาท <b>x</b> เหรียญ (คิดเป็นเงิน 10x บาท)<br>👉 มีเหรียญรวม {total_coins} เหรียญ ดังนั้นมีเหรียญห้าบาท <b>{total_coins} - x</b> เหรียญ (คิดเป็นเงิน 5({total_coins}-x) บาท)<br><br><b>ขั้นที่ 1: สร้างสมการจากมูลค่าเงินรวม</b><br>👉 เงินจากเหรียญสิบ + เงินจากเหรียญห้า = {total_val} บาท<br>👉 10x + 5({total_coins} - x) = {total_val}<br><br><b>ขั้นที่ 2: แก้สมการ</b><br>👉 10x + {total_coins*5} - 5x = {total_val}<br>👉 5x + {total_coins*5} = {total_val}<br>👉 5x = {total_val} - {total_coins*5}<br>👉 5x = {total_val - (total_coins*5)}<br>👉 x = {(total_val - (total_coins*5))} ÷ 5<br>👉 x = <b>{c10}</b><br><br><b>ตอบ: มีเหรียญสิบบาททั้งหมด {c10} เหรียญ</b></span>"
+
+                elif scenario == "consecutive":
+                    ctype = random.choice(["ธรรมดา", "คู่", "คี่"])
+                    if ctype == "ธรรมดา":
+                        start = random.randint(10, 50)
+                        ans = start + 2 
+                        total = start + (start+1) + (start+2)
+                        q = f"ผลบวกของ<b>จำนวนเต็มเรียงติดกัน 3 จำนวน</b> เท่ากับ <b>{total}</b><br>จงหาจำนวนที่<b>มากที่สุด</b>?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (จำนวนเรียงติดกัน):</b><br>👉 กำหนดให้จำนวนที่น้อยที่สุดคือ <b>x</b><br>👉 จำนวนถัดไปคือ <b>x + 1</b> และ <b>x + 2</b><br><br><b>ขั้นที่ 1: สร้างสมการ</b><br>👉 x + (x + 1) + (x + 2) = {total}<br>👉 3x + 3 = {total}<br><br><b>ขั้นที่ 2: แก้สมการ</b><br>👉 3x = {total} - 3<br>👉 3x = {total-3}<br>👉 x = {(total-3)} ÷ 3 = <b>{start}</b> (นี่คือจำนวนน้อยที่สุด)<br><br><b>ขั้นที่ 3: หาจำนวนที่มากที่สุด</b><br>👉 จำนวนที่มากที่สุดคือ x + 2 = {start} + 2 = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
                     else:
-                        sell = cost - (cost * percent // 100)
-                        q = f"แม่ซื้อนาฬิกามาในราคา <b>{cost:,} บาท</b> ขายต่อให้ญาติในราคา <b>{sell:,} บาท</b><br>แม่ขายนาฬิกาขาดทุนกี่เปอร์เซ็นต์?"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - หาเปอร์เซ็นต์):</b><br><b>ขั้นที่ 1: หาจำนวนเงินที่ขาดทุน</b><br>👉 ขาดทุน = ต้นทุน - ราคาขาย<br>👉 ขาดทุน = {cost:,} - {sell:,} = <b>{cost-sell:,} บาท</b><br><br><b>ขั้นที่ 2: ทำเป็นเปอร์เซ็นต์ (เทียบกับทุนเสมอ)</b><br>👉 สูตร: (ขาดทุน ÷ ต้นทุน) × 100<br>👉 คำนวณ: ({(cost-sell):,} ÷ {cost:,}) × 100 = <b>{percent}%</b><br><b>ตอบ: ขาดทุน {percent}%</b></span>"
+                        start = random.randint(10, 40) * 2
+                        if ctype == "คี่": start += 1
+                        ans = start + 4
+                        total = start + (start+2) + (start+4)
+                        q = f"ผลบวกของ<b>จำนวน{ctype}เรียงติดกัน 3 จำนวน</b> เท่ากับ <b>{total}</b><br>จงหาจำนวนที่<b>มากที่สุด</b>?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (จำนวน{ctype}เรียงติดกัน):</b><br>👉 <i>ข้อควรระวัง: จำนวน{ctype}เรียงติดกัน จะห่างกันทีละ 2</i><br>👉 กำหนดให้จำนวนที่น้อยที่สุดคือ <b>x</b><br>👉 จำนวนถัดไปคือ <b>x + 2</b> และ <b>x + 4</b><br><br><b>ขั้นที่ 1: สร้างสมการ</b><br>👉 x + (x + 2) + (x + 4) = {total}<br>👉 3x + 6 = {total}<br><br><b>ขั้นที่ 2: แก้สมการ</b><br>👉 3x = {total} - 6<br>👉 3x = {total-6}<br>👉 x = {(total-6)} ÷ 3 = <b>{start}</b> (นี่คือจำนวนน้อยที่สุด)<br><br><b>ขั้นที่ 3: หาจำนวนที่มากที่สุด</b><br>👉 จำนวนที่มากที่สุดคือ x + 4 = {start} + 4 = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
 
-                elif scenario == "markup_discount":
-                    cost = random.choice([500, 1000, 1200, 1500, 2000, 2500])
-                    markup = random.choice([30, 40, 50, 60])
-                    discount = random.choice([10, 15, 20, 25])
+                elif scenario == "fraction_money":
+                    d1 = random.choice([3, 4, 5])
+                    d2 = random.choice([4, 5, 6])
+                    while d1 == d2: d2 = random.choice([4, 5, 6])
+                    lcm = (d1 * d2) // math.gcd(d1, d2)
                     
-                    tag_price = cost + (cost * markup // 100)
-                    discount_amt = tag_price * discount // 100
-                    sell = tag_price - discount_amt
-                    profit = sell - cost
+                    n1, n2 = 1, 1
+                    while (n1*lcm//d1) + (n2*lcm//d2) >= lcm:
+                        d1, d2 = 4, 5 
+                        lcm = 20
+                        
+                    used_frac_n = (n1*lcm//d1) + (n2*lcm//d2)
+                    rem_frac_n = lcm - used_frac_n
                     
-                    q = f"แม่ค้าซื้อเสื้อมาต้นทุน <b>{cost:,} บาท</b> นำมาติดราคาป้ายไว้โดยหวังกำไร <b>{markup}%</b><br>แต่เมื่อถึงช่วงเทศกาล แม่ค้าประกาศลดราคาให้ลูกค้า <b>{discount}% จากราคาป้าย</b><br>สรุปแล้วแม่ค้าขายเสื้อตัวนี้ได้กำไรกี่บาท?"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - ร้อยละ 2 ชั้น):</b><br>⚠️ <i>ระวัง! ห้ามนำเปอร์เซ็นต์มาลบกันตรงๆ ({markup}% - {discount}%) เพราะฐานร้อยละไม่เท่ากัน!</i><br><br><b>ขั้นที่ 1: หาราคาป้ายที่แม่ค้าติดไว้</b> (คิดกำไรจากทุน)<br>👉 กำไร {markup}% ของทุน = ({markup}/100) × {cost:,} = {(cost * markup // 100):,} บาท<br>👉 ติดราคาป้าย = {cost:,} + {(cost * markup // 100):,} = <b>{tag_price:,} บาท</b><br><br><b>ขั้นที่ 2: หาราคาที่ขายจริง</b> (คิดส่วนลดจากราคาป้าย)<br>👉 ลดราคา {discount}% ของราคาป้าย = ({discount}/100) × {tag_price:,} = <b>{discount_amt:,} บาท</b><br>👉 ราคาขายจริง = {tag_price:,} - {discount_amt:,} = <b>{sell:,} บาท</b><br><br><b>ขั้นที่ 3: สรุปกำไร</b><br>👉 กำไรสุทธิ = ราคาขายจริง - ต้นทุนเดิม<br>👉 กำไรสุทธิ = {sell:,} - {cost:,} = <b>{profit:,} บาท</b><br><b>ตอบ: ได้กำไร {profit:,} บาท</b></span>"
-
-                elif scenario == "find_original":
-                    tag = random.choice([800, 1200, 1500, 2000, 2500, 3000, 4500])
-                    percent = random.choice([10, 15, 20, 25, 30])
-                    sell = tag - (tag * percent // 100)
+                    ans = random.randint(5, 15) * 100 * lcm 
+                    rem_money = ans * rem_frac_n // lcm
                     
-                    q = f"ร้านค้าติดป้ายลดราคารองเท้า <b>{percent}%</b> ทำให้ลูกค้าซื้อไปได้ในราคา <b>{sell:,} บาท</b><br>เดิมร้านค้าติดราคาป้ายรองเท้าคู่นี้ไว้กี่บาท?"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - หาราคาป้าย):</b><br><b>ขั้นที่ 1: ตีความหมายของส่วนลด</b><br>👉 ลดราคา {percent}% หมายความว่า ถ้าราคาป้าย 100 บาท จะขายจริงในราคา 100 - {percent} = <b>{100-percent} บาท</b><br><br><b>ขั้นที่ 2: เทียบบัญญัติไตรยางศ์ย้อนกลับ</b><br>👉 ถ้าราคาขาย <b>{100-percent} บาท</b> มาจากราคาป้าย <b>100 บาท</b><br>👉 ถ้าราคาขาย 1 บาท มาจากราคาป้าย 100 / {100-percent} บาท<br>👉 ถ้าราคาขาย <b>{sell:,} บาท</b> มาจากราคาป้าย = (100 / {100-percent}) × {sell:,}<br>👉 คำนวณได้ = <b>{tag:,} บาท</b><br><b>ตอบ: {tag:,} บาท</b></span>"
+                    q = f"สมชายใช้เงินซื้อหนังสือไป <b>1/{d1} ของเงินทั้งหมด</b> และซื้อขนมไปอีก <b>1/{d2} ของเงินทั้งหมด</b><br>ปรากฏว่าสมชายยังเหลือเงินอยู่ <b>{rem_money:,} บาท</b><br>เดิมสมชายมีเงินทั้งหมดกี่บาท?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์สมการเศษส่วน):</b><br>👉 กำหนดให้เดิมสมชายมีเงินทั้งหมด <b>x</b> บาท<br>👉 ซื้อหนังสือ: x/{d1} บาท, ซื้อขนม: x/{d2} บาท<br><br><b>ขั้นที่ 1: สร้างสมการ</b><br>👉 เงินทั้งหมด - หนังสือ - ขนม = เงินที่เหลือ<br>👉 x - (x/{d1}) - (x/{d2}) = {rem_money:,}<br><br><b>ขั้นที่ 2: แก้สมการโดยหา ค.ร.น.</b><br>👉 ค.ร.น. ของส่วน {d1} และ {d2} คือ <b>{lcm}</b><br>👉 นำ {lcm} คูณตลอดทั้งสมการ:<br>👉 {lcm}x - {lcm//d1}x - {lcm//d2}x = {rem_money:,} × {lcm}<br>👉 ({lcm} - {lcm//d1} - {lcm//d2})x = {rem_money * lcm:,}<br>👉 {rem_frac_n}x = {rem_money * lcm:,}<br>👉 x = {rem_money * lcm:,} ÷ {rem_frac_n} = <b>{ans:,}</b><br><br><b>ตอบ: เดิมสมชายมีเงิน {ans:,} บาท</b></span>"
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
