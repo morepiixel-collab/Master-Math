@@ -3062,59 +3062,58 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             elif actual_sub_t == "การหาขนาดของมุมที่หายไป":
                 def draw_angle_svg(mode, a1, a2, a3=""):
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="300" height="150">'
+                    text_style = 'font-size:13px; font-weight:bold; text-anchor:middle;'
                     if mode == "straight":
-                        # จุดตัดอยู่ที่ (150, 120)
                         svg += '<line x1="30" y1="120" x2="270" y2="120" stroke="#34495e" stroke-width="4"/>'
                         svg += '<line x1="150" y1="120" x2="220" y2="50" stroke="#34495e" stroke-width="4"/>'
                         # เส้นโค้งสีเขียว
                         svg += '<path d="M 120 120 Q 120 90 170 100" fill="none" stroke="#2ecc71" stroke-width="3"/>'
                         svg += '<path d="M 170 100 Q 180 110 180 120" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        # ตัวเลขมุม (ลดขนาดและจัดตำแหน่งใหม่)
-                        svg += f'<text x="130" y="105" font-size="14" fill="#c0392b" font-weight="bold" text-anchor="middle">{a1}°</text>'
-                        svg += f'<text x="185" y="112" font-size="16" fill="#2980b9" font-weight="bold" text-anchor="middle">{a2}</text>'
+                        # ตัวเลขมุม
+                        svg += f'<text x="125" y="105" {text_style} fill="#c0392b">{a1}°</text>'
+                        svg += f'<text x="182" y="112" {text_style} fill="#2980b9">{a2}</text>'
                     elif mode == "opposite":
-                        # จุดตัดอยู่ที่ (150, 80)
                         svg += '<line x1="60" y1="40" x2="240" y2="120" stroke="#34495e" stroke-width="4"/>'
                         svg += '<line x1="60" y1="120" x2="240" y2="40" stroke="#34495e" stroke-width="4"/>'
                         # เส้นโค้งสีเขียว
                         svg += '<path d="M 130 71 Q 150 55 170 71" fill="none" stroke="#2ecc71" stroke-width="3"/>'
                         svg += '<path d="M 130 89 Q 150 105 170 89" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        # ชื่อเส้นตรง A, B, C, D
-                        svg += '<text x="45" y="40" font-family="Sarabun" font-size="18" font-weight="bold" fill="#2c3e50">A</text>'
-                        svg += '<text x="250" y="125" font-family="Sarabun" font-size="18" font-weight="bold" fill="#2c3e50">B</text>'
-                        svg += '<text x="45" y="125" font-family="Sarabun" font-size="18" font-weight="bold" fill="#2c3e50">C</text>'
-                        svg += '<text x="250" y="40" font-family="Sarabun" font-size="18" font-weight="bold" fill="#2c3e50">D</text>'
-                        # ตัวเลขมุม (ลดขนาดและจัดตำแหน่งใหม่)
-                        svg += f'<text x="150" y="65" font-size="14" fill="#c0392b" font-weight="bold" text-anchor="middle">{a1}°</text>'
-                        svg += f'<text x="150" y="105" font-size="16" fill="#2980b9" font-weight="bold" text-anchor="middle">{a2}</text>'
+                        # ชื่อเส้น
+                        svg += '<text x="45" y="40" font-family="Sarabun" font-size="16" font-weight="bold" fill="#2c3e50">A</text>'
+                        svg += '<text x="250" y="125" font-family="Sarabun" font-size="16" font-weight="bold" fill="#2c3e50">B</text>'
+                        svg += '<text x="45" y="125" font-family="Sarabun" font-size="16" font-weight="bold" fill="#2c3e50">C</text>'
+                        svg += '<text x="250" y="40" font-family="Sarabun" font-size="16" font-weight="bold" fill="#2c3e50">D</text>'
+                        # ตัวเลขมุม
+                        svg += f'<text x="150" y="65" {text_style} fill="#c0392b">{a1}°</text>'
+                        svg += f'<text x="150" y="102" {text_style} fill="#2980b9">{a2}</text>'
                     elif mode == "triangle":
                         svg += '<polygon points="80,120 220,120 180,40" fill="#fef9e7" stroke="#f39c12" stroke-width="3" stroke-linejoin="round"/>'
                         # เส้นโค้งสีเขียวมุมทั้ง 3
                         svg += '<path d="M 105 120 Q 110 110 93 100" fill="none" stroke="#2ecc71" stroke-width="3"/>'
                         svg += '<path d="M 195 120 Q 190 110 207 100" fill="none" stroke="#2ecc71" stroke-width="3"/>'
                         svg += '<path d="M 166 68 Q 180 75 189 60" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        # ตัวเลขมุม (ลดขนาดและจัดตำแหน่งใหม่)
-                        svg += f'<text x="115" y="112" font-size="14" fill="#c0392b" font-weight="bold" text-anchor="middle">{a1}°</text>'
-                        svg += f'<text x="180" y="112" font-size="14" fill="#c0392b" font-weight="bold" text-anchor="middle">{a2}°</text>'
-                        svg += f'<text x="175" y="70" font-size="16" fill="#2980b9" font-weight="bold" text-anchor="middle">{a3}</text>'
+                        # ตัวเลขมุม
+                        svg += f'<text x="110" y="113" {text_style} fill="#c0392b">{a1}°</text>'
+                        svg += f'<text x="190" y="113" {text_style} fill="#c0392b">{a2}°</text>'
+                        svg += f'<text x="176" y="73" {text_style} fill="#2980b9">{a3}</text>'
                     svg += '</svg></div>'
                     return svg
 
                 scenario = random.choice(["straight", "opposite", "triangle"])
                 if scenario == "straight":
-                    ans = random.randint(35, 145)
-                    given = 180 - ans
+                    ans = random.randint(35, 85) # 💡 บังคับให้เป็นมุมแหลม (ด้านขวา)
+                    given = 180 - ans # 💡 บังคับให้เป็นมุมป้าน (ด้านซ้าย)
                     svg = draw_angle_svg("straight", given, "x")
                     q = f"จากรูป มุมบนเส้นตรงมีขนาดรวม 180°<br>จงหาขนาดของมุม <b>x</b> ?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (มุมบนเส้นตรง):</b><br>👉 มุมบนเส้นตรงมีขนาดรวม 180° เสมอ<br>👉 จะได้สมการ: {given}° + x = 180°<br>👉 x = 180° - {given}° = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
                 elif scenario == "opposite":
-                    ans = random.randint(40, 140)
+                    ans = random.randint(35, 85) # 💡 บังคับให้เป็นมุมแหลม (บน/ล่าง)
                     svg = draw_angle_svg("opposite", ans, "x")
                     q = f"จากรูป เส้นตรงสองเส้นตัดกัน<br>จงหาขนาดของมุม <b>x</b> ?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (มุมตรงข้าม):</b><br>👉 เมื่อเส้นตรงตัดกัน <b>มุมที่อยู่ตรงข้ามกันจะมีขนาดเท่ากัน</b><br>👉 จากรูป มุม x อยู่ตรงข้ามกับมุม {ans}° พอดี<br>👉 ดังนั้น x = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
                 else: 
-                    ans = random.randint(30, 90)
-                    a1 = random.randint(40, 80)
+                    ans = random.randint(40, 80)
+                    a1 = random.randint(40, 70)
                     a2 = 180 - ans - a1
                     svg = draw_angle_svg("triangle", a1, a2, "x")
                     q = f"จากรูป รูปสามเหลี่ยมมีผลรวมมุมภายใน 180°<br>จงหาขนาดของมุม <b>x</b> ?<br>{svg}"
@@ -3134,7 +3133,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg += '<line x1="50" y1="120" x2="270" y2="120" stroke="#2980b9" stroke-width="4"/>'
 
                     # ชื่อเส้นตรง A, B, C, D
-                    label_style = 'font-family:Sarabun; font-size:18px; font-weight:bold; fill:#2c3e50;'
+                    label_style = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
                     svg += f'<text x="30" y="65" {label_style}>A</text>'
                     svg += f'<text x="280" y="65" {label_style}>B</text>'
                     svg += f'<text x="30" y="125" {label_style}>C</text>'
@@ -3144,128 +3143,54 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg += '<polygon points="255,55 265,60 255,65" fill="#2980b9"/>'
                     svg += '<polygon points="255,115 265,120 255,125" fill="#2980b9"/>'
 
-                    # 💡 จัดการเส้นโค้งสีเขียว และวางตัวเลขให้เข้ามุมพอดี
-                    text_style = 'font-size:14px; fill:#c0392b; font-weight:bold; text-anchor:middle;'
+                    # 💡 จัดการเส้นโค้งสีเขียว และวางตัวเลขให้เข้ามุมพอดี (ปรับขนาดฟอนต์ 13px)
+                    text_style = 'font-size:13px; font-weight:bold; text-anchor:middle;'
                     if mode == "Z":
-                        # มุมบน (Acute)
-                        svg += '<path d="M 155 60 Q 155 75 163 85" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += f'<text x="152" y="78" {text_style}>{val}°</text>'
-                        # มุมล่าง (Acute)
-                        svg += '<path d="M 165 120 Q 165 105 157 95" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += f'<text x="168" y="105" font-size="16px" fill="#2980b9" font-weight="bold" text-anchor="middle">{lbl}</text>'
+                        # มุมบน (Acute) -> ล่างซ้ายของจุดตัด
+                        svg += '<path d="M 152 60 Q 152 75 165 82" fill="none" stroke="#2ecc71" stroke-width="3"/>'
+                        svg += f'<text x="156" y="78" {text_style} fill="#c0392b">{val}°</text>'
+                        # มุมล่าง (Acute) -> บนขวาของจุดตัด
+                        svg += '<path d="M 168 120 Q 168 105 155 98" fill="none" stroke="#2ecc71" stroke-width="3"/>'
+                        svg += f'<text x="164" y="108" {text_style} fill="#2980b9">{lbl}</text>'
                     elif mode == "C":
-                        # มุมบน (Acute)
-                        svg += '<path d="M 155 60 Q 155 75 163 85" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += f'<text x="152" y="78" {text_style}>{val}°</text>'
-                        # มุมล่าง (Obtuse)
-                        svg += '<path d="M 115 120 Q 115 95 157 95" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += f'<text x="135" y="110" font-size="16px" fill="#2980b9" font-weight="bold" text-anchor="middle">{lbl}</text>'
+                        # มุมบน (Acute) -> ล่างซ้าย
+                        svg += '<path d="M 152 60 Q 152 75 165 82" fill="none" stroke="#2ecc71" stroke-width="3"/>'
+                        svg += f'<text x="156" y="78" {text_style} fill="#c0392b">{val}°</text>'
+                        # มุมล่าง (Obtuse) -> บนซ้ายของจุดตัด
+                        svg += '<path d="M 115 120 Q 115 95 155 98" fill="none" stroke="#2ecc71" stroke-width="3"/>'
+                        svg += f'<text x="135" y="108" {text_style} fill="#2980b9">{lbl}</text>'
                     elif mode == "F":
-                        # มุมบน (Obtuse)
-                        svg += '<path d="M 155 60 Q 155 35 197 35" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += f'<text x="175" y="52" {text_style}>{val}°</text>'
-                        # มุมล่าง (Obtuse)
-                        svg += '<path d="M 115 120 Q 115 95 157 95" fill="none" stroke="#2ecc71" stroke-width="3"/>'
-                        svg += f'<text x="135" y="110" font-size="16px" fill="#2980b9" font-weight="bold" text-anchor="middle">{lbl}</text>'
+                        # มุมบน (Obtuse) -> บนซ้ายของจุดตัด
+                        svg += '<path d="M 150 60 Q 150 35 195 38" fill="none" stroke="#2ecc71" stroke-width="3"/>'
+                        svg += f'<text x="170" y="52" {text_style} fill="#c0392b">{val}°</text>'
+                        # มุมล่าง (Obtuse) -> บนซ้ายของจุดตัด
+                        svg += '<path d="M 115 120 Q 115 95 155 98" fill="none" stroke="#2ecc71" stroke-width="3"/>'
+                        svg += f'<text x="135" y="108" {text_style} fill="#2980b9">{lbl}</text>'
 
                     svg += '</svg></div>'
                     return svg
 
                 scenario = random.choice(["Z", "C", "F"])
-                val = random.randint(45, 135)
                 
+                # 💡 แก้ไข: บังคับค่าให้ตรงกับความเป็นจริงของรูปภาพ (ป้องกันมุมแหลมแต่ตัวเลขเกิน 90)
                 if scenario == "Z":
+                    val = random.randint(40, 85) # 💡 บังคับมุมแหลม
                     ans = val
                     svg = draw_parallel_svg("Z", val, "x")
                     q = f"จากรูป เส้นตรงสองเส้นขนานกัน<br>จงหาขนาดของมุม <b>x</b> (พิจารณามุมแย้ง)?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เส้นขนาน รูปตัว Z):</b><br>👉 เมื่อเส้นขนานถูกตัดด้วยเส้นตรง <b>มุมแย้ง (ตัว Z) จะมีขนาดเท่ากัน</b>เสมอ<br>👉 จากรูป มุม x เป็นมุมแย้งกับมุม {val}°<br>👉 ดังนั้น x = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
                 elif scenario == "C":
-                    ans = 180 - val
+                    val = random.randint(40, 85) # 💡 บังคับมุมแหลม (บน)
+                    ans = 180 - val # มุมป้าน (ล่าง)
                     svg = draw_parallel_svg("C", val, "x")
                     q = f"จากรูป เส้นตรงสองเส้นขนานกัน<br>จงหาขนาดของมุม <b>x</b> (พิจารณามุมภายในข้างเดียวกัน)?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เส้นขนาน รูปตัว C):</b><br>👉 <b>มุมภายในที่อยู่บนข้างเดียวกัน</b>ของเส้นตัด (ตัว C) จะรวมกันได้ <b>180°</b> เสมอ<br>👉 จะได้สมการ: {val}° + x = 180°<br>👉 x = 180° - {val}° = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
                 elif scenario == "F":
-                    ans = val
+                    val = random.randint(95, 140) # 💡 บังคับมุมป้าน (บน)
+                    ans = val # มุมป้าน (ล่าง)
                     svg = draw_parallel_svg("F", val, "x")
                     q = f"จากรูป เส้นตรงสองเส้นขนานกัน<br>จงหาขนาดของมุม <b>x</b> (พิจารณามุมภายนอกและมุมภายใน)?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เส้นขนาน รูปตัว F):</b><br>👉 <b>มุมภายนอกและมุมภายใน</b>ที่อยู่บนข้างเดียวกันของเส้นตัด จะมีขนาด<b>เท่ากัน</b>เสมอ<br>👉 จากรูป มุม x มีตำแหน่งสอดคล้องกับมุม {val}° พอดี<br>👉 ดังนั้น x = <b>{ans}°</b><br><b>ตอบ: {ans}°</b></span>"
-
-            elif actual_sub_t == "ปริมาตรและความจุทรงสี่เหลี่ยมมุมฉาก":
-                def draw_prism_svg(w_lbl, l_lbl, h_lbl, is_water=False):
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="250" height="190">'
-                    fill_front = "#aed6f1" if is_water else "#d5f5e3"
-                    fill_top = "#85c1e9" if is_water else "#abebc6"
-                    fill_right = "#5dade2" if is_water else "#82e0aa"
-                    stroke_c = "#2874a6" if is_water else "#27ae60"
-                    
-                    if is_water:
-                        y_offset = 55 # ระดับน้ำ
-                        
-                        # 1. วาดโครงตู้ปลาด้านหลังก่อน (เส้นสีเทา) เพื่อให้อยู่ด้านหลังน้ำ
-                        svg += '<line x1="100" y1="10" x2="100" y2="110" stroke="#bdc3c7" stroke-width="2"/>' # เส้นตั้งหลังซ้าย
-                        svg += '<line x1="100" y1="110" x2="200" y2="110" stroke="#bdc3c7" stroke-width="2"/>' # เส้นนอนหลังล่าง
-                        svg += '<line x1="60" y1="130" x2="100" y2="110" stroke="#bdc3c7" stroke-width="2"/>' # เส้นลึกพื้นซ้าย
-                        
-                        # 2. วาดก้อนน้ำ (แบบมีความโปร่งใส)
-                        svg += f'<polygon points="60,{30+y_offset} 100,{10+y_offset} 200,{10+y_offset} 160,{30+y_offset}" fill="{fill_top}" stroke="{stroke_c}" stroke-width="2" opacity="0.85"/>'
-                        svg += f'<rect x="60" y="{30+y_offset}" width="100" height="{100-y_offset}" fill="{fill_front}" stroke="{stroke_c}" stroke-width="2" opacity="0.85"/>'
-                        svg += f'<polygon points="160,{30+y_offset} 200,{10+y_offset} 200,110 160,130" fill="{fill_right}" stroke="{stroke_c}" stroke-width="2" opacity="0.85"/>'
-                        
-                        # 3. วาดโครงตู้ปลาด้านหน้า (เส้นสีเทา)
-                        svg += '<polygon points="60,30 100,10 200,10 160,30" fill="none" stroke="#95a5a6" stroke-width="2"/>'
-                        svg += '<line x1="60" y1="30" x2="60" y2="130" stroke="#95a5a6" stroke-width="2"/>'
-                        svg += '<line x1="160" y1="30" x2="160" y2="130" stroke="#95a5a6" stroke-width="2"/>'
-                        svg += '<line x1="200" y1="10" x2="200" y2="110" stroke="#95a5a6" stroke-width="2"/>'
-
-                    else:
-                        # วาดกล่องทึบปกติ
-                        svg += f'<rect x="60" y="50" width="100" height="80" fill="{fill_front}" stroke="{stroke_c}" stroke-width="3"/>'
-                        svg += f'<polygon points="60,50 100,20 200,20 160,50" fill="{fill_top}" stroke="{stroke_c}" stroke-width="3"/>'
-                        svg += f'<polygon points="160,50 200,20 200,100 160,130" fill="{fill_right}" stroke="{stroke_c}" stroke-width="3"/>'
-                        
-                    # คำบรรยายขนาดกว้างยาว
-                    svg += f'<text x="110" y="150" font-size="14" fill="#2c3e50" font-weight="bold" text-anchor="middle">{l_lbl}</text>'
-                    svg += f'<text x="190" y="125" font-size="14" fill="#2c3e50" font-weight="bold">{w_lbl}</text>'
-                    
-                    if is_water:
-                        svg += f'<text x="10" y="{80+y_offset/2}" font-size="14" fill="#2980b9" font-weight="bold">{h_lbl}</text>'
-                    else:
-                        svg += f'<text x="20" y="95" font-size="14" fill="#2c3e50" font-weight="bold">{h_lbl}</text>'
-                        
-                    svg += '</svg></div>'
-                    return svg
-
-                scenario = random.choice(["basic", "tank"])
-                if scenario == "basic":
-                    w = random.randint(3, 10)
-                    l = random.randint(5, 15)
-                    while l <= w: l += 1
-                    h = random.randint(4, 12)
-                    vol = w * l * h
-                    svg = draw_prism_svg(f"{w} ซม.", f"{l} ซม.", f"{h} ซม.")
-                    
-                    q = f"กล่องทรงสี่เหลี่ยมมุมฉาก กว้าง <b>{w} ซม.</b> ยาว <b>{l} ซม.</b> และสูง <b>{h} ซม.</b><br>กล่องใบนี้จะมี<b>ปริมาตร</b>ความจุกี่ลูกบาศก์เซนติเมตร?<br>{svg}"
-                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การหาปริมาตร):</b><br>
-                    <b>สูตร:</b> ปริมาตรทรงสี่เหลี่ยมมุมฉาก = กว้าง × ยาว × สูง<br>
-                    👉 แทนค่า: กว้าง = {w}, ยาว = {l}, สูง = {h}<br>
-                    👉 คำนวณ: {w} × {l} × {h} = <b>{vol:,} ลูกบาศก์เซนติเมตร</b><br>
-                    <b>ตอบ: {vol:,} ลูกบาศก์เซนติเมตร</b></span>"""
-                    
-                elif scenario == "tank":
-                    w = random.randint(10, 20)
-                    l = random.randint(20, 40)
-                    h = random.randint(15, 30)
-                    water_h = random.randint(5, h - 5)
-                    vol = w * l * water_h
-                    svg = draw_prism_svg(f"{w} ซม.", f"{l} ซม.", f"น้ำสูง {water_h} ซม.", is_water=True)
-                    
-                    q = f"ตู้ปลาทรงสี่เหลี่ยมมุมฉาก กว้าง <b>{w} ซม.</b> ยาว <b>{l} ซม.</b> สูง <b>{h} ซม.</b><br>ถ้าเติมน้ำลงไปในตู้ปลาให้มีระดับน้ำสูง <b>{water_h} ซม.</b><br>ปริมาตรของน้ำในตู้ปลาจะเป็นกี่ลูกบาศก์เซนติเมตร?<br>{svg}"
-                    sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ประยุกต์ปริมาตรน้ำ):</b><br>
-                    <i>จุดระวัง: โจทย์ถามปริมาตรของ 'น้ำ' ดังนั้นเราต้องใช้ 'ความสูงของน้ำ' ไม่ใช่ความสูงของตู้ปลานะครับ!</i><br><br>
-                    <b>สูตร:</b> ปริมาตรน้ำ = กว้าง × ยาว × ความสูงของน้ำ<br>
-                    👉 แทนค่า: กว้าง = {w}, ยาว = {l}, สูงของน้ำ = {water_h}<br>
-                    👉 คำนวณ: {w} × {l} × {water_h} = <b>{vol:,} ลูกบาศก์เซนติเมตร</b><br>
-                    <b>ตอบ: {vol:,} ลูกบาศก์เซนติเมตร</b></span>"""
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
