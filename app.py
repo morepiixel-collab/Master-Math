@@ -4160,6 +4160,80 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     q = f"สระว่ายน้ำแห่งหนึ่งถูกสร้างทางเดิน (ส่วนที่แรเงา) ล้อมรอบเพียง <b>2 ด้าน</b> ดังรูป<br>ถ้าสระว่ายน้ำรวมทางเดิน กว้าง <b>{H} เมตร</b> ยาว <b>{W} เมตร</b> และทางเดินกว้าง <b>{path} เมตร</b><br>จงหาพื้นที่ของทางเดินรูปตัว L นี้?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ทางเดินตัว L):</b><br>👉 หลักการคิดที่ง่ายที่สุดคือ: มองให้เป็น <b>กรอบรูปที่ถูกดันไปชิดมุม</b><br>👉 <b>พื้นที่ทางเดิน = พื้นที่สี่เหลี่ยมรูปใหญ่(รวมทางเดิน) - พื้นที่สี่เหลี่ยมรูปเล็ก(เฉพาะสระสีขาว)</b><br><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมรูปใหญ่ (ทั้งหมด)</b><br>👉 กว้าง {H} ม., ยาว {W} ม.<br>👉 พื้นที่รูปใหญ่ = {H} × {W} = <b>{area_out} ตารางเมตร</b><br><br><b>ขั้นที่ 2: หาขนาดของสี่เหลี่ยมรูปเล็ก (สีขาว)</b><br>👉 ความกว้างด้านใน = กว้างรวม - ความกว้างทางเดิน = {H} - {path} = <b>{inner_h} เมตร</b><br>👉 ความยาวด้านใน = ยาวรวม - ความกว้างทางเดิน = {W} - {path} = <b>{inner_w} เมตร</b><br>👉 พื้นที่รูปเล็ก = {inner_h} × {inner_w} = <b>{area_in} ตารางเมตร</b><br><br><b>ขั้นที่ 3: หาพื้นที่ทางเดินตัว L (แรเงา)</b><br>👉 นำพื้นที่รูปใหญ่ ลบ พื้นที่รูปเล็ก: {area_out} - {area_in} = <b>{ans} ตารางเมตร</b><br><br><b>ตอบ: {ans} ตารางเมตร</b></span>"
 
+            # ================= หมวด ป.4 ที่เพิ่มใหม่ =================
+            elif actual_sub_t == "การบวก (แบบตั้งหลัก)":
+                # ป.4 ตัวเลขจะเกิน 100,000
+                a = random.randint(100000, 999999) if not is_challenge else random.randint(1000000, 9999999)
+                b = random.randint(100000, 999999) if not is_challenge else random.randint(1000000, 9999999)
+                ans = a + b
+                q_base = f"จงหาผลบวกของ <b>{a:,} + {b:,}</b>"
+                
+                table_html = generate_vertical_table_html(a, b, "+", result=ans, is_key=False)
+                table_key = generate_vertical_table_html(a, b, "+", result=ans, is_key=True)
+                
+                q = f"{q_base}<br>{table_html}"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>ตั้งหลักให้ตรงกัน แล้วบวกจากหลักหน่วย (ขวาไปซ้าย)<br>{table_key}</span>"
+
+            elif actual_sub_t == "แปลงเศษเกินเป็นจำนวนคละ":
+                den = random.randint(3, 12) if not is_challenge else random.randint(13, 25)
+                whole = random.randint(2, 9)
+                num_rem = random.randint(1, den - 1)
+                num_total = (whole * den) + num_rem
+                
+                frac_str = f_html(num_total, den)
+                mixed_str = generate_mixed_number_html(whole, num_rem, den)
+                
+                q = f"จงแปลงเศษเกินต่อไปนี้ให้เป็นจำนวนคละ<br><br><div style='text-align:center; font-size:26px;'>{frac_str} = <span style='color:#2980b9;'>?</span></div>"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 นำตัวเศษ (ด้านบน) หารด้วยตัวส่วน (ด้านล่าง)<br>👉 นำ {num_total} ÷ {den} <br>👉 จะได้ <b>{whole}</b> และเหลือเศษ <b>{num_rem}</b><br>👉 นำมาเขียนเป็นจำนวนคละได้คือ <b>{mixed_str}</b><br><b>ตอบ: {mixed_str}</b></span>"
+
+            elif actual_sub_t == "การบอกชนิดของมุม":
+                angle = random.randint(10, 175)
+                
+                if angle < 90:
+                    angle_type = "มุมแหลม"
+                    reason = "มีขนาดน้อยกว่า 90 องศา"
+                elif 85 < angle < 95:
+                    angle = 90
+                    angle_type = "มุมฉาก"
+                    reason = "มีขนาดเท่ากับ 90 องศาพอดี"
+                elif angle == 180:
+                    angle_type = "มุมตรง"
+                    reason = "มีขนาดเท่ากับ 180 องศาพอดี"
+                else:
+                    angle_type = "มุมป้าน"
+                    reason = "มีขนาดมากกว่า 90 องศา แต่น้อยกว่า 180 องศา"
+                
+                q = f"มุมที่มีขนาด <b>{angle}°</b> คือมุมชนิดใด?<br><span style='font-size:18px; color:#7f8c8d;'>(มุมแหลม, มุมฉาก, มุมป้าน, มุมตรง)</span>"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 มุม {angle}° {reason}<br>👉 ดังนั้นจึงจัดเป็น <b>{angle_type}</b><br><b>ตอบ: {angle_type}</b></span>"
+
+            elif actual_sub_t == "การแก้สมการ (บวก/ลบ)":
+                var = random.choice(["A", "B", "x", "y", "ก", "ข"])
+                a = random.randint(1000, 9999) if not is_challenge else random.randint(15000, 50000)
+                op = random.choice(["+", "-"])
+                
+                if op == "+":
+                    ans = random.randint(1000, 9999) if not is_challenge else random.randint(15000, 50000)
+                    c = ans + a
+                    q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b> : <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} + {a:,} = {c:,}</b></div>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้ายตัวเลข <b>+{a:,}</b> ไปอยู่อีกฝั่ง โดยเปลี่ยนเครื่องหมายบวกเป็นลบ<br>👉 จะได้: {var} = {c:,} - {a:,}<br>👉 คำนวณ: {var} = <b>{ans:,}</b><br><b>ตอบ: {ans:,}</b></span>"
+                else:
+                    c = random.randint(1000, 9999) if not is_challenge else random.randint(15000, 50000)
+                    ans = c + a
+                    q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b> : <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} - {a:,} = {c:,}</b></div>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้ายตัวเลข <b>-{a:,}</b> ไปอยู่อีกฝั่ง โดยเปลี่ยนเครื่องหมายลบเป็นบวก<br>👉 จะได้: {var} = {c:,} + {a:,}<br>👉 คำนวณ: {var} = <b>{ans:,}</b><br><b>ตอบ: {ans:,}</b></span>"
+
+            elif actual_sub_t == "การอ่านและการเขียนตัวเลข":
+                num = random.randint(100000, 999999) if not is_challenge else random.randint(1000000, 99999999)
+                thai_text = generate_thai_number_text(str(num))
+                mode = random.choice(["to_text", "to_num"])
+                
+                if mode == "to_text":
+                    q = f"จงเขียนตัวเลข <b>{num:,}</b> เป็นตัวหนังสือภาษาไทย"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 อ่านตามหลักจากซ้ายไปขวา (ร้อยล้าน สิบล้าน ล้าน แสน หมื่น พัน ร้อย สิบ หน่วย)<br><b>ตอบ: {thai_text}</b></span>"
+                else:
+                    q = f"จงเขียนคำอ่าน <b>\"{thai_text}\"</b> เป็นตัวเลขฮินดูอารบิก"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 แปลงจากคำอ่านเป็นตัวเลขทีละหลัก และอย่าลืมใส่เครื่องหมายจุลภาค (,)<br><b>ตอบ: {num:,}</b></span>"
+
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
