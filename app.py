@@ -4315,8 +4315,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 แปลงคำอ่านเป็นตัวเลข โดยตัวเลขหลังคำว่า 'จุด' ให้เขียนเรียงกันทีละหลัก<br><b>ตอบ: {num_str}</b></span>"
 
             elif actual_sub_t == "การบอกชนิดของมุม":
-                # 💡 ฟังก์ชันวาดรูปมุมแบบอัตโนมัติตามองศา (อัปเกรดให้รองรับมุมกลับ)
-                def draw_basic_angle(deg):
+                # 💡 ฟังก์ชันวาดรูปมุมแบบอัตโนมัติตามองศา (รองรับมุมกลับและสุ่มชื่อมุม)
+                def draw_basic_angle(deg, p1_name, v_name, p2_name):
                     import math
                     # ขยายขนาดพื้นที่วาดภาพ เพื่อไม่ให้มุมกลับทะลุกรอบ
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="300" height="240">'
@@ -4342,24 +4342,30 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         large_arc = 1 if deg > 180 else 0
                         svg += f'<path d="M {vx+r} {vy} A {r} {r} 0 {large_arc} 0 {ex} {ey}" fill="none" stroke="#e74c3c" stroke-width="3"/>'
                         
-                    # จุดและชื่อจุด
+                    # จุดและชื่อจุด (อัปเดตให้ใช้ชื่อที่สุ่มมา)
                     svg += f'<circle cx="{vx}" cy="{vy}" r="5" fill="#c0392b"/>'
                     svg += f'<circle cx="{bx}" cy="{by}" r="5" fill="#c0392b"/>'
                     svg += f'<circle cx="{ax}" cy="{ay}" r="5" fill="#c0392b"/>'
                     lbl = 'font-family:Sarabun; font-size:18px; font-weight:bold; fill:#2c3e50;'
-                    svg += f'<text x="{vx-15}" y="{vy+20}" {lbl}>O</text>'
-                    svg += f'<text x="{bx+15}" y="{by+5}" {lbl}>B</text>'
+                    svg += f'<text x="{vx-15}" y="{vy+20}" {lbl}>{v_name}</text>'
+                    svg += f'<text x="{bx+15}" y="{by+5}" {lbl}>{p2_name}</text>'
                     
-                    # จัดตำแหน่งตัวหนังสือ A ไม่ให้ทับกับเส้น
+                    # จัดตำแหน่งตัวหนังสือแขนอีกข้างไม่ให้ทับกับเส้น
                     ax_off = 15 if ax >= vx else -25
                     ay_off = 5 if ay >= vy else -10
-                    svg += f'<text x="{ax+ax_off}" y="{ay-ay_off}" {lbl}>A</text>'
+                    svg += f'<text x="{ax+ax_off}" y="{ay-ay_off}" {lbl}>{p1_name}</text>'
                     
                     # ตัวเลขมุม (ขยับออกไปตามรัศมี)
                     tx = vx + (r+25) * math.cos(rad/2)
                     ty = vy - (r+25) * math.sin(rad/2)
                     svg += f'<text x="{tx}" y="{ty+5}" font-family="Sarabun" font-size="16" font-weight="bold" fill="#e74c3c" text-anchor="middle">{deg}°</text>'
                     return svg + '</svg></div>'
+
+                # 🎲 สุ่มชื่อมุม (ตัวอักษรภาษาอังกฤษ 3 ตัวไม่ซ้ำกัน)
+                letters_pool = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+                sampled_letters = random.sample(letters_pool, 3)
+                p1, v, p2 = sampled_letters[0], sampled_letters[1], sampled_letters[2]
+                angle_name = f"{p1}{v}{p2}"
 
                 # ปรับระบบสุ่มให้ครอบคลุมทั้ง 5 ชนิด
                 angle = random.randint(15, 345) # สุ่มได้ถึง 345 องศา (มุมกลับ)
@@ -4380,11 +4386,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 else:
                     angle_type, reason = "มุมกลับ", "มีขนาดมากกว่า 180 องศา แต่น้อยกว่า 360 องศา"
                     
-                svg_html = draw_basic_angle(angle)
+                svg_html = draw_basic_angle(angle, p1, v, p2)
                 
-                q = f"จากรูป มุม AOB ที่มีขนาด <b>{angle}°</b> คือมุมชนิดใด?<br>{svg_html}<span style='font-size:18px; color:#7f8c8d;'>(มุมแหลม, มุมฉาก, มุมป้าน, มุมตรง, มุมกลับ)</span>"
-                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สังเกตจากรูปภาพมุมกาง <b>{angle}°</b><br>👉 ซึ่งมุม {angle}° {reason}<br>👉 ดังนั้นมุม AOB จึงจัดเป็น <b>{angle_type}</b><br><b>ตอบ: {angle_type}</b></span>"
-
+                q = f"จากรูป มุม <b>{angle_name}</b> ที่มีขนาด <b>{angle}°</b> คือมุมชนิดใด?<br>{svg_html}<span style='font-size:18px; color:#7f8c8d;'>(มุมแหลม, มุมฉาก, มุมป้าน, มุมตรง, มุมกลับ)</span>"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สังเกตจากรูปภาพมุมกาง <b>{angle}°</b><br>👉 ซึ่งมุม {angle}° {reason}<br>👉 ดังนั้นมุม {angle_name} จึงจัดเป็น <b>{angle_type}</b><br><b>ตอบ: {angle_type}</b></span>"
             elif actual_sub_t == "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)":
                 def draw_angle_feature_local(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
                     len_a = math.hypot(ax - vx, ay - vy)
