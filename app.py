@@ -4718,6 +4718,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg = draw_angle_svg_local("straight", 180-ans, ans, "?")
                     q = f"ถ้านำไม้โปรแทรกเตอร์มาวัดมุม <b>x</b> ในรูป จะได้ขนาดกี่องศา?<br>(กำหนดให้เส้นตรงด้านล่างคือ 180°)<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 มุมบนเส้นตรงมีขนาดรวม 180°<br>👉 ถ้ามุมอีกฝั่งกาง {180-ans}° มุม x จะเท่ากับ 180° - {180-ans}° = <b>{ans}°</b><br><b>ตอบ: {ans} องศา</b></span>"
+            
             elif actual_sub_t == "การสร้างมุมตามขนาดที่กำหนด":
                 l_pool = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
                 smpl = random.sample(l_pool, 3)
@@ -4740,10 +4741,63 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 sol = f"<span style='color:#2c3e50;'><b>เฉลย:</b> มุมกาง {target_deg}° จัดเป็น <b>{a_type}</b></span>"
 
             elif actual_sub_t == "โจทย์ปัญหาเรื่องมุมจากเข็มนาฬิกา":
+                # 💡 ฟังก์ชันวาดนาฬิกาประกอบโจทย์
+                def draw_clock_svg(hour):
+                    import math
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="260">'
+                    cx, cy = 280, 130  # จุดศูนย์กลางนาฬิกา
+                    r_clock = 100
+                    
+                    # วาดตัวเรือนนาฬิกา
+                    svg += f'<circle cx="{cx}" cy="{cy}" r="{r_clock}" fill="#ffffff" stroke="#34495e" stroke-width="4"/>'
+                    svg += f'<circle cx="{cx}" cy="{cy}" r="5" fill="#2c3e50"/>'
+                    
+                    # วาดขีดตัวเลขนาฬิกา (12 ขีด)
+                    for i in range(12):
+                        deg = i * 30
+                        rad = math.radians(deg - 90)
+                        x1, y1 = cx + (r_clock - 10) * math.cos(rad), cy + (r_clock - 10) * math.sin(rad)
+                        x2, y2 = cx + r_clock * math.cos(rad), cy + r_clock * math.sin(rad)
+                        svg += f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#7f8c8d" stroke-width="2"/>'
+                        
+                        # ใส่ตัวเลขหลักๆ (12, 3, 6, 9)
+                        if i % 3 == 0:
+                            num = 12 if i == 0 else i
+                            tx, ty = cx + (r_clock - 25) * math.cos(rad), cy + (r_clock - 25) * math.sin(rad)
+                            svg += f'<text x="{tx}" y="{ty+5}" font-family="sans-serif" font-size="14" font-weight="bold" fill="#34495e" text-anchor="middle">{num}</text>'
+
+                    # 💡 วาดเข็มนาฬิกา
+                    # เข็มยาว (ชี้เลข 12 เสมอ)
+                    svg += f'<line x1="{cx}" y1="{cy}" x2="{cx}" y2="{cy - 80}" stroke="#2c3e50" stroke-width="4" stroke-linecap="round"/>'
+                    
+                    # เข็มสั้น (ชี้ตามชั่วโมงที่สุ่มได้)
+                    hr_rad = math.radians((hour * 30) - 90)
+                    hx, hy = cx + 60 * math.cos(hr_rad), cy + 60 * math.sin(hr_rad)
+                    svg += f'<line x1="{cx}" y1="{cy}" x2="{hx}" y2="{hy}" stroke="#e74c3c" stroke-width="6" stroke-linecap="round"/>'
+                    
+                    # วาดส่วนโค้งมุม (แสดงระยะห่าง)
+                    arc_r = 30
+                    svg += f'<path d="M {cx} {cy-arc_r} A {arc_r} {arc_r} 0 0 1 {cx + arc_r*math.cos(hr_rad)} {cy + arc_r*math.sin(hr_rad)}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
+                    
+                    return svg + '</svg></div>'
+
+                # สุ่มตัวเลขชั่วโมง (1-6 เพื่อให้เด็กมองมุมได้ชัดเจน)
                 hr_num = random.randint(1, 6)
                 ans_deg = hr_num * 30
-                q = f"เมื่อเข็มยาวชี้เลข 12 และเข็มสั้นชี้เลข <b>{hr_num}</b> เข็มทั้งสองทำมุมกันกี่องศา?"
-                sol = f"<span style='color:#2c3e50;'><b>วิธีทำ:</b> 1 ช่องนาฬิกา = 30° ดังนั้น {hr_num} ช่อง = {hr_num} × 30 = <b>{ans_deg} องศา</b></span>"
+                
+                # ชนิดของมุม
+                a_type = "มุมแหลม" if ans_deg < 90 else "มุมฉาก" if ans_deg == 90 else "มุมป้าน" if ans_deg < 180 else "มุมตรง"
+                
+                svg_clock = draw_clock_svg(hr_num)
+                
+                q = f"จากรูปนาฬิกา เมื่อเข็มยาวชี้เลข 12 และเข็มสั้นชี้เลข <b>{hr_num}</b><br>เข็มนาฬิกาทั้งสองเล่มทำมุมกันกี่องศา และเป็นมุมชนิดใด?<br>{svg_clock}"
+                
+                sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
+                1. นาฬิกามีทั้งหมด 12 ช่องใหญ่ รอบวงกลมคือ 360 องศา<br>
+                2. ดังนั้น 1 ช่องตัวเลข (เช่น 12 ไป 1) กว้าง 360 ÷ 12 = <b>30 องศา</b><br>
+                3. ในรูป เข็มสั้นชี้ที่เลข {hr_num} หมายถึงห่างจากเลข 12 อยู่ {hr_num} ช่อง<br>
+                4. คำนวณ: {hr_num} ช่อง × 30 องศา = <b>{ans_deg} องศา</b><br>
+                <b>ตอบ: {ans_deg} องศา (จัดเป็น{a_type})</b></span>'''
 
             elif actual_sub_t == "การหาความยาวรอบรูปสี่เหลี่ยมมุมฉาก":
                 def draw_rect_svg_local(w_val, h_val, w_lbl, h_lbl, fill_color="#eaf2f8"):
