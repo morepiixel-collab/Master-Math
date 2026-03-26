@@ -4576,33 +4576,55 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 เปรียบเทียบจำนวนหลัก และค่าของเลขโดดทีละหลักจากซ้ายไปขวา<br>👉 เรียงลำดับจาก{order} จะได้:<br><b>ตอบ: {sorted_str}</b></span>"
 
             elif actual_sub_t == "สมการและตัวไม่ทราบค่าจากชีวิตประจำวัน":
-                item = random.choice(["ขนม", "สมุด", "ดินสอ", "ไอศกรีม"])
-                price_per_unit = random.randint(15, 45)
-                quantity = random.randint(3, 9)
-                total_cost = price_per_unit * quantity
-                
-                mode = random.choice(["find_unit", "find_qty"])
-                
-                if mode == "find_unit":
-                    q = f"คุณแม่ซื้อ <b>{item}</b> จำนวน <b>{quantity}</b> ชิ้น จ่ายเงินไปทั้งหมด <b>{total_cost:,}</b> บาท <br>อยากทราบว่า {item} <b>ราคาชิ้นละกี่บาท?</b> (เขียนเป็นประโยคสัญลักษณ์ที่มีตัวไม่ทราบค่า จ และหาคำตอบ)"
+                # ตรวจสอบว่าผู้ใช้เปิดโหมด Challenge หรือไม่ (สมมติใช้ตัวแปร is_challenge)
+                # หากในโค้ดคุณใช้ชื่ออื่น ให้เปลี่ยนชื่อตัวแปรให้ตรงกันครับ
+                is_challenge = st.session_state.get("challenge_mode", False)
+
+                if not is_challenge:
+                    # --- โหมดธรรมดา: สมการ 2 ขั้นตอนพื้นฐาน ---
+                    item = random.choice(["ขนม", "สมุด", "ดินสอ"])
+                    price = random.randint(15, 35)
+                    qty = random.randint(3, 7)
+                    extra_money = random.randint(20, 100)
+                    total_paid = (price * qty) + extra_money
+                    
+                    q = f"คุณแม่ซื้อ <b>{item}</b> จำนวน <b>{qty}</b> ชิ้น และซื้อผลไม้เพิ่มอีก <b>{extra_money}</b> บาท <br>คุณแม่ต้องจ่ายเงินทั้งหมด <b>{total_paid}</b> บาท อยากทราบว่า {item} <b>ราคาชิ้นละกี่บาท?</b><br>(จงเขียนสมการโดยให้ จ แทนราคาของ{item} และหาคำตอบ)"
+                    
                     sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
-                    👉 <b>ขั้นที่ 1:</b> เขียนประโยคสัญลักษณ์จากโจทย์<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; (จำนวนชิ้น) × (ราคาต่อชิ้น) = (ราคารวม)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">{quantity} × จ = {total_cost}</span><br>
-                    👉 <b>ขั้นที่ 2:</b> ใช้ความสัมพันธ์ของการคูณและการหารเพื่อหาค่า จ<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จ = {total_cost} <span style="color:#e74c3c;">÷</span> {quantity}<br>
-                    👉 <b>ขั้นที่ 3:</b> คำนวณหาคำตอบ<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {total_cost} ÷ {quantity} = <span style="color:#27ae60;"><b>{price_per_unit}</b></span><br>
-                    <b>ตอบ: {item} ราคาชิ้นละ {price_per_unit} บาท</b></span>'''
+                    👉 <b>ขั้นที่ 1:</b> เขียนสมการจากสถานการณ์<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; (จำนวน {item} × ราคาต่อชิ้น) + ค่าผลไม้ = เงินทั้งหมด<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">({qty} × จ) + {extra_money} = {total_paid}</span><br>
+                    👉 <b>ขั้นที่ 2:</b> กำจัดตัวเลขที่บวกอยู่ (ย้ายไปลบ)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; {qty} × จ = {total_paid} <span style="color:#e74c3c;">- {extra_money}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; {qty} × จ = {total_paid - extra_money}<br>
+                    👉 <b>ขั้นที่ 3:</b> หาค่า จ (ย้ายไปหาร)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จ = {total_paid - extra_money} <span style="color:#e74c3c;">÷ {qty}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จ = <span style="color:#27ae60;"><b>{price}</b></span><br>
+                    <b>ตอบ: {item} ราคาชิ้นละ {price} บาท</b></span>'''
+                
                 else:
-                    q = f"พี่มีเงิน <b>{total_cost:,}</b> บาท นำไปซื้อ <b>{item}</b> ราคาชิ้นละ <b>{price_per_unit}</b> บาท <br>จะได้ {item} ทั้งหมด<b>กี่ชิ้น?</b> (เขียนเป็นประโยคสัญลักษณ์ที่มีตัวไม่ทราบค่า x และหาคำตอบ)"
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
-                    👉 <b>ขั้นที่ 1:</b> เขียนประโยคสัญลักษณ์จากโจทย์<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; (เงินทั้งหมด) ÷ (ราคาต่อชิ้น) = (จำนวนชิ้น)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">{total_cost} ÷ {price_per_unit} = x</span><br>
-                    👉 <b>ขั้นที่ 2:</b> คำนวณหาค่า x<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {total_cost} ÷ {price_per_unit} = <span style="color:#27ae60;"><b>{quantity}</b></span><br>
-                    <b>ตอบ: จะได้ {item} ทั้งหมด {quantity} ชิ้น</b></span>'''
+                    # --- โหมด Challenge: สมการที่มีตัวแปรทั้งสองฝั่ง หรือความสัมพันธ์เชิงเปรียบเทียบ ---
+                    name1, name2 = random.sample(["ต้นกล้า", "ใยไหม", "ปั้น", "ข้าว"], 2)
+                    base_val = random.randint(25, 60)
+                    diff = random.randint(10, 30)
+                    # สถานการณ์: name1 มีเงินเป็น 2 เท่าของ name2 และทั้งสองคนมีเงินรวมกัน...
+                    total_sum = (base_val * 2) + base_val
+                    
+                    q = f"<b>{name1}</b> มีเงินเป็น <b>2 เท่า</b> ของ <b>{name2}</b> <br>ถ้าทั้งสองคนมีเงินรวมกันทั้งหมด <b>{total_sum}</b> บาท <br>อยากทราบว่า <b>{name1} มีเงินกี่บาท?</b> (จงตั้งสมการและหาคำตอบ)"
+                    
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (โหมดท้าทาย):</b><br>
+                    👉 <b>ขั้นที่ 1:</b> กำหนดตัวไม่ทราบค่า<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ให้ <span style="color:#2980b9;">x</span> แทนจำนวนเงินของ {name2}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {name1} จะมีเงิน <span style="color:#2980b9;">2 × x</span> (หรือ 2x)<br>
+                    👉 <b>ขั้นที่ 2:</b> เขียนสมการจากผลรวมของทั้งสองคน<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; เงินของ {name1} + เงินของ {name2} = {total_sum}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">(2 × x) + x = {total_sum}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">3 × x = {total_sum}</span> (เพราะ 2 ส่วน รวมกับ 1 ส่วน เป็น 3 ส่วน)<br>
+                    👉 <b>ขั้นที่ 3:</b> หาค่า x (เงินของ {name2})<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; x = {total_sum} <span style="color:#e74c3c;">÷ 3</span> = <b>{base_val}</b> บาท<br>
+                    👉 <b>ขั้นที่ 4:</b> หาเงินของ {name1} ตามที่โจทย์ถาม<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; {name1} มีเงิน 2 × {base_val} = <span style="color:#27ae60;"><b>{base_val * 2}</b></span> บาท<br>
+                    <b>ตอบ: {name1} มีเงิน {base_val * 2} บาท</b></span>'''
 
             elif actual_sub_t == "สมการเชิงตรรกะและตาชั่งปริศนา":
                 val_a = random.randint(6, 12)
