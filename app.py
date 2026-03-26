@@ -5192,6 +5192,81 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 &nbsp;&nbsp;&nbsp;&nbsp; นำจำนวนหัวทั้งหมดไปลบออก: {t_heads} (ตัวทั้งหมด) - {count_a2} ({a2['name']}) = <span style="color:#27ae60;"><b>{count_a1} ตัว</b></span><br>
                 <b>ตอบ: ฟาร์มนี้มี{target_animal['name']}ทั้งหมด {count_a1 if target_animal['name'] == a1['name'] else count_a2} ตัว</b></span>'''
 
+            elif actual_sub_t == "โจทย์ปัญหาสมการ: ความสัมพันธ์ของ 2 สิ่ง":
+                is_challenge = st.session_state.get("challenge_mode", False)
+                
+                # 🎲 ฐานข้อมูลจับคู่สิ่งของ 2 ชนิด
+                items_pool = [
+                    {"A": "สมุด", "B": "ปากกา", "uA": "เล่ม", "uB": "ด้าม"},
+                    {"A": "เสื้อ", "B": "กางเกง", "uA": "ตัว", "uB": "ตัว"},
+                    {"A": "โต๊ะ", "B": "เก้าอี้", "uA": "ตัว", "uB": "ตัว"},
+                    {"A": "พิซซ่า", "B": "ไก่ทอด", "uA": "ถาด", "uB": "ชิ้น"},
+                    {"A": "นมสด", "B": "ขนมปัง", "uA": "ขวด", "uB": "ห่อ"}
+                ]
+                pair = random.choice(items_pool)
+                nameA, nameB = pair["A"], pair["B"]
+                uA, uB = pair["uA"], pair["uB"]
+                
+                if not is_challenge:
+                    # --- โหมดธรรมดา: ทฤษฎีผลบวก-ผลต่าง พื้นฐาน ---
+                    val_A = random.randint(30, 80)
+                    val_B = random.randint(10, val_A - 10)
+                    
+                    sum_val = val_A + val_B
+                    diff_val = val_A - val_B
+                    
+                    q = f"<b>{nameA}</b> 1 {uA} รวมกับ <b>{nameB}</b> 1 {uB} ราคารวมกัน <b>{sum_val}</b> บาท<br>ถ้า <b>{nameA}</b> 1 {uA} ราคาแพงกว่า <b>{nameB}</b> 1 {uB} อยู่ <b>{diff_val}</b> บาท<br>อยากทราบว่า <b>{nameA}</b> ราคา{uA}ละกี่บาท?"
+                    
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (โหมดพื้นฐาน):</b><br>
+                    👉 <b>ขั้นที่ 1:</b> วิเคราะห์โจทย์<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ผลบวก (ราคารวม) = {sum_val}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ผลต่าง (แพงกว่ากัน) = {diff_val}<br>
+                    👉 <b>ขั้นที่ 2:</b> ใช้สูตรลัดหาของที่แพงกว่า ({nameA})<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>สูตรลัดระดับแข่งขัน:</b> ราคาของชิ้นที่แพงกว่า = (ผลบวก + ผลต่าง) ÷ 2</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ราคา <b>{nameA}</b> = ({sum_val} + {diff_val}) ÷ 2<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; = {sum_val + diff_val} ÷ 2 = <span style="color:#e74c3c;"><b>{val_A}</b></span> บาท<br>
+                    <b>ตอบ: {nameA} ราคา{uA}ละ {val_A} บาท</b></span>'''
+                    
+                else:
+                    # --- โหมดท้าทาย: รูปแบบโจทย์สมการตัดตัวแปร (ตามที่คุณผู้ใช้งานต้องการเป๊ะๆ) ---
+                    val_B = random.randint(8, 25)
+                    m = random.randint(2, 4) # สุ่มจำนวนเท่า (เช่น ปากกา 2 ด้าม, 3 ด้าม, 4 ด้าม)
+                    
+                    # สุ่มค่าของ A ให้น้อยกว่า ผลรวมของ B หลายๆ ด้าม เพื่อให้เกิดส่วนต่างที่เป็นบวก
+                    val_A = random.randint(val_B + 5, (val_B * m) - 2) 
+                    
+                    sum_val = val_A + val_B
+                    diff_val = (val_B * m) - val_A
+                    
+                    # สุ่มถามว่าจะให้หาค่าของ A หรือ B
+                    ask_A = random.choice([True, False])
+                    target_name = nameA if ask_A else nameB
+                    target_u = uA if ask_A else uB
+                    target_ans = val_A if ask_A else val_B
+                    
+                    q = f"<b>{nameA}</b> 1 {uA} รวมกับ <b>{nameB}</b> 1 {uB} ราคารวมกัน <b>{sum_val}</b> บาท<br><b>{nameB}</b> <b>{m}</b> {uB} ราคาแพงกว่า <b>{nameA}</b> 1 {uA} อยู่ <b>{diff_val}</b> บาท<br>อยากทราบว่า <b>{target_name}</b> ราคา{target_u}ละกี่บาท?"
+                    
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคระดับแข่งขัน: การรวมประโยคหักล้าง):</b><br>
+                    👉 <b>ขั้นที่ 1:</b> เขียนประโยคสัญลักษณ์จากโจทย์<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ประโยคที่ 1: ({nameA} 1 {uA}) + ({nameB} 1 {uB}) = {sum_val} บาท<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ประโยคที่ 2: ({nameB} {m} {uB}) - ({nameA} 1 {uA}) = {diff_val} บาท<br>
+                    👉 <b>ขั้นที่ 2:</b> นำทั้งสองประโยคมารวมกัน (นำของมารวมกัน และนำเงินมารวมกัน)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; นำของมารวมกันจะได้: ({nameA} 1 {uA} + {nameB} 1 {uB}) + ({nameB} {m} {uB} - {nameA} 1 {uA})<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>สังเกตให้ดี:</b> เรามี "{nameA} 1 {uA}" และมี "ลบ {nameA} 1 {uA}" มันจะ<b>หักล้างกันหายไปพอดี!</b></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะเหลือแค่: {nameB} 1 {uB} รวมกับ {nameB} {m} {uB} = <span style="color:#2980b9;"><b>{nameB} {m+1} {uB}</b></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; นำเงินมารวมกัน: {sum_val} + {diff_val} = <span style="color:#2980b9;"><b>{sum_val + diff_val} บาท</b></span><br>
+                    👉 <b>ขั้นที่ 3:</b> หาค่า {nameB}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้บทสรุปว่า: <b>{nameB} {m+1} {uB}</b> ราคา <b>{sum_val + diff_val}</b> บาท<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {nameB} 1 {uB} = {sum_val + diff_val} ÷ {m+1} = <span style="color:#27ae60;"><b>{val_B}</b></span> บาท<br>'''
+                    
+                    # ถ้าโจทย์ถามหาของอีกชิ้น (A) ต้องเอาไปแทนค่าต่อ
+                    if ask_A:
+                        sol += f'''👉 <b>ขั้นที่ 4:</b> หาค่า {nameA} ตามที่โจทย์ถาม<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จากประโยคแรกสุด: {nameA} 1 {uA} + {nameB}({val_B} บาท) = {sum_val} บาท<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {nameA} 1 {uA} = {sum_val} - {val_B} = <span style="color:#e74c3c;"><b>{val_A}</b></span> บาท<br>'''
+                    
+                    sol += f'''<b>ตอบ: {target_name} ราคา{target_u}ละ {target_ans} บาท</b></span>'''
+
             elif actual_sub_t == "ค่าประมาณเป็นจำนวนเต็มสิบ เต็มร้อย เต็มพัน":
                 target = random.choice(["สิบ", "ร้อย", "พัน"])
                 num = random.randint(1234, 99999) if not is_challenge else random.randint(100000, 999999)
