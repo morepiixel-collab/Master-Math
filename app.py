@@ -5211,7 +5211,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     val_1 = random.randint(30, 80)
                     val_2 = random.randint(10, val_1 - 10)
                     
-                    # สุ่มว่า A จะแพงกว่า หรือ ถูกกว่า B
                     is_A_expensive = random.choice([True, False])
                     
                     if is_A_expensive:
@@ -5222,23 +5221,39 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         reason_str = f"เพราะ <b>x</b> คือของที่แพงกว่า ถ้าเราอยากรู้ราคาของที่ถูกกว่า (<b>y</b>) เราก็ต้องเอาของแพง (<b>x</b>) ไป <b>\"หักออก\"</b> ด้วยส่วนต่างนั่นเองครับ!"
                         sub_str = f"x + (x - {diff_val}) = {val_A + val_B}"
                         combine_str = f"2x - {diff_val} = {val_A + val_B}"
-                        move_str = f"2x = {val_A + val_B} + {diff_val}"
-                        calc_str = f"2x = {(val_A + val_B) + diff_val}"
-                        final_x_str = f"x = {(val_A + val_B) + diff_val} ÷ 2"
+                        
+                        # คำอธิบายย้ายข้างแบบละเอียด (กรณีลบ)
+                        step3_explanation = f'''👉 <b>ขั้นที่ 3: ย้ายข้างสมการเพื่อหาค่า x (ทำให้ x อยู่คนเดียว)</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 เทคนิคการย้ายข้าง:</b> เราต้องกำจัดตัวเลขที่อยู่ฝั่งเดียวกับ x ออกไป โดยใช้ "เครื่องหมายตรงข้าม" ครับ</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จากสมการ <b>{combine_str}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ย้าย <b>-{diff_val}</b> ไปฝั่งขวา จะเปลี่ยนเครื่องหมายตรงข้ามเป็น <b>+{diff_val}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>2x = {val_A + val_B} + {diff_val}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>2x = {(val_A + val_B) + diff_val}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 ย้ายตัวคูณไปหาร:</b> 2x หมายความว่า 2 "คูณ" อยู่กับ x ถ้าอยากได้ x ตัวเดียว ต้องย้าย 2 ไปเป็น "หาร"</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>x = {(val_A + val_B) + diff_val} ÷ 2</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>x = <span style="color:#e74c3c;">{val_A}</span></b> บาท<br>'''
+
                     else:
-                        val_A, val_B = val_2, val_1 # A ถูกกว่า
+                        val_A, val_B = val_2, val_1 
                         diff_word = "ถูกกว่า"
                         diff_val = val_B - val_A
                         eq2_str = f"x + {diff_val} = y"
                         reason_str = f"เพราะ <b>x</b> คือของที่ถูกกว่า ถ้าเราอยากรู้ราคาของที่แพงกว่า (<b>y</b>) เราก็ต้องเอาของถูก (<b>x</b>) ไป <b>\"บวกเพิ่ม\"</b> ด้วยส่วนต่างนั่นเองครับ!"
                         sub_str = f"x + (x + {diff_val}) = {val_A + val_B}"
                         combine_str = f"2x + {diff_val} = {val_A + val_B}"
-                        move_str = f"2x = {val_A + val_B} - {diff_val}"
-                        calc_str = f"2x = {(val_A + val_B) - diff_val}"
-                        final_x_str = f"x = {(val_A + val_B) - diff_val} ÷ 2"
+                        
+                        # คำอธิบายย้ายข้างแบบละเอียด (กรณีบวก)
+                        step3_explanation = f'''👉 <b>ขั้นที่ 3: ย้ายข้างสมการเพื่อหาค่า x (ทำให้ x อยู่คนเดียว)</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 เทคนิคการย้ายข้าง:</b> เราต้องกำจัดตัวเลขที่อยู่ฝั่งเดียวกับ x ออกไป โดยใช้ "เครื่องหมายตรงข้าม" ครับ</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จากสมการ <b>{combine_str}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ย้าย <b>+{diff_val}</b> ไปฝั่งขวา จะเปลี่ยนเครื่องหมายตรงข้ามเป็น <b>-{diff_val}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>2x = {val_A + val_B} - {diff_val}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>2x = {(val_A + val_B) - diff_val}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 ย้ายตัวคูณไปหาร:</b> 2x หมายความว่า 2 "คูณ" อยู่กับ x ถ้าอยากได้ x ตัวเดียว ต้องย้าย 2 ไปเป็น "หาร"</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>x = {(val_A + val_B) - diff_val} ÷ 2</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>x = <span style="color:#e74c3c;">{val_A}</span></b> บาท<br>'''
                     
                     sum_val = val_A + val_B
-                    
                     q = f"<b>{nameA}</b> 1 {uA} รวมกับ <b>{nameB}</b> 1 {uB} ราคารวมกัน <b>{sum_val}</b> บาท<br>ถ้า <b>{nameA}</b> 1 {uA} ราคา<b>{diff_word}</b> <b>{nameB}</b> 1 {uB} อยู่ <b>{diff_val}</b> บาท<br>อยากทราบว่า <b>{nameA}</b> ราคา{uA}ละกี่บาท?"
                     
                     sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (แก้สมการด้วยวิธีแทนค่าตัวแปร):</b><br>
@@ -5250,32 +5265,26 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     &nbsp;&nbsp;&nbsp;&nbsp; 2) {nameA} {diff_word} {nameB} {diff_val} บาท ➞ <b>{eq2_str}</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --- (สมการที่ ②)<br>
                     <br>
                     &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>🤔 ทำไมถึงเขียนสมการแบบนี้?</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>คำอธิบาย:</b> {reason_str}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>คำอธิบาย:</b> {reason_str}</span><br>
                     <br>
                     👉 <b>ขั้นที่ 2: แก้สมการ (นำสมการที่ ② ไปแทนค่าในสมการที่ ①)</b><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลการแทนค่า:</b> เราจะนำก้อนของ y ไปวางแทนที่ตัว y ในสมการแรก เพื่อให้เหลือแค่ตัวแปร x ตัวเดียวครับ</span><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; จากสมการที่ ①: x + <b>y</b> = {sum_val}<br>
                     &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า y ลงไป: <b>{sub_str}</b><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; รวมตัวแปร x เข้าด้วยกัน: <b>{combine_str}</b><br>
-                    👉 <b>ขั้นที่ 3: ย้ายข้างสมการเพื่อหาค่า x</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{move_str}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{calc_str}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{final_x_str}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>x = <span style="color:#e74c3c;">{val_A}</span></b> บาท<br>
+                    {step3_explanation}
                     <b>ตอบ: {nameA} ราคา{uA}ละ {val_A} บาท</b></span>'''
                     
                 else:
-                    # --- โหมดท้าทาย ---
                     val_B = random.randint(8, 25)
                     m = random.randint(2, 4) 
                     
                     val_A = random.randint(15, 80)
-                    while val_A == (val_B * m): # ป้องกันไม่ให้ราคาเท่ากันเป๊ะ
+                    while val_A == (val_B * m): 
                         val_A = random.randint(15, 80)
                         
                     sum_val = val_A + val_B
                     
-                    # เช็คว่า B m ชิ้น แพงกว่า หรือ ถูกกว่า A 1 ชิ้น
                     if (val_B * m) > val_A:
                         diff_word = "แพงกว่า"
                         diff_val = (val_B * m) - val_A
@@ -5284,9 +5293,17 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         reason_isolate = f"ราคาของ {nameB} {m} {uB} ({m}y) หักออกด้วยส่วนต่าง ({diff_val}) จะมีค่าเท่ากับราคาของ {nameA} (x) พอดีครับ"
                         sub_str = f"({m}y - {diff_val}) + y = {sum_val}"
                         combine_str = f"{m+1}y - {diff_val} = {sum_val}"
-                        move_str = f"{m+1}y = {sum_val} + {diff_val}"
-                        calc_str = f"{m+1}y = {sum_val + diff_val}"
-                        final_y_str = f"y = {sum_val + diff_val} ÷ {m+1}"
+                        
+                        step3_explanation = f'''👉 <b>ขั้นที่ 3: ย้ายข้างสมการเพื่อหาค่า y (ทำให้ y อยู่คนเดียว)</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 เทคนิคการย้ายข้าง:</b> เราต้องกำจัดตัวเลขที่อยู่ฝั่งเดียวกับ y ออกไป โดยเปลี่ยนเป็น "เครื่องหมายตรงข้าม"</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จากสมการ <b>{combine_str}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ย้าย <b>-{diff_val}</b> ไปฝั่งขวา จะเปลี่ยนเป็น <b>+{diff_val}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>{m+1}y = {sum_val} + {diff_val}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>{m+1}y = {sum_val + diff_val}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 ย้ายตัวคูณไปหาร:</b> {m+1}y หมายความว่า {m+1} "คูณ" อยู่กับ y ถ้าอยากได้ y ตัวเดียว ต้องย้าย {m+1} ไปเป็น "หาร"</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>y = {sum_val + diff_val} ÷ {m+1}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>y = <span style="color:#27ae60;">{val_B}</span></b> บาท<br>'''
+                        
                     else:
                         diff_word = "ถูกกว่า"
                         diff_val = val_A - (val_B * m)
@@ -5295,9 +5312,16 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         reason_isolate = f"ราคาของ {nameB} {m} {uB} ({m}y) บวกเพิ่มด้วยส่วนต่าง ({diff_val}) จะมีค่าเท่ากับราคาของ {nameA} (x) พอดีครับ"
                         sub_str = f"({m}y + {diff_val}) + y = {sum_val}"
                         combine_str = f"{m+1}y + {diff_val} = {sum_val}"
-                        move_str = f"{m+1}y = {sum_val} - {diff_val}"
-                        calc_str = f"{m+1}y = {sum_val - diff_val}"
-                        final_y_str = f"y = {sum_val - diff_val} ÷ {m+1}"
+                        
+                        step3_explanation = f'''👉 <b>ขั้นที่ 3: ย้ายข้างสมการเพื่อหาค่า y (ทำให้ y อยู่คนเดียว)</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 เทคนิคการย้ายข้าง:</b> เราต้องกำจัดตัวเลขที่อยู่ฝั่งเดียวกับ y ออกไป โดยเปลี่ยนเป็น "เครื่องหมายตรงข้าม"</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จากสมการ <b>{combine_str}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ย้าย <b>+{diff_val}</b> ไปฝั่งขวา จะเปลี่ยนเป็น <b>-{diff_val}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>{m+1}y = {sum_val} - {diff_val}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>{m+1}y = {sum_val - diff_val}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 ย้ายตัวคูณไปหาร:</b> {m+1}y หมายความว่า {m+1} "คูณ" อยู่กับ y ถ้าอยากได้ y ตัวเดียว ต้องย้าย {m+1} ไปเป็น "หาร"</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>y = {sum_val - diff_val} ÷ {m+1}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>y = <span style="color:#27ae60;">{val_B}</span></b> บาท<br>'''
                     
                     ask_A = random.choice([True, False])
                     target_name = nameA if ask_A else nameB
@@ -5319,13 +5343,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลการแทนค่า:</b> นำก้อนนี้ไปแทนที่ x ในสมการที่ ① เพื่อให้เหลือแค่ตัวแปร y ครับ</span><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; จากสมการที่ ①: <b>x</b> + y = {sum_val}<br>
                     &nbsp;&nbsp;&nbsp;&nbsp; เปลี่ยน x ตามที่จัดรูปไว้: <b>{sub_str}</b><br>
-                    👉 <b>ขั้นที่ 3: ย้ายข้างสมการเพื่อหาค่า y (ราคา {nameB})</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; รวมตัวแปร y เข้าด้วยกัน:<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{combine_str}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{move_str}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{calc_str}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{final_y_str}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>y = <span style="color:#27ae60;">{val_B}</span></b> บาท<br>'''
+                    {step3_explanation}'''
                     
                     if ask_A:
                         sol += f'''👉 <b>ขั้นที่ 4: หาค่า x (ราคา {nameA}) ตามที่โจทย์ถาม</b><br>
