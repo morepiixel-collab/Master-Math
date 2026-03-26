@@ -4391,11 +4391,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 q = f"จากรูป มุม <b>{angle_name}</b> ที่มีขนาด <b>{angle}°</b> คือมุมชนิดใด?<br>{svg_html}<span style='font-size:18px; color:#7f8c8d;'>(มุมแหลม, มุมฉาก, มุมป้าน, มุมตรง, มุมกลับ)</span>"
                 sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สังเกตจากรูปภาพมุมกาง <b>{angle}°</b><br>👉 ซึ่งมุม {angle}° {reason}<br>👉 ดังนั้นมุม {angle_name} จึงจัดเป็น <b>{angle_type}</b><br><b>ตอบ: {angle_type}</b></span>"
             elif actual_sub_t == "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)":
-                # 💡 1. ฟังก์ชันวาดไม้โปรแทรกเตอร์แบบละเอียด (ลดสเกลลง 30% ให้กะทัดรัด)
                 def draw_protractor_svg(deg1, deg2, p1_name, v_name, p2_name):
                     import math
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="400" height="200">'
-                    cx, cy = 200, 160
+                    # 💡 แก้ไขตามคำแนะนำ: ไม่ลดขนาดพื้นหลัง (SVG Canvas) ให้กว้าง 560px เท่าเดิม 
+                    # แต่ขนาดไม้โปรฯ กับความยาวแขนจะเล็กอยู่ตรงกลาง เพื่อให้ตัวอักษรไม่ตกขอบ
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="240">'
+                    cx, cy = 280, 190
                     r_outer = 120
                     r_inner = 80
                     
@@ -4458,13 +4459,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     x1_ray = cx + arm_len * math.cos(rad1)
                     y1_ray = cy - arm_len * math.sin(rad1)
-                    svg += f'<line x1="{cx}" y1="{cy}" x2="{x1_ray}" y2="{y1_ray}" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round"/>'
+                    # 💡 แก้ไข: ปรับเส้นสีแดงให้เล็กลง (stroke-width="1.5")
+                    svg += f'<line x1="{cx}" y1="{cy}" x2="{x1_ray}" y2="{y1_ray}" stroke="#e74c3c" stroke-width="1.5" stroke-linecap="round"/>'
                     
                     x2_ray = cx + arm_len * math.cos(rad2)
                     y2_ray = cy - arm_len * math.sin(rad2)
-                    svg += f'<line x1="{cx}" y1="{cy}" x2="{x2_ray}" y2="{y2_ray}" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round"/>'
+                    svg += f'<line x1="{cx}" y1="{cy}" x2="{x2_ray}" y2="{y2_ray}" stroke="#e74c3c" stroke-width="1.5" stroke-linecap="round"/>'
                     
-                    svg += f'<circle cx="{cx}" cy="{cy}" r="4" fill="#c0392b"/>'
+                    svg += f'<circle cx="{cx}" cy="{cy}" r="3" fill="#c0392b"/>'
                     
                     lbl_bg = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#e74c3c; stroke:#ffffff; stroke-width:3px; paint-order:stroke;'
                     lbl_fg = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#c0392b;'
@@ -4485,7 +4487,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     return svg + '</svg></div>'
 
-                # 💡 2. ฟังก์ชันวาดมุมประกอบสมการเส้นตรง (ลดสเกลลง 30%)
                 def draw_angle_feature_pt(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
                     import math
                     len_a, len_b = math.hypot(ax - vx, ay - vy), math.hypot(bx - vx, by - vy)
@@ -4501,13 +4502,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
                 def draw_angle_svg_pt(val1, val2, val3="?"):
                     import math
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="400" height="150">'
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="150">'
                     lbl_st = 'font-family:Sarabun; font-size:14px; font-weight:bold; fill:#2c3e50;'
-                    vx, vy, phi = 200, 120, val2 
-                    ax, ay, cx, cy = 40, 120, 360, 120 
+                    vx, vy, phi = 280, 120, val2 
+                    ax, ay, cx, cy = 120, 120, 440, 120 
                     bx, by = vx + 105 * math.cos(math.radians(phi)), vy - 105 * math.sin(math.radians(phi))
                     svg += f'<line x1="{ax}" y1="{ay}" x2="{cx}" y2="{cy}" stroke="#34495e" stroke-width="3"/>'
-                    svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#c0392b" stroke-width="2.5"/>'
+                    # 💡 แก้ไข: ปรับเส้นสีแดงให้เล็กลง (stroke-width="1.5")
+                    svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#c0392b" stroke-width="1.5"/>'
                     svg += f'<circle cx="{bx}" cy="{by}" r="3" fill="#c0392b"/>'
                     svg += f'<text x="{ax-15}" y="{ay+5}" {lbl_st}>A</text>'
                     svg += f'<text x="{cx+10}" y="{cy+5}" {lbl_st}>B</text>'
