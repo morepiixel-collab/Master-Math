@@ -4391,26 +4391,22 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 q = f"จากรูป มุม <b>{angle_name}</b> ที่มีขนาด <b>{angle}°</b> คือมุมชนิดใด?<br>{svg_html}<span style='font-size:18px; color:#7f8c8d;'>(มุมแหลม, มุมฉาก, มุมป้าน, มุมตรง, มุมกลับ)</span>"
                 sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สังเกตจากรูปภาพมุมกาง <b>{angle}°</b><br>👉 ซึ่งมุม {angle}° {reason}<br>👉 ดังนั้นมุม {angle_name} จึงจัดเป็น <b>{angle_type}</b><br><b>ตอบ: {angle_type}</b></span>"
             elif actual_sub_t == "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)":
-                # 💡 1. ฟังก์ชันวาดไม้โปรแทรกเตอร์แบบละเอียดสมจริง (ขยายขอบป้องกันตัวอักษรขาด)
                 def draw_protractor_svg(deg1, deg2, p1_name, v_name, p2_name):
                     import math
-                    # ขยาย width เป็น 500 และ height เป็น 260 เพื่อให้มีพื้นที่เหลือรอบด้าน
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="500" height="260">'
-                    cx, cy = 250, 220
+                    # 💡 ขยายความกว้างกรอบเป็น 560 และขยับจุดกึ่งกลาง cx เป็น 280 เพื่อไม่ให้ตัวอักษรตกขอบ
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="260">'
+                    cx, cy = 280, 220
                     r_outer = 170
                     r_inner = 110
                     
-                    # พื้นหลังไม้โปรแทรกเตอร์
                     svg += f'<path d="M {cx-r_outer-20} {cy} A {r_outer+20} {r_outer+20} 0 0 1 {cx+r_outer+20} {cy} Z" fill="#eef2f5" stroke="#bdc3c7" stroke-width="2"/>'
                     svg += f'<path d="M {cx-r_outer} {cy} A {r_outer} {r_outer} 0 0 1 {cx+r_outer} {cy} Z" fill="none" stroke="#7f8c8d" stroke-width="1.5"/>'
                     svg += f'<path d="M {cx-r_inner} {cy} A {r_inner} {r_inner} 0 0 1 {cx+r_inner} {cy} Z" fill="none" stroke="#7f8c8d" stroke-width="1.5"/>'
                     svg += f'<line x1="{cx-r_outer-20}" y1="{cy}" x2="{cx+r_outer+20}" y2="{cy}" stroke="#95a5a6" stroke-width="2"/>'
                     
-                    # สัญลักษณ์จุดกึ่งกลาง (จุดยอดมุม)
                     svg += f'<line x1="{cx-15}" y1="{cy}" x2="{cx+15}" y2="{cy}" stroke="#c0392b" stroke-width="2"/>'
                     svg += f'<line x1="{cx}" y1="{cy-15}" x2="{cx}" y2="{cy}" stroke="#c0392b" stroke-width="2"/>'
                     
-                    # วาดขีดสเกลและตัวเลข 0-180
                     for i in range(181):
                         angle_rad = math.radians(i)
                         cos_a = math.cos(angle_rad)
@@ -4419,8 +4415,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         if i % 10 == 0:
                             tick_len = 15
                             stroke_w = 2
-                            out_txt = str(180 - i) # วงนอก (0 อยู่ซ้าย)
-                            in_txt = str(i)        # วงใน (0 อยู่ขวา)
+                            out_txt = str(180 - i)
+                            in_txt = str(i)
                             
                             tx_out = cx + (r_outer - 22) * cos_a
                             ty_out = cy - (r_outer - 22) * sin_a
@@ -4456,7 +4452,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         y4 = cy - (r_inner + tick_len) * sin_a
                         svg += f'<line x1="{x3}" y1="{y3}" x2="{x4}" y2="{y4}" stroke="#34495e" stroke-width="{stroke_w}"/>'
 
-                    # วาดแขนของมุม
                     arm_len = 200
                     rad1 = math.radians(deg1)
                     rad2 = math.radians(deg2)
@@ -4478,9 +4473,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg += f'<text x="{cx}" y="{cy+25}" {lbl_fg} text-anchor="middle">{v_name}</text>'
                     
                     def add_lbl(rad_val, name):
-                        # ปรับการดันตัวอักษรให้อยู่ห่างจากแขนเล็กน้อย และไม่ให้ตกขอบ
-                        tx = cx + (arm_len + 15) * math.cos(rad_val)
-                        ty = cy - (arm_len + 15) * math.sin(rad_val)
+                        tx = cx + (arm_len + 25) * math.cos(rad_val)
+                        ty = cy - (arm_len + 25) * math.sin(rad_val)
                         ty = ty - 5 if math.sin(rad_val) > 0.5 else ty + 8
                         res = f'<text x="{tx}" y="{ty}" {lbl_bg} text-anchor="middle">{name}</text>'
                         res += f'<text x="{tx}" y="{ty}" {lbl_fg} text-anchor="middle">{name}</text>'
@@ -4491,8 +4485,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     return svg + '</svg></div>'
 
-                # 💡 2. ฟังก์ชันวาดมุมประกอบสมการเส้นตรง (ขยายขอบ)
                 def draw_angle_feature_pt(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
+                    import math
                     len_a, len_b = math.hypot(ax - vx, ay - vy), math.hypot(bx - vx, by - vy)
                     if len_a == 0 or len_b == 0: return ""
                     sx, sy = vx + (ax - vx) * r_arc / len_a, vy + (ay - vy) * r_arc / len_a
@@ -4505,12 +4499,13 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     return arc_svg + f'<text x="{tx}" y="{ty+4}" font-size="{"16px" if is_x else "13px"}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
 
                 def draw_angle_svg_pt(val1, val2, val3="?"):
-                    # ขยาย SVG กว้างขึ้นเป็น 400 และขยับ Center (vx) ให้สมดุล
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="400" height="200">'
+                    import math
+                    # ขยายหน้ากระดาษแบบเส้นตรงเป็น 560 เหมือนกัน
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
                     lbl_st = 'font-family:Sarabun; font-size:18px; font-weight:bold; fill:#2c3e50;'
-                    vx, vy, phi = 200, 160, val2 
-                    ax, ay, cx, cy = 50, 160, 350, 160 
-                    bx, by = vx + 120 * math.cos(math.radians(phi)), vy - 120 * math.sin(math.radians(phi))
+                    vx, vy, phi = 280, 160, val2 
+                    ax, ay, cx, cy = 60, 160, 500, 160 
+                    bx, by = vx + 150 * math.cos(math.radians(phi)), vy - 150 * math.sin(math.radians(phi))
                     svg += f'<line x1="{ax}" y1="{ay}" x2="{cx}" y2="{cy}" stroke="#34495e" stroke-width="4"/>'
                     svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#c0392b" stroke-width="3"/>'
                     svg += f'<circle cx="{bx}" cy="{by}" r="3" fill="#c0392b"/>'
@@ -4522,7 +4517,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg += draw_angle_feature_pt(vx, vy, bx, by, cx, cy, 28, 45, val3, "#2ecc71", "#2980b9", is_x=True)
                     return svg + '</svg></div>'
 
-                # 🎲 สุ่มตัวอักษรชื่อมุม
                 l_pool = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
                 smpl = random.sample(l_pool, 3)
                 p1, v, p2 = smpl[0], smpl[1], smpl[2]
