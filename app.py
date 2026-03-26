@@ -5208,7 +5208,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 uA, uB = pair["uA"], pair["uB"]
                 
                 if not is_challenge:
-                    # --- โหมดธรรมดา: ตรรกะปรับราคาให้เท่ากัน + สมการข้อความ ---
+                    # --- โหมดธรรมดา: วิธีแทนค่าตัวแปร (ตามลายมือผู้ใช้งานเป๊ะๆ) ---
                     val_A = random.randint(30, 80)
                     val_B = random.randint(10, val_A - 10)
                     
@@ -5217,26 +5217,28 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     q = f"<b>{nameA}</b> 1 {uA} รวมกับ <b>{nameB}</b> 1 {uB} ราคารวมกัน <b>{sum_val}</b> บาท<br>ถ้า <b>{nameA}</b> 1 {uA} ราคาแพงกว่า <b>{nameB}</b> 1 {uB} อยู่ <b>{diff_val}</b> บาท<br>อยากทราบว่า <b>{nameA}</b> ราคา{uA}ละกี่บาท?"
                     
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (อธิบายตามหลักการ "ปรับราคาให้เท่ากัน"):</b><br>
-                    👉 <b>ขั้นที่ 1: เขียนสิ่งที่เรามีจากโจทย์</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; 1) ราคา {nameA} + ราคา {nameB} = {sum_val} บาท<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; 2) {nameA} แพงกว่า {nameB} อยู่ {diff_val} บาท<br>
-                    👉 <b>ขั้นที่ 2: ปรับราคาให้เท่ากับของที่ "แพงกว่า" ({nameA})</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; สมมติว่าเราอยากอัปเกรดให้ <b>{nameB}</b> (ของที่ถูกกว่า) มีราคา <b>แพงเท่ากับ {nameA}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; เราก็ต้อง "สมมติว่าเพิ่มเงิน" ให้ {nameB} อีก {diff_val} บาท (ตามส่วนต่างของมัน)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; เมื่อราคาของแพงขึ้น ราคารวมก็ต้องบวกเพิ่มขึ้นด้วย: {sum_val} + {diff_val} = <span style="color:#2980b9;"><b>{sum_val + diff_val} บาท</b></span><br>
-                    👉 <b>ขั้นที่ 3: เขียนเป็นรูปแบบสมการ</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ตอนนี้สินค้าทั้งสองชิ้นถูกปรับราคาให้กลายเป็น {nameA} แล้ว สามารถเขียนเป็นสมการได้ว่า:<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>(ราคา {nameA}) + (ราคา {nameA}) = {sum_val + diff_val}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; หรือเขียนย่อๆ คือ: <b>2 × (ราคา {nameA}) = {sum_val + diff_val}</b><br>
-                    👉 <b>ขั้นที่ 4: หาคำตอบ</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ในเมื่อ {nameA} 2 {uA} ราคา {sum_val + diff_val} บาท<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ราคา {nameA} 1 {uA} = {sum_val + diff_val} ÷ 2<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ราคา {nameA} = <span style="color:#e74c3c;"><b>{val_A} บาท</b></span><br>
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (แก้สมการด้วยวิธีแทนค่าตัวแปร):</b><br>
+                    👉 <b>ขั้นที่ 1: กำหนดตัวแปรและสร้างสมการ</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ให้ <b>x</b> แทนราคาของ <b>{nameA}</b> (ของที่แพงกว่า)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ให้ <b>y</b> แทนราคาของ <b>{nameB}</b> (ของที่ถูกกว่า)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จากโจทย์ เขียนประโยคสัญลักษณ์ได้ดังนี้:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; 1) ราคารวมกัน {sum_val} บาท ➞ <b>x + y = {sum_val}</b> &nbsp;&nbsp;&nbsp;&nbsp; --- (สมการที่ ①)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; 2) แพงกว่ากัน {diff_val} บาท ➞ <b>x - {diff_val} = y</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --- (สมการที่ ②)<br>
+                    👉 <b>ขั้นที่ 2: แก้สมการ (นำสมการที่ ② ไปแทนค่าในสมการที่ ①)</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลการแทนค่า:</b> ในเมื่อเรารู้ว่า y มีค่าเท่ากับ (x - {diff_val}) เราก็แค่เอา (x - {diff_val}) ไปวางแทนที่ตัว y ในสมการแรก เพื่อให้เหลือแค่ตัวแปร x ตัวเดียวครับ</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จากสมการที่ ①: x + <b>y</b> = {sum_val}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; เปลี่ยน y เป็น (x - {diff_val}): <b>x + (x - {diff_val}) = {sum_val}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; รวมตัวแปร x เข้าด้วยกัน: <b>2x - {diff_val} = {sum_val}</b><br>
+                    👉 <b>ขั้นที่ 3: ย้ายข้างสมการเพื่อหาค่า x</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ย้าย -{diff_val} ไปฝั่งขวา (เปลี่ยนลบเป็นบวก):<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>2x = {sum_val} + {diff_val}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>2x = {sum_val + diff_val}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>x = {sum_val + diff_val} ÷ 2</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>x = <span style="color:#e74c3c;">{val_A}</span></b> บาท<br>
                     <b>ตอบ: {nameA} ราคา{uA}ละ {val_A} บาท</b></span>'''
                     
                 else:
-                    # --- โหมดท้าทาย: ตรรกะรวมกองเพื่อหักล้าง + สมการข้อความ ---
+                    # --- โหมดท้าทาย: วิธีแทนค่าตัวแปร แบบประยุกต์ ---
                     val_B = random.randint(8, 25)
                     m = random.randint(2, 4) 
                     val_A = random.randint(val_B + 5, (val_B * m) - 2) 
@@ -5251,25 +5253,32 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     q = f"<b>{nameA}</b> 1 {uA} รวมกับ <b>{nameB}</b> 1 {uB} ราคารวมกัน <b>{sum_val}</b> บาท<br><b>{nameB}</b> <b>{m}</b> {uB} ราคาแพงกว่า <b>{nameA}</b> 1 {uA} อยู่ <b>{diff_val}</b> บาท<br>อยากทราบว่า <b>{target_name}</b> ราคา{target_u}ละกี่บาท?"
                     
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการรวมสมการเพื่อหักล้าง):</b><br>
-                    👉 <b>ขั้นที่ 1: เปลี่ยนประโยคภาษาไทย ให้เป็น "สมการข้อความ"</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; สมการที่ 1: (ราคา {nameA} 1 {uA}) <b>+</b> (ราคา {nameB} 1 {uB}) = {sum_val} บาท<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; สมการที่ 2: (ราคา {nameB} {m} {uB}) <b>-</b> (ราคา {nameA} 1 {uA}) = {diff_val} บาท<br>
-                    👉 <b>ขั้นที่ 2: นำสมการที่ 1 และ 2 มา "บวกรวมกัน"</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เป้าหมาย:</b> ถ้านำของฝั่งซ้ายมากองรวมกัน และนำเงินฝั่งขวามากองรวมกัน สิ่งของที่ตรงข้ามกันจะหักล้างกันเอง!</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ฝั่งซ้าย: เรามี "(ราคา {nameA})" และถูก "(<b>ลบ</b> ราคา {nameA})" ➞ <b>จึงหักล้างกันหายไปพอดี!</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะเหลือแค่: (ราคา {nameB} 1 {uB}) รวมกับ (ราคา {nameB} {m} {uB}) = <b>ราคา {nameB} {m+1} {uB}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ฝั่งขวา (เงินรวมกัน): {sum_val} + {diff_val} = <b>{sum_val + diff_val} บาท</b><br>
-                    👉 <b>ขั้นที่ 3: สรุปผลสมการใหม่</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้สมการใหม่คือ: <b>(ราคา {nameB} {m+1} {uB}) = {sum_val + diff_val} บาท</b><br>
-                    👉 <b>ขั้นที่ 4: หาค่า {nameB} 1 {uB}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ราคา {nameB} = {sum_val + diff_val} ÷ {m+1} = <span style="color:#27ae60;"><b>{val_B} บาท</b></span><br>'''
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการแก้สมการด้วยวิธีแทนค่า):</b><br>
+                    👉 <b>ขั้นที่ 1: กำหนดตัวแปรและสร้างสมการ</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ให้ <b>x</b> แทนราคาของ <b>{nameA} 1 {uA}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ให้ <b>y</b> แทนราคาของ <b>{nameB} 1 {uB}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; 1) ราคารวมกัน {sum_val} บาท ➞ <b>x + y = {sum_val}</b> &nbsp;&nbsp;&nbsp;&nbsp; --- (สมการที่ ①)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; 2) {nameB} {m} {uB} แพงกว่า {nameA} 1 {uA} ➞ <b>{m}y - x = {diff_val}</b> &nbsp;&nbsp;&nbsp;&nbsp; --- (สมการที่ ②)<br>
+                    👉 <b>ขั้นที่ 2: จัดรูปสมการและแทนค่า</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จากสมการที่ ② เราสามารถย้ายข้างเพื่อหาค่า x ได้ดังนี้:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ย้าย -x ไปฝั่งขวา และย้าย {diff_val} มาฝั่งซ้าย: <b>{m}y - {diff_val} = x</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผล:</b> ตอนนี้เรารู้แล้วว่าตัว x มีค่าเท่ากับ ({m}y - {diff_val}) ให้นำก้อนนี้ไปแทนที่ x ในสมการที่ ①</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จากสมการที่ ①: <b>x</b> + y = {sum_val}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; เปลี่ยน x เป็น ({m}y - {diff_val}): <b>({m}y - {diff_val}) + y = {sum_val}</b><br>
+                    👉 <b>ขั้นที่ 3: ย้ายข้างสมการเพื่อหาค่า y (ราคา {nameB})</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; รวมตัวแปร y เข้าด้วยกัน ({m}y + y = {m+1}y):<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{m+1}y - {diff_val} = {sum_val}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{m+1}y = {sum_val} + {diff_val}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{m+1}y = {sum_val + diff_val}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>y = {sum_val + diff_val} ÷ {m+1}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>y = <span style="color:#27ae60;">{val_B}</span></b> บาท<br>'''
                     
                     if ask_A:
-                        sol += f'''👉 <b>ขั้นที่ 5: หาค่า {nameA} ตามที่โจทย์สั่ง</b><br>
-                        &nbsp;&nbsp;&nbsp;&nbsp; นำราคา {nameB} กลับไปแทนในสมการที่ 1: (ราคา {nameA}) + <b>{val_B}</b> = {sum_val}<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผล:</b> เมื่อรู้ราคาสิ่งหนึ่งแล้ว ให้นำไปแทนค่าในสมการบรรทัดแรก เพื่อหาอีกสิ่งได้เลย</span><br>
-                        &nbsp;&nbsp;&nbsp;&nbsp; ราคา {nameA} = {sum_val} - {val_B} = <span style="color:#e74c3c;"><b>{val_A} บาท</b></span><br>'''
+                        sol += f'''👉 <b>ขั้นที่ 4: หาค่า x (ราคา {nameA}) ตามที่โจทย์ถาม</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>วิธีทำ:</b> นำค่า y ที่เพิ่งหาได้ กลับไปแทนในสมการที่ ①</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>x + {val_B} = {sum_val}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>x = {sum_val} - {val_B}</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>x = <span style="color:#e74c3c;">{val_A}</span></b> บาท<br>'''
                     
                     sol += f'''<b>ตอบ: {target_name} ราคา{target_u}ละ {target_ans} บาท</b></span>'''
 
