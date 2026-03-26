@@ -682,7 +682,7 @@ curriculum_db = {
         "การบวก ลบ คูณ หาร": ["การบวก (แบบตั้งหลัก)", "การลบ (แบบตั้งหลัก)", "การคูณ (แบบตั้งหลัก)", "การหารยาว"],
         "เศษส่วนและทศนิยม": ["แปลงเศษเกินเป็นจำนวนคละ", "การอ่านและการเขียนทศนิยม"],
         "เรขาคณิตและการวัด": ["การบอกชนิดของมุม", "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)", "การหาความยาวรอบรูปสี่เหลี่ยมมุมฉาก", "การหาพื้นที่รูปสี่เหลี่ยมมุมฉาก"],
-        "สมการ": ["การแก้สมการ (บวก/ลบ)", "การแก้สมการ (คูณ/หาร)"]
+        "สมการ": ["การแก้สมการ (บวก/ลบ)"]
     },
     "ป.5": {
         "เศษส่วน": ["การบวกเศษส่วน", "การลบเศษส่วน", "การคูณเศษส่วน", "การหารเศษส่วน"],
@@ -3444,53 +3444,721 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br><b>หลักการ:</b> การทำเศษส่วนให้เป็นร้อยละ ต้องทำ <b>'ตัวส่วนให้เท่ากับ 100'</b> เสมอ<br><br><b>ขั้นที่ 1:</b> หาตัวเลขที่คูณกับส่วน {d} แล้วได้ 100<br>👉 พบว่า {d} × <b>{m}</b> = 100<br><br><b>ขั้นที่ 2:</b> นำ {m} มาคูณทั้งเศษและส่วน<br>👉 ({n} × {m}) / ({d} × {m}) = {render_frac(ans, 100)}<br><br><b>ขั้นที่ 3:</b> เมื่อส่วนเป็น 100 แล้ว ตัวเศษคือค่าร้อยละ<br>👉 ได้ <b>ร้อยละ {ans}</b> หรือ <b>{ans}%</b><br><b>ตอบ: {ans}%</b></span>"
 
             elif actual_sub_t == "การแก้สมการ (คูณ/หาร)":
-                var = random.choice(["x", "y", "a", "m", "ก", "A"])
-                
-                # กล่องอธิบายหลักการสมการ (ตาชั่ง)
-                balance_rule = f"<div style='background-color:#f0f8ff; padding:10px; border-radius:5px; border-left: 4px solid #3498db; margin: 10px 0;'><span style='color:#2980b9; font-size:15px;'><i><b>⚖️ กฎของสมการ (ตาชั่งแห่งความสมดุล):</b><br>ถ้าเราต้องการให้ <b>{var}</b> อยู่ตัวเดียว แล้วมีตัวเลขมา <b>คูณ</b> หรือ <b>หาร</b> อยู่<br>เราต้องทำในสิ่งตรงข้าม (คูณแก้ด้วยหาร, หารแก้ด้วยคูณ) <br><b>ข้อควรระวัง:</b> ต้องทำแบบเดียวกัน <b>ทั้งสองข้าง</b> เสมอ! ตาชั่งถึงจะไม่เอียงครับ</i></span></div>"
+                def r_frac(num, den):
+                    return f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b>{num}</b></div><div style='padding-top:2px;'><b>{den}</b></div></div>"
 
+                var = random.choice(["x", "y", "a", "m", "k", "p"])
+                
                 if is_challenge:
-                    scenario = random.choice(["both_sides_num", "word_problem"])
+                    scenario = random.choice(["distributive", "fractional_coef", "both_sides", "word_problem"])
                     
-                    if scenario == "both_sides_num":
-                        # โจทย์แนว: a * x = b + c
-                        a = random.randint(2, 9)
-                        ans = random.randint(11, 25)
-                        total_right = a * ans
-                        b = random.randint(10, total_right - 10)
-                        c = total_right - b
+                    if scenario == "distributive":
+                        a = random.randint(2, 6)
+                        ans = random.randint(3, 12)
+                        b = random.randint(1, 10)
+                        is_plus = random.choice([True, False])
                         
-                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a} × {var} = {b} + {c}</b></div>"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - คำนวณฝั่งตรงข้าม):</b><br>👉 สังเกตว่าฝั่งขวามีตัวเลขบวกกันอยู่ เราต้องยุบมันให้เป็นตัวเลขเดียวก่อนครับ<br><br><b>ขั้นที่ 1: คำนวณฝั่งขวา</b><br>👉 จาก {a} × {var} = <b>{b} + {c}</b><br>👉 คำนวณ {b} + {c} = <b>{total_right}</b><br>👉 จะได้สมการใหม่คือ: <b>{a} × {var} = {total_right}</b><br><br><b>ขั้นที่ 2: แก้สมการโดยใช้หลักการสมดุล</b>{balance_rule}👉 ตอนนี้ {var} ถูก <b>คูณด้วย {a}</b> อยู่<br>👉 เพื่อให้ {a} หายไปกลายเป็น 1 เราต้อง <b>หารด้วย {a} ทั้งสองข้าง</b><br><div style='margin:10px 0; font-size:16px;'>👉 ({a} × {var}) <span style='color:#e67e22;'><b>÷ {a}</b></span> = {total_right} <span style='color:#e67e22;'><b>÷ {a}</b></span></div>👉 ฝั่งซ้าย: {a} หาร {a} เหลือ 1 (เหลือแค่ {var} ตัวเดียว)<br>👉 ฝั่งขวา: {total_right} ÷ {a} = {ans}<br>👉 <b>{var} = {ans}</b><br><br><b>ตอบ: {ans}</b></span>"
+                        if is_plus:
+                            c = a * (ans + b)
+                            q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a}({var} + {b}) = {c}</b></div>"
+                            sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br>👉 นำ {a} ที่คูณอยู่หน้าวงเล็บ ย้ายไปหารอีกฝั่ง<br>👉 {var} + {b} = {c} ÷ {a}<br>👉 {var} + {b} = {c//a}<br>👉 ย้าย +{b} ไปลบ<br>👉 {var} = {c//a} - {b}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+                        else:
+                            while ans <= b: 
+                                ans = random.randint(5, 15)
+                                b = random.randint(1, 5)
+                            c = a * (ans - b)
+                            q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a}({var} - {b}) = {c}</b></div>"
+                            sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br>👉 นำ {a} ที่คูณอยู่หน้าวงเล็บ ย้ายไปหารอีกฝั่ง<br>👉 {var} - {b} = {c} ÷ {a}<br>👉 {var} - {b} = {c//a}<br>👉 ย้าย -{b} ไปบวก<br>👉 {var} = {c//a} + {b}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+                            
+                    elif scenario == "fractional_coef":
+                        a = random.randint(2, 5)
+                        b = random.randint(3, 7)
+                        while math.gcd(a, b) != 1: b = random.randint(3, 7)
+                        ans = b * random.randint(1, 5) 
+                        c = random.randint(5, 15)
+                        d = (a * ans // b) + c
+                        
+                        f_html = r_frac(f"{a}{var}", b)
+                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{f_html} + <b>{c} = {d}</b></div>"
+                        
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์):</b><br>👉 ย้าย +{c} ไปลบอีกฝั่งก่อน<br>👉 {f_html} = {d} - {c}<br>👉 {f_html} = {d-c}<br>👉 ย้าย {b} ที่เป็นตัวส่วน (หารอยู่) ไปคูณ<br>👉 {a}{var} = {d-c} × {b}<br>👉 {a}{var} = {(d-c)*b}<br>👉 ย้าย {a} ไปหาร<br>👉 {var} = {(d-c)*b} ÷ {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+                        
+                    elif scenario == "both_sides":
+                        ans = random.randint(2, 10)
+                        c = random.randint(2, 5)
+                        a = c + random.randint(1, 4)
+                        diff_a = a - c
+                        diff_val = diff_a * ans
+                        b = random.randint(1, 10)
+                        d = diff_val + b
+                        
+                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a}{var} + {b} = {c}{var} + {d}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - ตัวแปรสองฝั่ง):</b><br>👉 ย้ายตัวแปรให้อยู่ฝั่งเดียวกัน และย้ายตัวเลขไปอีกฝั่ง<br>👉 ย้าย {c}{var} ไปลบ และย้าย +{b} ไปลบอีกฝั่ง<br>👉 {a}{var} - {c}{var} = {d} - {b}<br>👉 {diff_a}{var} = {d-b}<br>👉 {var} = {d-b} ÷ {diff_a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
 
                     elif scenario == "word_problem":
-                        # โจทย์ปัญหาพื้นฐาน
-                        a = random.randint(3, 8)
-                        ans = random.randint(12, 30)
-                        total = a * ans
-                        
-                        q = f"สมหญิงมีลูกอมอยู่จำนวนหนึ่ง เมื่อนำไปแบ่งให้เพื่อน <b>{a} คน คนละเท่าๆ กัน</b><br>ปรากฏว่าเพื่อนได้รับลูกอมไปคนละ <b>{ans} เม็ด</b> พอดี<br>เดิมสมหญิงมีลูกอมทั้งหมดกี่เม็ด?"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - เปลี่ยนโจทย์เป็นสมการ):</b><br>👉 เราต้องเปลี่ยนประโยคภาษาไทย ให้เป็นสัญลักษณ์ทางคณิตศาสตร์ครับ<br><br><b>ขั้นที่ 1: กำหนดตัวแปรและสร้างสมการ</b><br>👉 ให้ 'ลูกอมจำนวนหนึ่ง' แทนด้วยตัวแปร <b>{var}</b><br>👉 'นำไปแบ่งให้เพื่อน {a} คน' การแบ่งเท่าๆ กันคือการหาร เขียนได้เป็น <b>÷ {a}</b> หรือ <b>/ {a}</b><br>👉 'ได้รับคนละ {ans} เม็ด' เขียนได้เป็น <b>= {ans}</b><br>👉 นำมาประกอบกันจะได้สมการ: <b>{var} ÷ {a} = {ans}</b><br><br><b>ขั้นที่ 2: แก้สมการโดยใช้หลักการสมดุล</b>{balance_rule}👉 เพื่อกำจัด <b>÷ {a}</b> ทิ้ง เราต้อง <b>คูณเพิ่มด้วย {a} ทั้งสองข้าง</b><br><div style='margin:10px 0; font-size:16px;'>👉 ({var} ÷ {a}) <span style='color:#8e44ad;'><b>× {a}</b></span> = {ans} <span style='color:#8e44ad;'><b>× {a}</b></span></div>👉 <b>{var} = {total}</b><br><br><b>ตอบ: เดิมมีลูกอม {total} เม็ด</b></span>"
+                        ans = random.randint(5, 20)
+                        mult = random.randint(2, 5)
+                        sub = random.randint(2, 10)
+                        res = (mult * ans) - sub
+                        q = f"<b>{mult} เท่า</b> ของจำนวนจำนวนหนึ่ง หักออกด้วย <b>{sub}</b> จะมีค่าเท่ากับ <b>{res}</b><br>จงหาจำนวนนั้น?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - ตีโจทย์ปัญหา):</b><br>👉 กำหนดให้จำนวนนั้นคือ <b>{var}</b><br>👉 สร้างสมการได้เป็น: <b>{mult}{var} - {sub} = {res}</b><br>👉 ย้าย -{sub} ไปบวกอีกฝั่ง: {mult}{var} = {res} + {sub}<br>👉 {mult}{var} = {res+sub}<br>👉 ย้าย {mult} ไปหาร: {var} = {res+sub} ÷ {mult}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
 
                 else:
-                    scenario = random.choice(["mul", "div"])
-                    
-                    if scenario == "mul":
-                        a = random.randint(2, 12)
-                        ans = random.randint(12, 45)
+                    scenario = random.choice(["mult", "div", "mult_add", "div_sub"])
+                    if scenario == "mult":
+                        a = random.randint(4, 15)
+                        ans = random.randint(3, 12)
                         b = a * ans
-                        
-                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a} × {var} = {b}</b></div>"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b>{balance_rule}<br><b>แสดงขั้นตอน:</b><br>👉 ตอนนี้ตัวแปร {var} ถูก <b>คูณด้วย {a}</b> อยู่<br>👉 เพื่อกำจัด {a} ให้หายไป (ตัดกันกลายเป็น 1) เราต้อง <b>นำ {a} ไปหารทั้งสองข้าง</b> ของสมการ<br><div style='margin:10px 0; font-size:18px;'>👉 ({a} × {var}) <span style='color:#e67e22;'><b>÷ {a}</b></span> = {b} <span style='color:#e67e22;'><b>÷ {a}</b></span></div>👉 ฝั่งซ้าย: {a} ตัดกับ {a} หายไป เหลือแค่ <b>{var}</b> ตัวเดียว<br>👉 ฝั่งขวา: {b} หารด้วย {a} ได้ <b>{ans}</b><br>👉 จะได้ <b>{var} = {ans}</b><br><br><b>ตอบ: {ans}</b></span>"
-                        
+                        q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b>: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a}{var} = {b}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 {a} คูณอยู่กับ {var} จึงย้าย {a} ไปหารอีกฝั่ง<br>👉 {var} = {b} ÷ {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
                     elif scenario == "div":
-                        a = random.randint(2, 12)
-                        ans = random.randint(15, 60)
-                        b = ans * a
+                        a = random.randint(3, 9)
+                        ans = random.randint(5, 20)
+                        c = a * ans
+                        f_html = r_frac(var, a)
+                        q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b>: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{f_html} <b>= {ans}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 {a} หารอยู่กับ {var} จึงย้าย {a} ไปคูณอีกฝั่ง<br>👉 {var} = {ans} × {a}<br>👉 {var} = <b>{c}</b><br><b>ตอบ: {c}</b></span>"
+                    elif scenario == "mult_add":
+                        a = random.randint(2, 6)
+                        ans = random.randint(3, 10)
+                        b = random.randint(1, 15)
+                        c = (a * ans) + b
+                        q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b>: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a}{var} + {b} = {c}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้าย +{b} ไปลบอีกฝั่งก่อน<br>👉 {a}{var} = {c} - {b}<br>👉 {a}{var} = {c-b}<br>👉 ย้าย {a} ที่คูณอยู่ไปหาร<br>👉 {var} = {c-b} ÷ {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+                    elif scenario == "div_sub":
+                        a = random.randint(2, 6)
+                        ans = a * random.randint(4, 12)
+                        b = random.randint(1, 10)
+                        c = (ans // a) - b
+                        while c <= 0:
+                            ans = a * random.randint(4, 12)
+                            b = random.randint(1, 10)
+                            c = (ans // a) - b
+                        f_html = r_frac(var, a)
+                        q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b>: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'>{f_html} - <b>{b} = {c}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้าย -{b} ไปบวกอีกฝั่งก่อน<br>👉 {f_html} = {c} + {b}<br>👉 {f_html} = {c+b}<br>👉 ย้าย {a} ที่หารอยู่ไปคูณ<br>👉 {var} = {c+b} × {a}<br>👉 {var} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+
+            elif actual_sub_t == "โจทย์ปัญหา ห.ร.ม. และ ค.ร.น.":
+                # --- เครื่องยนต์แสดงวิธีหารสั้นแบบอัตโนมัติ (Visual Short Division Engine) ---
+                def prod(lst):
+                    p = 1
+                    for x in lst: p *= x
+                    return p
+
+                def render_short_div(nums, mode="gcd"):
+                    primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
+                    steps = []
+                    current_nums = list(nums)
+                    divisors = []
+                    
+                    # หารร่วมทุกตัว (สำหรับ ห.ร.ม. และ ค.ร.น. ขั้นแรก)
+                    while True:
+                        found = False
+                        for p in primes:
+                            if all(n % p == 0 for n in current_nums):
+                                divisors.append(p)
+                                steps.append(list(current_nums))
+                                current_nums = [n // p for n in current_nums]
+                                found = True
+                                break
+                        if not found: break
+                    
+                    # หารร่วมอย่างน้อย 2 ตัว (สำหรับ ค.ร.น. ขั้นที่สอง)
+                    if mode == "lcm":
+                        while True:
+                            found = False
+                            for p in primes:
+                                if sum(1 for n in current_nums if n % p == 0) >= 2:
+                                    divisors.append(p)
+                                    steps.append(list(current_nums))
+                                    current_nums = [n // p if n % p == 0 else n for n in current_nums]
+                                    found = True
+                                    break
+                            if not found: break
+                            
+                    # วาด HTML หารสั้น
+                    html = "<div style='display:block; text-align:center; margin: 20px 0;'><div style='display:inline-block; text-align:left; font-family:\"Courier New\", Courier, monospace; font-size:20px; background:#f8f9fa; padding:15px 25px; border-radius:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid #e0e0e0;'>"
+                    for i in range(len(divisors)):
+                        html += f"<div style='display: flex; align-items: baseline;'>"
+                        html += f"<div style='width: 35px; text-align: right; color: #c0392b; font-weight: bold; padding-right: 12px;'>{divisors[i]}</div>"
+                        html += f"<div style='border-left: 2px solid #2c3e50; border-bottom: 2px solid #2c3e50; padding: 4px 15px; display: flex; gap: 20px;'>"
+                        for n in steps[i]:
+                            html += f"<div style='width: 40px; text-align: center; color: #333;'>{n}</div>"
+                        html += "</div></div>"
                         
-                        # ใช้รูปแบบเศษส่วนเพื่อให้เด็กชินตาก่อนขึ้น ป.5
-                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:22px; margin: 15px 0;'><b><div style='display:inline-block; vertical-align:middle; text-align:center;'><div style='border-bottom:2px solid #2c3e50; padding:0 5px;'>{var}</div><div>{a}</div></div> = {ans}</b></div>"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br><div style='background-color:#fce4e4; padding:10px; border-radius:5px; border-left: 4px solid #c0392b; margin: 10px 0;'><span style='color:#c0392b; font-size:15px;'><i><b>💡 จุดสังเกต:</b> การเขียนในรูปเศษส่วน (ตัวบน / ตัวล่าง) มันก็คือ <b>'การหาร'</b> นั่นเองครับ! ความหมายคือ <b>{var} ÷ {a} = {ans}</b></i></span></div>{balance_rule}<br><b>แสดงขั้นตอน:</b><br>👉 ตอนนี้ตัวแปร {var} ถูก <b>หารด้วย {a}</b> อยู่ (เป็นตัวส่วน)<br>👉 เพื่อกำจัดตัวส่วน {a} ให้หายไป เราต้อง <b>นำ {a} ไปคูณทั้งสองข้าง</b> ของสมการ<br><div style='margin:10px 0; font-size:18px;'>👉 ({var} ÷ {a}) <span style='color:#8e44ad;'><b>× {a}</b></span> = {ans} <span style='color:#8e44ad;'><b>× {a}</b></span></div>👉 ฝั่งซ้าย: ตัวคูณ {a} ตัดกับตัวหาร {a} หายไป เหลือแค่ <b>{var}</b> ตัวเดียว<br>👉 ฝั่งขวา: {ans} คูณกับ {a} ได้ <b>{b}</b><br>👉 จะได้ <b>{var} = {b}</b><br><br><b>ตอบ: {b}</b></span>"
+                    html += f"<div style='display: flex; align-items: baseline;'>"
+                    html += f"<div style='width: 35px; text-align: right; padding-right: 12px;'></div>"
+                    html += f"<div style='padding: 6px 15px 0px 15px; display: flex; gap: 20px; color: #2980b9; font-weight: bold; border-bottom: 4px double #2980b9;'>"
+                    for n in current_nums:
+                        html += f"<div style='width: 40px; text-align: center;'>{n}</div>"
+                    html += "</div></div></div></div>"
+                    
+                    return html, divisors, current_nums
+
+                # สุ่มโจทย์ 10 รูปแบบที่ครอบคลุมทุกสนามสอบ
+                scenario = random.choice([
+                    "gcd_fruit", "gcd_student", "gcd_wire", "gcd_tile", "gcd_fence",
+                    "lcm_clock", "lcm_bus", "lcm_run", "lcm_bell", "lcm_med"
+                ])
+
+                # ================= หมวด ห.ร.ม. =================
+                if scenario.startswith("gcd_"):
+                    if scenario == "gcd_fruit":
+                        g = random.choice([5, 6, 8, 10, 12, 15, 20])
+                        m1, m2, m3 = random.sample([3, 4, 5, 7, 9, 11], 3)
+                        a, b, c = g * m1, g * m2, g * m3
+                        div_html, divs, rems = render_short_div([a, b, c], "gcd")
+                        gcd_val = prod(divs)
+                        gcd_exp = " × ".join(map(str, divs))
+                        
+                        q = f"แม่ค้ามีส้ม <b>{a} ผล</b>, มังคุด <b>{b} ผล</b> และชมพู่ <b>{c} ผล</b><br>ต้องการจัดผลไม้ใส่ถุง ถุงละเท่าๆ กัน โดยไม่ให้ผลไม้ปะปนกันและไม่เหลือเศษ<br>จะจัดผลไม้ได้<b>มากที่สุด</b>ถุงละกี่ผล และจัดได้ทั้งหมดกี่ถุง?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ประยุกต์ ห.ร.ม.):</b><br>👉 คีย์เวิร์ด: 'แบ่งเท่าๆ กัน' และ 'มากที่สุด' = หา <b>ห.ร.ม.</b> ของ {a}, {b}, {c}<br><br><b>ขั้นที่ 1: หา ห.ร.ม. ด้วยการตั้งหารสั้น</b>{div_html}👉 <b>ห.ร.ม.</b> คือการนำ <span style='color:#c0392b;'><b>ตัวหาร (สีแดง)</b></span> มาคูณกัน<br>👉 จะได้ ห.ร.ม. = {gcd_exp} = <b>{gcd_val}</b><br><i>(หมายความว่า: จัดผลไม้ได้มากที่สุดถุงละ <b>{gcd_val} ผล</b>)</i><br><br><b>ขั้นที่ 2: หาจำนวนถุงทั้งหมด</b> (นำผลลัพธ์จากการหารมารวมกัน)<br>👉 ส้มได้ {rems[0]} ถุง, มังคุดได้ {rems[1]} ถุง, ชมพู่ได้ {rems[2]} ถุง<br>👉 รวมทั้งหมด: {rems[0]} + {rems[1]} + {rems[2]} = <b>{sum(rems)} ถุง</b><br><b>ตอบ: ถุงละ {gcd_val} ผล, ได้ทั้งหมด {sum(rems)} ถุง</b></span>"
+                        
+                    elif scenario == "gcd_student":
+                        g = random.choice([12, 15, 18, 20, 24])
+                        m1, m2, m3 = random.sample([2, 3, 4, 5, 7], 3)
+                        a, b, c = g * m1, g * m2, g * m3
+                        div_html, divs, rems = render_short_div([a, b, c], "gcd")
+                        gcd_val = prod(divs)
+                        gcd_exp = " × ".join(map(str, divs))
+                        
+                        q = f"โรงเรียนแห่งหนึ่งมีนักเรียนชั้น ป.4 จำนวน <b>{a} คน</b>, ป.5 จำนวน <b>{b} คน</b> และ ป.6 จำนวน <b>{c} คน</b><br>ครูต้องการแบ่งนักเรียนเป็นกลุ่ม กลุ่มละเท่าๆ กัน โดยนักเรียนในแต่ละกลุ่มต้องอยู่ชั้นเดียวกัน<br>จะแบ่งนักเรียนได้กลุ่มละ<b>มากที่สุด</b>กี่คน และได้ทั้งหมดกี่กลุ่ม?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ประยุกต์ ห.ร.ม.):</b><br>👉 คีย์เวิร์ด: 'แบ่งกลุ่มเท่าๆ กัน' และ 'มากที่สุด' = หา <b>ห.ร.ม.</b> ของ {a}, {b}, {c}<br><br><b>ขั้นที่ 1: หา ห.ร.ม. ด้วยการตั้งหารสั้น</b>{div_html}👉 <b>ห.ร.ม.</b> คือการนำ <span style='color:#c0392b;'><b>ตัวหาร (สีแดง)</b></span> มาคูณกัน<br>👉 จะได้ ห.ร.ม. = {gcd_exp} = <b>{gcd_val}</b><br><i>(หมายความว่า: แบ่งนักเรียนได้กลุ่มละมากที่สุด <b>{gcd_val} คน</b>)</i><br><br><b>ขั้นที่ 2: หาจำนวนกลุ่มทั้งหมด</b> (นำผลลัพธ์สุดท้ายมารวมกัน)<br>👉 รวมทั้งหมด: {rems[0]} + {rems[1]} + {rems[2]} = <b>{sum(rems)} กลุ่ม</b><br><b>ตอบ: กลุ่มละ {gcd_val} คน, ได้ทั้งหมด {sum(rems)} กลุ่ม</b></span>"
+
+                    elif scenario == "gcd_wire":
+                        g = random.choice([4, 6, 8, 12, 14, 16])
+                        m1, m2, m3 = random.sample([3, 5, 7, 9, 11], 3)
+                        a, b, c = g * m1, g * m2, g * m3
+                        div_html, divs, rems = render_short_div([a, b, c], "gcd")
+                        gcd_val = prod(divs)
+                        gcd_exp = " × ".join(map(str, divs))
+                        
+                        q = f"ช่างมีลวดอยู่ 3 เส้น ยาว <b>{a} เมตร</b>, <b>{b} เมตร</b> และ <b>{c} เมตร</b><br>ต้องการตัดลวดให้ยาวเท่าๆ กัน และยาว<b>มากที่สุด</b> โดยไม่เหลือเศษ<br>ช่างจะตัดลวดได้ยาวเส้นละกี่เมตร และได้ลวดทั้งหมดกี่เส้น?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ประยุกต์ ห.ร.ม.):</b><br>👉 คีย์เวิร์ด: 'ตัดเท่าๆ กัน' และ 'ยาวมากที่สุด' = หา <b>ห.ร.ม.</b> ของ {a}, {b}, {c}<br><br><b>ขั้นที่ 1: หา ห.ร.ม. ด้วยการตั้งหารสั้น</b>{div_html}👉 <b>ห.ร.ม.</b> คือการนำ <span style='color:#c0392b;'><b>ตัวหาร (สีแดง)</b></span> มาคูณกัน<br>👉 จะได้ ห.ร.ม. = {gcd_exp} = <b>{gcd_val}</b><br><i>(หมายความว่า: ตัดลวดได้ยาวที่สุดเส้นละ <b>{gcd_val} เมตร</b>)</i><br><br><b>ขั้นที่ 2: หาจำนวนเส้นลวดทั้งหมด</b> (นำผลลัพธ์มารวมกัน)<br>👉 รวมทั้งหมด: {rems[0]} + {rems[1]} + {rems[2]} = <b>{sum(rems)} เส้น</b><br><b>ตอบ: ตัดยาวเส้นละ {gcd_val} เมตร, ได้ทั้งหมด {sum(rems)} เส้น</b></span>"
+
+                    elif scenario == "gcd_tile":
+                        g = random.choice([15, 20, 25, 30, 40])
+                        m1, m2 = random.choice([(8, 15), (10, 13), (12, 17), (14, 25)])
+                        w = g * m1
+                        h = g * m2
+                        div_html, divs, rems = render_short_div([w, h], "gcd")
+                        gcd_val = prod(divs)
+                        gcd_exp = " × ".join(map(str, divs))
+                        
+                        q = f"ห้องโถงรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{w} ซม.</b> ยาว <b>{h} ซม.</b><br>ต้องการปูกระเบื้องรูป<b>สี่เหลี่ยมจัตุรัส</b>ที่มีขนาด<b>ใหญ่ที่สุด</b>ให้เต็มห้องพอดีโดยไม่ต้องตัดกระเบื้อง<br>กระเบื้องแต่ละแผ่นจะมีความยาวด้านละกี่เซนติเมตร และต้องใช้กระเบื้องทั้งหมดกี่แผ่น?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ประยุกต์ ห.ร.ม. ขั้นสูง):</b><br>👉 คีย์เวิร์ด: ปูกระเบื้อง 'จัตุรัส' (ด้านเท่ากัน) ที่ 'ใหญ่ที่สุด' = หา <b>ห.ร.ม.</b> ของ {w} และ {h}<br><br><b>ขั้นที่ 1: หา ห.ร.ม. ด้วยการตั้งหารสั้น</b>{div_html}👉 <b>ห.ร.ม.</b> คือการนำ <span style='color:#c0392b;'><b>ตัวหาร (สีแดง)</b></span> มาคูณกัน<br>👉 จะได้ ห.ร.ม. = {gcd_exp} = <b>{gcd_val}</b><br><i>(หมายความว่า: กระเบื้องต้องยาวด้านละ <b>{gcd_val} ซม.</b>)</i><br><br><b>ขั้นที่ 2: หาจำนวนแผ่นกระเบื้อง</b><br>👉 <i>ระวัง! การหาพื้นที่ต้องนำผลลัพธ์มา 'คูณกัน' ไม่ใช่บวกกัน!</i><br>👉 ด้านกว้างปูได้ {rems[0]} แผ่น, ด้านยาวปูได้ {rems[1]} แผ่น<br>👉 จำนวนแผ่นทั้งหมด = {rems[0]} × {rems[1]} = <b>{rems[0]*rems[1]} แผ่น</b><br><b>ตอบ: ยาวด้านละ {gcd_val} ซม., ใช้ทั้งหมด {rems[0]*rems[1]} แผ่น</b></span>"
+
+                    elif scenario == "gcd_fence":
+                        g = random.choice([4, 5, 8, 10, 15])
+                        m1, m2 = random.choice([(6, 11), (7, 12), (9, 14), (8, 15)])
+                        w = g * m1
+                        h = g * m2
+                        div_html, divs, rems = render_short_div([w, h], "gcd")
+                        gcd_val = prod(divs)
+                        gcd_exp = " × ".join(map(str, divs))
+                        peri = 2 * (w + h)
+                        total_posts = peri // gcd_val
+                        
+                        q = f"ที่ดินรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{w} เมตร</b> ยาว <b>{h} เมตร</b><br>ต้องการปักเสารั้วล้อมรอบที่ดินให้มีระยะห่างเท่าๆ กัน และห่างกัน<b>มากที่สุด</b> โดยให้มีเสาอยู่ตามมุมทั้งสี่ด้วย<br>จะต้องปักเสาห่างกันกี่เมตร และใช้เสาทั้งหมดกี่ต้น?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน):</b><br>👉 คีย์เวิร์ด: 'ห่างเท่าๆ กัน' และ 'มากที่สุด' = หา <b>ห.ร.ม.</b> ของกว้างและยาว<br><br><b>ขั้นที่ 1: หา ห.ร.ม. ด้วยการตั้งหารสั้น</b>{div_html}👉 <b>ห.ร.ม.</b> คือการนำ <span style='color:#c0392b;'><b>ตัวหาร (สีแดง)</b></span> มาคูณกัน<br>👉 จะได้ ห.ร.ม. = {gcd_exp} = <b>{gcd_val}</b><br><i>(หมายความว่า: ต้องปักเสาห่างกันต้นละ <b>{gcd_val} เมตร</b>)</i><br><br><b>ขั้นที่ 2: หาจำนวนเสาทั้งหมด</b><br>👉 หาความยาวรอบรูปที่ดินทั้งหมด: ({w} + {h}) × 2 = {peri} เมตร<br>👉 นำความยาวรอบรูป หารด้วย ระยะห่าง: {peri} ÷ {gcd_val} = <b>{total_posts} ต้น</b><br><b>ตอบ: ห่างกัน {gcd_val} เมตร, ใช้ทั้งหมด {total_posts} ต้น</b></span>"
+
+                # ================= หมวด ค.ร.น. =================
+                elif scenario.startswith("lcm_"):
+                    sets = [(10, 15, 20), (12, 15, 20), (15, 20, 30), (20, 30, 40), (15, 30, 45), (20, 30, 45), (30, 45, 60), (4, 6, 8), (3, 4, 6)]
+                    t_tuple = random.choice(sets)
+                    t1, t2, t3 = t_tuple
+                    
+                    div_html, divs, rems = render_short_div([t1, t2, t3], "lcm")
+                    lcm_factors = divs + [x for x in rems if x > 1]
+                    if not lcm_factors: lcm_factors = rems 
+                    lcm_val = prod(divs) * prod(rems)
+                    lcm_exp = " × ".join(map(str, lcm_factors))
+
+                    start_h = random.randint(6, 9)
+                    start_m = random.choice([0, 15, 30])
+                    add_h, add_m = lcm_val // 60, lcm_val % 60
+                    end_h, end_m = start_h + add_h, start_m + add_m
+                    if end_m >= 60:
+                        end_h += 1; end_m -= 60
+
+                    if scenario == "lcm_clock":
+                        q = f"นาฬิกาปลุก 3 เรือน ตั้งเวลาปลุกดังนี้:<br>เรือนแรก ปลุกทุกๆ <b>{t1} นาที</b><br>เรือนที่สอง ปลุกทุกๆ <b>{t2} นาที</b><br>เรือนที่สาม ปลุกทุกๆ <b>{t3} นาที</b><br>ถ้านาฬิกาทั้งสามเรือนปลุกพร้อมกันครั้งแรกเวลา <b>{start_h:02d}:{start_m:02d} น.</b><br>นาฬิกาทั้งสามเรือนจะปลุกพร้อมกันอีกครั้งเวลาใด?"
+                        obj_name = "เวลาทั้ง 3 เรือน"
+                    elif scenario == "lcm_bus":
+                        q = f"รถโดยสาร 3 สาย ออกจากสถานีพร้อมกันเวลา <b>{start_h:02d}:{start_m:02d} น.</b><br>สายที่ 1 ออกทุกๆ <b>{t1} นาที</b><br>สายที่ 2 ออกทุกๆ <b>{t2} นาที</b><br>สายที่ 3 ออกทุกๆ <b>{t3} นาที</b><br>รถโดยสารทั้งสามสายจะออกจากสถานีพร้อมกันอีกครั้งเวลาใด?"
+                        obj_name = "เวลารถทั้ง 3 สาย"
+                    elif scenario == "lcm_run":
+                        q = f"นักกีฬา 3 คน ออกวิ่งจากจุดเริ่มต้นพร้อมกันเวลา <b>{start_h:02d}:{start_m:02d} น.</b><br>คนที่ 1 วิ่งวนรอบสนาม 1 รอบใช้เวลา <b>{t1} นาที</b><br>คนที่ 2 ใช้เวลา <b>{t2} นาที</b><br>คนที่ 3 ใช้เวลา <b>{t3} นาที</b><br>นักกีฬาทั้งสามคนจะวิ่งมาเจอกันที่จุดเริ่มต้นพร้อมกันอีกครั้งเวลาใด?"
+                        obj_name = "เวลาวิ่งทั้ง 3 คน"
+                    elif scenario == "lcm_bell":
+                        q = f"ที่วัดแห่งหนึ่งมีระฆัง 3 ใบ ตีพร้อมกันครั้งแรกเวลา <b>{start_h:02d}:{start_m:02d} น.</b><br>ใบที่ 1 ตีทุกๆ <b>{t1} นาที</b><br>ใบที่ 2 ตีทุกๆ <b>{t2} นาที</b><br>ใบที่ 3 ตีทุกๆ <b>{t3} นาที</b><br>ระฆังทั้งสามใบจะตีดังพร้อมกันอีกครั้งเวลาใด?"
+                        obj_name = "เวลาตีระฆังทั้ง 3 ใบ"
+                    elif scenario == "lcm_med":
+                        q = f"แพทย์สั่งให้ผู้ป่วยทานยา 3 ชนิด ดังนี้:<br>ชนิดที่ 1 ทานทุกๆ <b>{t1} ชั่วโมง</b><br>ชนิดที่ 2 ทานทุกๆ <b>{t2} ชั่วโมง</b><br>ชนิดที่ 3 ทานทุกๆ <b>{t3} ชั่วโมง</b><br>ถ้ารับประทานยาพร้อมกันครั้งแรกเวลา <b>08:00 น.</b><br>ผู้ป่วยจะต้องรับประทานยาทั้ง 3 ชนิดพร้อมกันอีกครั้งในอีกกี่ชั่วโมง?"
+                        obj_name = "เวลาทานยาทั้ง 3 ชนิด"
+
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ประยุกต์ ค.ร.น.):</b><br>👉 คีย์เวิร์ด: 'พร้อมกันอีกครั้ง' = หา <b>ค.ร.น.</b> ของ{obj_name}<br><br><b>ขั้นที่ 1: หา ค.ร.น. ด้วยการตั้งหารสั้น</b>{div_html}👉 <b>ค.ร.น.</b> คือการนำ <span style='color:#c0392b;'><b>ตัวหาร (สีแดง)</b></span> และ <span style='color:#2980b9;'><b>ผลลัพธ์สุดท้าย (สีฟ้า)</b></span> มาคูณกัน<br>👉 จะได้ ค.ร.น. = {lcm_exp} = <b>{lcm_val}</b><br><br>"
+                    
+                    if scenario == "lcm_med":
+                        sol += f"<b>ขั้นที่ 2: สรุปคำตอบ</b><br>👉 ผู้ป่วยต้องทานยาพร้อมกันอีกครั้งในอีก <b>{lcm_val} ชั่วโมง</b><br><b>ตอบ: อีก {lcm_val} ชั่วโมง</b></span>"
+                    else:
+                        sol += f"<b>ขั้นที่ 2: แปลงเวลาและบวกเพิ่ม</b><br>👉 เวลาที่ต้องรอคือ {lcm_val} นาที แปลงเป็น <b>{add_h} ชั่วโมง {add_m} นาที</b><br>👉 เริ่มต้นเวลา {start_h:02d}:{start_m:02d} น. นับบวกเพิ่มไปอีก {add_h} ชม. {add_m} นาที<br>👉 จะได้เป็นเวลา <b>{end_h:02d}:{end_m:02d} น.</b><br><b>ตอบ: {end_h:02d}:{end_m:02d} น.</b></span>"
+
+            elif actual_sub_t == "โจทย์ปัญหาคลาสสิก (สมการประยุกต์)":
+                scenario = random.choice(["legs", "age", "coins", "consecutive", "fraction_money"])
+
+                if scenario == "legs":
+                    pigs = random.randint(5, 25)
+                    chickens = random.randint(10, 35)
+                    heads = pigs + chickens
+                    legs = (pigs * 4) + (chickens * 2)
+
+                    q = f"ฟาร์มแห่งหนึ่งมี <b>หมู</b> และ <b>ไก่</b> รวมกัน <b>{heads} ตัว</b><br>ถ้านับขาสัตว์รวมกันได้ <b>{legs} ขา</b><br>ฟาร์มแห่งนี้มีหมูกี่ตัว?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์ขาสัตว์):</b><br><br><b>ขั้นที่ 1: สมมติตัวแปร (แยกจำนวนตัว)</b><br>👉 สมมติให้ มีหมูอยู่ <b>x</b> ตัว<br>👉 เนื่องจากมีสัตว์ 2 ชนิดรวมกันทั้งหมด {heads} ตัว <i>(ความหมายคือ: หมู + ไก่ = {heads})</i><br>👉 ถ้าเราอยากรู้จำนวนไก่ เราต้องเอาสัตว์ทั้งหมด <b>หักออก (ลบ)</b> ด้วยจำนวนหมู<br>👉 ดังนั้น จะเหลือไก่ = สัตว์ทั้งหมด - หมู = <b>{heads} - x</b> ตัว<br><br><b>ขั้นที่ 2: เปลี่ยน 'จำนวนตัว' ให้เป็น 'จำนวนขา'</b><br>👉 หมู 1 ตัว มี 4 ขา ดังนั้น หมู x ตัว จะมีขารวม <b>4 คูณ x = 4x ขา</b><br>👉 ไก่ 1 ตัว มี 2 ขา ดังนั้น ไก่ ({heads} - x) ตัว จะมีขารวม <b>2 คูณ ({heads} - x) = 2({heads} - x) ขา</b><br><br><b>ขั้นที่ 3: สร้างสมการจากขารวม</b><br>👉 ขาหมู + ขาไก่ = {legs} ขา<br>👉 <b>4x + 2({heads} - x) = {legs}</b><br><br><b>ขั้นที่ 4: แก้สมการ</b><br>👉 4x + {heads*2} - 2x = {legs} <i>(นำ 2 กระจายคูณเข้าไปในวงเล็บ)</i><br>👉 2x + {heads*2} = {legs}<br>👉 2x = {legs} - {heads*2}<br>👉 2x = {legs - (heads*2)}<br>👉 x = {(legs - (heads*2))} ÷ 2<br>👉 x = <b>{pigs}</b><br><br><b>ตอบ: ฟาร์มนี้มีหมู {pigs} ตัว</b></span>"
+
+                elif scenario == "age":
+                    son_now = random.randint(8, 15)
+                    future_y = random.randint(3, 10)
+                    son_future = son_now + future_y
+                    M = random.choice([2, 3]) 
+                    dad_future = son_future * M
+                    dad_now = dad_future - future_y
+                    diff = dad_now - son_now
+
+                    q = f"ปัจจุบัน พ่อมีอายุมากกว่าลูก <b>{diff} ปี</b><br>อีก <b>{future_y} ปีข้างหน้า</b> พ่อจะมีอายุเป็น <b>{M} เท่า</b> ของลูก<br>ปัจจุบันลูกอายุเท่าไหร่?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์อายุ):</b><br>👉 กำหนดให้ ปัจจุบันลูกอายุ <b>x</b> ปี<br>👉 ปัจจุบันพ่ออายุมากกว่าลูก {diff} ปี ดังนั้นพ่ออายุ <b>x + {diff}</b> ปี<br><br><b>ขั้นที่ 1: วิเคราะห์อายุในอีก {future_y} ปีข้างหน้า</b><br>👉 ลูกจะอายุ: x + {future_y} ปี<br>👉 พ่อจะอายุ: (x + {diff}) + {future_y} = x + {diff + future_y} ปี<br><br><b>ขั้นที่ 2: สร้างสมการ</b> (พ่อจะเป็น {M} เท่าของลูก)<br>👉 อายุพ่ออนาคต = {M} × อายุลูกอนาคต<br>👉 x + {diff + future_y} = {M}(x + {future_y})<br><br><b>ขั้นที่ 3: แก้สมการ</b><br>👉 x + {diff + future_y} = {M}x + {M * future_y}<br>👉 ย้ายตัวแปร x ไปฝั่งเดียวกัน: {diff + future_y} - {M * future_y} = {M}x - x<br>👉 {diff + future_y - (M * future_y)} = {(M-1)}x<br>👉 x = {diff + future_y - (M * future_y)} ÷ {(M-1)}<br>👉 x = <b>{son_now}</b><br><br><b>ตอบ: ปัจจุบันลูกอายุ {son_now} ปี</b></span>"
+
+                elif scenario == "coins":
+                    c10 = random.randint(5, 20)
+                    c5 = random.randint(8, 25)
+                    total_coins = c10 + c5
+                    total_val = (c10 * 10) + (c5 * 5)
+
+                    q = f"กระปุกออมสินมี <b>เหรียญสิบบาท</b> และ <b>เหรียญห้าบาท</b> รวมกัน <b>{total_coins} เหรียญ</b><br>เมื่อนำเงินมานับรวมกันได้ทั้งหมด <b>{total_val} บาท</b><br>กระปุกออมสินนี้มีเหรียญสิบบาทกี่เหรียญ?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์นับเหรียญ):</b><br><br><b>ขั้นที่ 1: กำหนดตัวแปร (แยกจำนวนเหรียญก่อน)</b><br>👉 สมมติให้มี เหรียญสิบบาท อยู่ <b>x</b> เหรียญ<br>👉 เนื่องจากในกระปุกมีเหรียญ 2 ชนิดรวมกันทั้งหมด {total_coins} เหรียญ <i>(ความหมายคือ: เหรียญ 10 + เหรียญ 5 = {total_coins})</i><br>👉 ถ้าเราอยากรู้จำนวนเหรียญ 5 บาท เราต้องเอาเหรียญทั้งหมด <b>หักออก (ลบ)</b> ด้วยจำนวนเหรียญ 10 บาท<br>👉 ดังนั้น จะมีเหรียญห้าบาท = เหรียญทั้งหมด - เหรียญสิบ = <b>{total_coins} - x</b> เหรียญ<br><br><b>ขั้นที่ 2: เปลี่ยน 'จำนวนเหรียญ' ให้เป็น 'มูลค่าเงิน (บาท)'</b><br>👉 เหรียญ 10 บาท จำนวน x เหรียญ คิดเป็นเงิน <b>10 คูณ x = 10x บาท</b><br>👉 เหรียญ 5 บาท จำนวน ({total_coins} - x) เหรียญ คิดเป็นเงิน <b>5 คูณ ({total_coins} - x) = 5({total_coins} - x) บาท</b><br><br><b>ขั้นที่ 3: สร้างสมการจากมูลค่าเงินรวม</b><br>👉 เงินจากเหรียญสิบ + เงินจากเหรียญห้า = {total_val} บาท<br>👉 <b>10x + 5({total_coins} - x) = {total_val}</b><br><br><b>ขั้นที่ 4: แก้สมการ</b><br>👉 10x + {total_coins*5} - 5x = {total_val} <i>(นำ 5 กระจายคูณเข้าไปในวงเล็บ)</i><br>👉 5x + {total_coins*5} = {total_val}<br>👉 5x = {total_val} - {total_coins*5}<br>👉 5x = {total_val - (total_coins*5)}<br>👉 x = {(total_val - (total_coins*5))} ÷ 5<br>👉 x = <b>{c10}</b><br><br><b>ตอบ: มีเหรียญสิบบาททั้งหมด {c10} เหรียญ</b></span>"
+
+                elif scenario == "consecutive":
+                    ctype = random.choice(["ธรรมดา", "คู่", "คี่"])
+                    if ctype == "ธรรมดา":
+                        start = random.randint(10, 50)
+                        ans = start + 2 
+                        total = start + (start+1) + (start+2)
+                        q = f"ผลบวกของ<b>จำนวนเต็มเรียงติดกัน 3 จำนวน</b> เท่ากับ <b>{total}</b><br>จงหาจำนวนที่<b>มากที่สุด</b>?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (จำนวนเรียงติดกัน):</b><br>👉 กำหนดให้จำนวนที่น้อยที่สุดคือ <b>x</b><br>👉 จำนวนถัดไปคือ <b>x + 1</b> และ <b>x + 2</b><br><br><b>ขั้นที่ 1: สร้างสมการ</b><br>👉 x + (x + 1) + (x + 2) = {total}<br>👉 3x + 3 = {total}<br><br><b>ขั้นที่ 2: แก้สมการ</b><br>👉 3x = {total} - 3<br>👉 3x = {total-3}<br>👉 x = {(total-3)} ÷ 3 = <b>{start}</b><br><br><b>ขั้นที่ 3: สรุปหาจำนวนที่มากที่สุด</b><br>👉 จากขั้นที่ 2 เราหาค่า x ได้ <b>{start}</b> ซึ่งก็คือ 'จำนวนที่น้อยที่สุด' <br>👉 เรามาลองเขียนไล่ลำดับจำนวนทั้ง 3 จำนวน จะได้: <b>{start}</b>, <b>{start+1}</b>, และ <b>{start+2}</b><br>👉 จะเห็นได้ชัดเจนว่า จำนวนที่มากที่สุด (ตัวที่สาม) ก็คือ <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+                    else:
+                        start = random.randint(10, 40) * 2
+                        if ctype == "คี่": start += 1
+                        ans = start + 4
+                        total = start + (start+2) + (start+4)
+                        q = f"ผลบวกของ<b>จำนวน{ctype}เรียงติดกัน 3 จำนวน</b> เท่ากับ <b>{total}</b><br>จงหาจำนวนที่<b>มากที่สุด</b>?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (จำนวน{ctype}เรียงติดกัน):</b><br>👉 <i>ข้อควรระวัง: จำนวน{ctype}เรียงติดกัน จะห่างกันทีละ 2</i><br>👉 กำหนดให้จำนวนที่น้อยที่สุดคือ <b>x</b><br>👉 จำนวนถัดไปคือ <b>x + 2</b> และ <b>x + 4</b><br><br><b>ขั้นที่ 1: สร้างสมการ</b><br>👉 x + (x + 2) + (x + 4) = {total}<br>👉 3x + 6 = {total}<br><br><b>ขั้นที่ 2: แก้สมการ</b><br>👉 3x = {total} - 6<br>👉 3x = {total-6}<br>👉 x = {(total-6)} ÷ 3 = <b>{start}</b><br><br><b>ขั้นที่ 3: สรุปหาจำนวนที่มากที่สุด</b><br>👉 จากขั้นที่ 2 เราหาค่า x ได้ <b>{start}</b> ซึ่งก็คือ 'จำนวน{ctype}ที่น้อยที่สุด' <br>👉 เรามาลองเขียนไล่ลำดับจำนวนทั้ง 3 จำนวน จะได้: <b>{start}</b>, <b>{start+2}</b>, และ <b>{start+4}</b><br>👉 จะเห็นได้ชัดเจนว่า จำนวนที่มากที่สุด (ตัวที่สาม) ก็คือ <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+
+                elif scenario == "fraction_money":
+                    d1 = random.choice([3, 4, 5])
+                    d2 = random.choice([4, 5, 6])
+                    while d1 == d2: d2 = random.choice([4, 5, 6])
+                    lcm = (d1 * d2) // math.gcd(d1, d2)
+                    
+                    n1, n2 = 1, 1
+                    while (n1*lcm//d1) + (n2*lcm//d2) >= lcm:
+                        d1, d2 = 4, 5 
+                        lcm = 20
+                        
+                    used_frac_n = (n1*lcm//d1) + (n2*lcm//d2)
+                    rem_frac_n = lcm - used_frac_n
+                    
+                    ans = random.randint(5, 15) * 100 * lcm 
+                    rem_money = ans * rem_frac_n // lcm
+                    
+                    m1_list = [d1 * i for i in range(1, (lcm//d1) + 1)]
+                    m2_list = [d2 * i for i in range(1, (lcm//d2) + 1)]
+                    lcm_explain = f"<br><span style='color:#7f8c8d; font-size:15px;'><i>&nbsp;&nbsp;&nbsp;&nbsp;(วิธีหา ค.ร.น. แบบง่ายๆ คือไล่สูตรคูณหาตัวเลขที่ซ้ำกันตัวแรก:<br>&nbsp;&nbsp;&nbsp;&nbsp;แม่ {d1} : {', '.join(map(str, m1_list))} <br>&nbsp;&nbsp;&nbsp;&nbsp;แม่ {d2} : {', '.join(map(str, m2_list))} <br>&nbsp;&nbsp;&nbsp;&nbsp;เจอเลข <b>{lcm}</b> ซ้ำกันเป็นตัวแรก ดังนั้น ค.ร.น. คือ {lcm})</i></span>"
+                    
+                    f_norm1 = f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b>{lcm}x</b></div><div style='padding-top:2px;'><b>{d1}</b></div></div>"
+                    f_norm2 = f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b>{lcm}x</b></div><div style='padding-top:2px;'><b>{d2}</b></div></div>"
+                    
+                    f_canc1 = f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b><s style='color:#e74c3c;'>{lcm}</s><sup style='color:#27ae60; font-size:14px; margin-left:3px;'>{lcm//d1}</sup>x</b></div><div style='padding-top:2px;'><b><s style='color:#e74c3c;'>{d1}</s><sub style='color:#27ae60; font-size:12px; margin-left:3px;'>1</sub></b></div></div>"
+                    f_canc2 = f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 5px;'><div style='border-bottom:2px solid #2c3e50; padding:0 4px;'><b><s style='color:#e74c3c;'>{lcm}</s><sup style='color:#27ae60; font-size:14px; margin-left:3px;'>{lcm//d2}</sup>x</b></div><div style='padding-top:2px;'><b><s style='color:#e74c3c;'>{d2}</s><sub style='color:#27ae60; font-size:12px; margin-left:3px;'>1</sub></b></div></div>"
+                    
+                    q = f"สมชายใช้เงินซื้อหนังสือไป <b>1/{d1} ของเงินทั้งหมด</b> และซื้อขนมไปอีก <b>1/{d2} ของเงินทั้งหมด</b><br>ปรากฏว่าสมชายยังเหลือเงินอยู่ <b>{rem_money:,} บาท</b><br>เดิมสมชายมีเงินทั้งหมดกี่บาท?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (โจทย์สมการเศษส่วน):</b><br>👉 กำหนดให้เดิมสมชายมีเงินทั้งหมด <b>x</b> บาท<br>👉 ซื้อหนังสือ: x/{d1} บาท, ซื้อขนม: x/{d2} บาท<br><br><b>ขั้นที่ 1: สร้างสมการ</b><br>👉 เงินทั้งหมด - หนังสือ - ขนม = เงินที่เหลือ<br>👉 x - (x/{d1}) - (x/{d2}) = {rem_money:,}<br><br><b>ขั้นที่ 2: แก้สมการโดยหา ค.ร.น.</b><br>👉 ค.ร.น. ของส่วน {d1} และ {d2} คือ <b>{lcm}</b> {lcm_explain}<br><br>👉 นำ ค.ร.น. ({lcm}) คูณกระจายเข้าไปใน <b>ทุกๆ จำนวน</b> ของสมการ:<br><div style='margin: 12px 0;'>👉 <b>({lcm} × x) - {f_norm1} - {f_norm2} = {rem_money:,} × {lcm}</b></div>👉 นำตัวส่วนไปตัดทอนกับ {lcm} ให้กลายเป็นจำนวนเต็ม:<br><div style='margin: 12px 0;'>👉 <b>{lcm}x - {f_canc1} - {f_canc2} = {rem_money * lcm:,}</b></div>👉 จะได้สมการใหม่ที่ไม่มีเศษส่วนกวนใจแล้ว:<br>👉 <b>{lcm}x - {lcm//d1}x - {lcm//d2}x = {rem_money * lcm:,}</b><br><br><div style='background-color:#fef9e7; padding:10px; border-radius:5px; border-left: 4px solid #f39c12; margin: 10px 0;'><span style='color:#d35400; font-size:15px;'><i><b>💡 ทำไมบรรทัดต่อไปถึงเหลือ x เดียว? (สมบัติการแจกแจง / ดึงตัวร่วม)</b><br>สังเกตว่าทุกจำนวนมี <b>x</b> เกาะอยู่เหมือนกันหมด เราจึงสามารถดึง <b>x</b> ออกมาเป็นตัวแทนไว้ข้างนอกวงเล็บได้!<br>เปรียบเทียบให้เห็นภาพ: มีเงิน {lcm} บาท จ่ายไป {lcm//d1} บาท และจ่ายอีก {lcm//d2} บาท<br>ก็คือเอาตัวเลขมาหักลบกันก่อน <b>({lcm} - {lcm//d1} - {lcm//d2})</b> แล้วค่อยแปะคำว่า <b>x (แทนหน่วยบาท)</b> ไว้ข้างหลังครับ!</i></span></div>👉 <b>({lcm} - {lcm//d1} - {lcm//d2})x = {rem_money * lcm:,}</b><br>👉 <b>{rem_frac_n}x = {rem_money * lcm:,}</b><br>👉 x = {rem_money * lcm:,} ÷ {rem_frac_n} = <b>{ans:,}</b><br><br><b>ตอบ: เดิมสมชายมีเงิน {ans:,} บาท</b></span>"
+
+            elif actual_sub_t == "แบบรูปและอนุกรม (Number Patterns)":
+                scenario = random.choice(["increasing_diff", "fibonacci", "telescoping", "alternating", "perfect_square"])
+                
+                def f_html(n, d): return f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 2px;'><div style='border-bottom:1px solid #2c3e50; padding:0 2px; font-size:15px;'><b>{n}</b></div><div style='padding-top:1px; font-size:15px;'><b>{d}</b></div></div>"
+                def f_canc(n, d): return f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 2px;'><div style='border-bottom:1px solid #e74c3c; padding:0 2px; font-size:15px;'><s style='color:#e74c3c; opacity:0.6;'><span style='color:#2c3e50;'><b>{n}</b></span></s></div><div style='padding-top:1px; font-size:15px;'><s style='color:#e74c3c; opacity:0.6;'><span style='color:#2c3e50;'><b>{d}</b></span></s></div></div>"
+
+                if scenario == "increasing_diff":
+                    start = random.randint(1, 10)
+                    diff_start = random.choice([2, 3, 4])
+                    diff_step = random.choice([1, 2])
+                    
+                    seq = [start]
+                    diffs = []
+                    cur = start
+                    cur_diff = diff_start
+                    
+                    for _ in range(5):
+                        cur += cur_diff
+                        seq.append(cur)
+                        diffs.append(cur_diff)
+                        cur_diff += diff_step
+                        
+                    ans = seq[-1]
+                    given_seq = seq[:-1]
+                    
+                    q = f"จากแบบรูปของจำนวนที่กำหนดให้:<br><div style='font-size:22px; margin:15px 0; color:#c0392b;'><b>{', '.join(map(str, given_seq))}, ...</b></div>จงหาจำนวนถัดไป?"
+                    
+                    relation_html = "<div style='font-family: monospace; font-size: 16px;'>"
+                    relation_html += " &nbsp;&nbsp;&nbsp; ".join([f"<b>{x}</b>" for x in seq]) + "<br>"
+                    relation_html += "&nbsp;&nbsp;&nbsp;".join([f"<span style='color:#2980b9;'>+{d}</span>&nbsp;&nbsp;" for d in diffs])
+                    relation_html += "</div>"
+
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาความสัมพันธ์):</b><br>👉 ให้เราลองหาผลต่าง (ระยะห่าง) ของตัวเลขแต่ละคู่ที่อยู่ติดกันดูครับ<br><br><div style='background:#f8f9fa; padding:10px; border-radius:5px; margin: 10px 0;'>{relation_html}</div>👉 จะสังเกตเห็นว่า ระยะห่างมันไม่ได้เพิ่มขึ้นแบบคงที่ แต่มัน **เพิ่มขึ้นทีละ {diff_step}** (จาก +{diffs[0]} เป็น +{diffs[1]}, +{diffs[2]}, ...)<br>👉 ดังนั้น ระยะห่างตัวสุดท้ายที่จะนำไปบวกคือ <b>+{diffs[-1]}</b><br>👉 นำตัวเลขล่าสุดมาบวกกับระยะห่าง: {given_seq[-1]} + {diffs[-1]} = <b>{ans}</b><br><br><b>ตอบ: {ans}</b></span>"
+
+                elif scenario == "fibonacci":
+                    a = random.randint(1, 3)
+                    b = random.randint(1, 5)
+                    seq = [a, b]
+                    for _ in range(5):
+                        seq.append(seq[-1] + seq[-2])
+                        
+                    ans = seq[-1]
+                    given_seq = seq[:-1]
+                    
+                    q = f"จากแบบรูปของจำนวนที่กำหนดให้:<br><div style='font-size:22px; margin:15px 0; color:#c0392b;'><b>{', '.join(map(str, given_seq))}, ...</b></div>จงหาจำนวนถัดไป?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (อนุกรมสะสม):</b><br>👉 ข้อนี้ถ้าน้องๆ ลองหาระยะห่างดู จะพบว่ามันไม่มีกฎเกณฑ์ที่ชัดเจนครับ<br>👉 ให้ลองสังเกตความสัมพันธ์แบบ **'นำตัวเลข 2 ตัวหน้า มาบวกกัน จะได้ตัวเลขถัดไป'** เสมอ!<br><br><b>ลองพิสูจน์ดู:</b><br>👉 {seq[0]} + {seq[1]} = <b>{seq[2]}</b><br>👉 {seq[1]} + {seq[2]} = <b>{seq[3]}</b><br>👉 {seq[2]} + {seq[3]} = <b>{seq[4]}</b><br><br><b>ขั้นสุดท้าย: หาคำตอบ</b><br>👉 นำตัวเลข 2 ตัวสุดท้ายมาบวกกัน: {given_seq[-2]} + {given_seq[-1]} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+
+                elif scenario == "telescoping":
+                    end_n = random.choice([20, 30, 40, 50, 99])
+                    
+                    term1 = f_html(1, "1×2")
+                    term2 = f_html(1, "2×3")
+                    term3 = f_html(1, "3×4")
+                    term_n = f_html(1, f"{end_n}×{end_n+1}")
+                    
+                    q = f"จงหาผลบวกของอนุกรมเศษส่วนต่อไปนี้:<br><br><div style='font-size:20px; text-align:center;'>{term1} + {term2} + {term3} + ... + {term_n} = ?</div>"
+                    
+                    t1_split = f"({f_html(1,1)} - {f_html(1,2)})"
+                    t2_split = f"({f_html(1,2)} - {f_html(1,3)})"
+                    t3_split = f"({f_html(1,3)} - {f_html(1,4)})"
+                    tn_split = f"({f_html(1,end_n)} - {f_html(1,end_n+1)})"
+                    
+                    cancel_view = f"<div style='margin:15px 0; font-size:18px;'>= {f_html(1,1)} <span style='color:#e74c3c;'><b>- {f_canc(1,2)} + {f_canc(1,2)}</b></span> <span style='color:#e74c3c;'><b>- {f_canc(1,3)} + {f_canc(1,3)}</b></span> - ... + <span style='color:#e74c3c;'><b>{f_canc(1,end_n)}</b></span> - {f_html(1,end_n+1)}</div>"
+                    
+                    ans_n = end_n
+                    ans_d = end_n + 1
+                    ans_html = f_html(ans_n, ans_d)
+
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 เทคนิคเศษส่วนต่อเนื่อง / Telescoping):</b><br>👉 ถ้าน้องๆ มัวแต่หา ค.ร.น. ข้อนี้ทำทั้งวันก็ไม่เสร็จครับ! เราต้องใช้เทคนิค <b>'การแยกเศษส่วน'</b><br><br><b>ขั้นที่ 1: แปลงร่างเศษส่วน</b><br>สังเกตว่าตัวส่วนเป็นตัวเลขเรียงติดกันคูณกัน เราสามารถจับแยกเป็น 2 ก้อนลบกันได้เสมอ ดังนี้:<br>👉 {term1} แยกได้เป็น {t1_split}<br>👉 {term2} แยกได้เป็น {t2_split}<br>👉 ...ไปเรื่อยๆ จนถึงตัวสุดท้าย...<br>👉 {term_n} แยกได้เป็น {tn_split}<br><br><b>ขั้นที่ 2: นำมาเขียนเรียงต่อกันแล้วสังเกตความวิเศษ!</b><br>เมื่อเราเอาวงเล็บออก จะเกิดการ <b>'ตัดกันเอง'</b> ของตัวเลขตรงกลาง (ตัวติดลบเจอตัวบวก หักล้างกันกลายเป็นศูนย์)<br>{cancel_view}👉 จะเห็นว่าตัวเลขตรงกลางโดน <span style='color:#e74c3c;'><b>ขีดฆ่าตายเรียบ!</b></span> เหลือรอดแค่ <b>'หัวตัวแรก'</b> กับ <b>'หางตัวสุดท้าย'</b> เท่านั้น!<br><br><b>ขั้นที่ 3: คำนวณคำตอบสุดท้าย</b><br>👉 เหลือแค่: {f_html(1,1)} - {f_html(1,end_n+1)}<br>👉 แปลงร่าง 1 ให้ส่วนเท่ากัน: {f_html(end_n+1, end_n+1)} - {f_html(1, end_n+1)}<br>👉 นำเศษมาลบกัน: {ans_html}<br><br><b>ตอบ: {ans_n}/{ans_d}</b></span>"
+
+                elif scenario == "alternating":
+                    # อนุกรมสลับ (2 ชุดซ้อนกัน)
+                    start1 = random.randint(2, 5)
+                    step1 = random.randint(2, 4)
+                    start2 = random.randint(20, 30)
+                    step2 = random.randint(1, 3)
+                    
+                    seq1 = [start1 + (i*step1) for i in range(4)]
+                    seq2 = [start2 - (i*step2) for i in range(4)]
+                    
+                    # สลับตัวเลข
+                    mixed_seq = []
+                    for i in range(4):
+                        mixed_seq.append(seq1[i])
+                        mixed_seq.append(seq2[i])
+                        
+                    ans = mixed_seq[6] # ถามตัวที่ 7 (อยู่ในชุดที่ 1)
+                    given_seq = mixed_seq[:6]
+                    
+                    q = f"จากแบบรูปของจำนวนที่กำหนดให้:<br><div style='font-size:22px; margin:15px 0; color:#c0392b;'><b>{', '.join(map(str, given_seq))}, ...</b></div>จงหาจำนวนถัดไป?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 อนุกรมสลับซ้อนกัน):</b><br>👉 ข้อนี้ดูเผินๆ เหมือนตัวเลขเดี๋ยวเพิ่มเดี๋ยวลด ไม่มีกฎเกณฑ์ที่แน่นอน<br>👉 <b>ความลับคือ:</b> มีอนุกรม 2 ชุดซ่อนสลับกันอยู่! ให้เราลองมอง <b>'ข้ามกระโดดทีละ 1 ตัว'</b> ดูครับ<br><br><b>แยกอนุกรมออกเป็น 2 ชุด:</b><br>🔹 <b>ชุดที่ 1 (ตัวคี่):</b> {seq1[0]}, {seq1[1]}, {seq1[2]}, <b>...ตัวที่กำลังหา...</b><br><i>(สังเกตว่า: บวกเพิ่มทีละ {step1})</i><br>🔸 <b>ชุดที่ 2 (ตัวคู่):</b> {seq2[0]}, {seq2[1]}, {seq2[2]}<br><i>(สังเกตว่า: ลบออกทีละ {step2})</i><br><br><b>ขั้นสุดท้าย: หาคำตอบ</b><br>👉 ตำแหน่งที่เราต้องการหา คือตัวถัดไปของ <b>ชุดที่ 1</b><br>👉 นำตัวสุดท้ายของชุดที่ 1 มาบวกเพิ่ม: {seq1[2]} + {step1} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+
+                elif scenario == "perfect_square":
+                    # อนุกรมยกกำลังสอง (Perfect Squares)
+                    start_base = random.randint(1, 4)
+                    bases = [start_base + i for i in range(6)]
+                    seq = [b**2 for b in bases]
+                    ans = seq[-1]
+                    given_seq = seq[:-1]
+                    
+                    q = f"จากแบบรูปของจำนวนที่กำหนดให้:<br><div style='font-size:22px; margin:15px 0; color:#c0392b;'><b>{', '.join(map(str, given_seq))}, ...</b></div>จงหาจำนวนถัดไป?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (อนุกรมกำลังสอง):</b><br>👉 ข้อนี้ถ้าลองหาระยะห่าง จะพบว่ามันเพิ่มขึ้นทีละเลขคี่ (ตัวอย่าง: ลองลบกันดูจะได้ระยะห่างไม่เท่ากัน)<br>👉 แต่ถ้าเราแม่นสูตรคูณ เราจะสังเกตเห็นความน่าสนใจของตัวเลขกลุ่มนี้ครับ!<br><br><b>ลองแยกตัวประกอบดู:</b><br>👉 {seq[0]} เกิดจาก <b>{bases[0]} × {bases[0]}</b><br>👉 {seq[1]} เกิดจาก <b>{bases[1]} × {bases[1]}</b><br>👉 {seq[2]} เกิดจาก <b>{bases[2]} × {bases[2]}</b><br>👉 {seq[3]} เกิดจาก <b>{bases[3]} × {bases[3]}</b><br>👉 {seq[4]} เกิดจาก <b>{bases[4]} × {bases[4]}</b><br><br><b>ขั้นสุดท้าย: หาคำตอบ</b><br>👉 จะเห็นว่ามันคือตัวเลขเรียงติดกันคูณด้วยตัวมันเอง (ยกกำลังสอง)<br>👉 ดังนั้น ตัวถัดไปต้องเป็น <b>{bases[5]} × {bases[5]} = {ans}</b><br><b>ตอบ: {ans}</b></span>"
+
+            elif actual_sub_t == "มาตราส่วนและทิศทาง":
+                scenario = random.choice(["map_to_real", "real_to_map", "map_area", "find_scale"])
+                
+                if scenario == "map_to_real":
+                    scale_km = random.choice([5, 10, 20, 25, 50, 100])
+                    map_cm_base = random.randint(2, 15)
+                    has_decimal = random.choice([True, False])
+                    if has_decimal: 
+                        map_cm = map_cm_base + 0.5
+                        map_str = f"{map_cm:.1f}"
+                    else: 
+                        map_cm = map_cm_base
+                        map_str = f"{map_cm}"
+                        
+                    ans = map_cm * scale_km
+                    ans_str = f"{ans:g}" 
+                    
+                    q = f"แผนที่ฉบับหนึ่งกำหนดมาตราส่วน <b>1 ซม. : {scale_km} กม.</b><br>ถ้าวัดระยะทางจากเมือง A ไปเมือง B ในแผนที่ได้ <b>{map_str} เซนติเมตร</b><br>ระยะทางจริงจากเมือง A ไปเมือง B คือกี่กิโลเมตร?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (การอ่านมาตราส่วนแผนที่):</b><br>👉 มาตราส่วน 1 ซม. : {scale_km} กม. หมายความว่า <b>'ระยะทางในกระดาษ 1 ซม. เท่ากับระยะทางจริง {scale_km} กิโลเมตร'</b><br><br><b>ขั้นที่ 1: เทียบบัญญัติไตรยางศ์</b><br>👉 แผนที่ 1 ซม. = ของจริง {scale_km} กม.<br>👉 แผนที่ {map_str} ซม. = ของจริง {map_str} × {scale_km} กม.<br><br><b>ขั้นที่ 2: คำนวณคำตอบ</b><br>👉 {map_str} × {scale_km} = <b>{ans_str} กิโลเมตร</b><br><b>ตอบ: {ans_str} กิโลเมตร</b></span>"
+                    
+                elif scenario == "real_to_map":
+                    scale_m = random.choice([10, 20, 50, 100, 200])
+                    map_ans_cm = random.randint(3, 12)
+                    has_decimal = random.choice([True, False])
+                    if has_decimal: map_ans_cm += 0.5
+                    real_m = map_ans_cm * scale_m
+                    real_str = f"{real_m:g}"
+                    map_str = f"{map_ans_cm:g}"
+                    
+                    q = f"แผนผังหมู่บ้านแห่งหนึ่งใช้มาตราส่วน <b>1 ซม. : {scale_m} เมตร</b><br>ถ้าระยะทางจริงจากหน้าหมู่บ้านถึงสวนสาธารณะคือ <b>{real_str} เมตร</b><br>ในแผนผังนี้ ระยะทางดังกล่าวจะมีความยาวกี่เซนติเมตร?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (แปลงระยะจริงลงในแผนผัง):</b><br>👉 มาตราส่วน 1 ซม. : {scale_m} เมตร หมายความว่า <b>'ระยะทางจริงทุกๆ {scale_m} เมตร จะวาดลงในกระดาษ 1 เซนติเมตร'</b><br><br><b>ขั้นที่ 1: เทียบบัญญัติไตรยางศ์ (คิดย้อนกลับ)</b><br>👉 ระยะจริง {scale_m} เมตร = วาดในแผนผัง 1 ซม.<br>👉 ระยะจริง {real_str} เมตร = นำไปหารด้วย {scale_m} เพื่อดูว่าจะได้กระดาษกี่เซนติเมตร<br><br><b>ขั้นที่ 2: คำนวณคำตอบ</b><br>👉 วาดในแผนผัง = {real_str} ÷ {scale_m}<br>👉 วาดในแผนผัง = <b>{map_str} เซนติเมตร</b><br><b>ตอบ: {map_str} เซนติเมตร</b></span>"
+
+                elif scenario == "map_area":
+                    scale_m = random.choice([5, 10, 20, 50])
+                    w_cm = random.randint(3, 8)
+                    l_cm = random.randint(4, 12)
+                    while w_cm >= l_cm: l_cm += 1
+                    
+                    real_w = w_cm * scale_m
+                    real_l = l_cm * scale_m
+                    real_area = real_w * real_l
+                    
+                    q = f"แผนผังที่ดินรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{w_cm} ซม.</b> ยาว <b>{l_cm} ซม.</b><br>ใช้มาตราส่วน <b>1 ซม. : {scale_m} เมตร</b><br>ที่ดินผืนนี้มี <b>พื้นที่จริง</b> กี่ตารางเมตร?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - หาพื้นที่จริง):</b><br><div style='background-color:#fce4e4; padding:10px; border-radius:5px; border-left: 4px solid #c0392b; margin: 10px 0;'><span style='color:#c0392b; font-size:15px;'><i><b>⚠️ จุดระวัง (ข้อนี้เด็กๆ โดนหลอกบ่อยมาก!):</b><br>ห้ามเอา (กว้าง × ยาว) ในกระดาษ แล้วมาคูณ {scale_m} โดยเด็ดขาด!<br>เพราะการหาพื้นที่ จะต้องแปลง <b>'ความกว้าง'</b> และ <b>'ความยาว'</b> ให้เป็นของจริงก่อนนำมาคูณกันครับ!</i></span></div><br><b>ขั้นที่ 1: แปลงความกว้างและความยาวให้เป็นของจริง</b><br>👉 ความกว้างจริง = {w_cm} ซม. × {scale_m} เมตร = <b>{real_w} เมตร</b><br>👉 ความยาวจริง = {l_cm} ซม. × {scale_m} เมตร = <b>{real_l} เมตร</b><br><br><b>ขั้นที่ 2: คำนวณหาพื้นที่จริง</b><br>👉 พื้นที่สี่เหลี่ยมผืนผ้า = กว้างจริง × ยาวจริง<br>👉 พื้นที่ = {real_w} × {real_l} = <b>{real_area:,} ตารางเมตร</b><br><br><b>ตอบ: {real_area:,} ตารางเมตร</b></span>"
+
+                elif scenario == "find_scale":
+                    real_km = random.choice([15, 20, 30, 45, 60, 120])
+                    map_cm = random.choice([3, 4, 5, 6, 10, 12])
+                    while real_km * 100000 % map_cm != 0:
+                        map_cm = random.choice([3, 4, 5, 6, 10, 12])
+                    
+                    real_cm = real_km * 100000
+                    scale_val = real_cm // map_cm
+                    
+                    q = f"ระยะทางจริงจากจังหวัด ก ไปจังหวัด ข คือ <b>{real_km} กิโลเมตร</b><br>ถ้าวัดระยะทางในแผนที่ได้ <b>{map_cm} เซนติเมตร</b><br>แผนที่ฉบับนี้ใช้มาตราส่วน <b>1 : เท่าใด?</b>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - หามาตราส่วน):</b><br>👉 การหามาตราส่วน 1 : x  เราต้องทำให้หน่วยของทั้งสองฝั่ง <b>'เป็นเซนติเมตรเหมือนกัน'</b> ก่อนครับ<br><br><b>ขั้นที่ 1: แปลงระยะทางจริงจาก กิโลเมตร เป็น เซนติเมตร</b><br>👉 1 กิโลเมตร = 1,000 เมตร<br>👉 1 เมตร = 100 เซนติเมตร<br>👉 ดังนั้น 1 กิโลเมตร = 1,000 × 100 = <b>100,000 เซนติเมตร</b><br>👉 ระยะจริง {real_km} กม. = {real_km} × 100,000 = <b>{real_cm:,} เซนติเมตร</b><br><br><b>ขั้นที่ 2: เทียบอัตราส่วนเพื่อหามาตราส่วน</b><br>👉 ระยะในแผนที่ : ระยะจริง<br>👉 <b>{map_cm} ซม. : {real_cm:,} ซม.</b><br>👉 ทำฝั่งซ้ายให้เป็น 1 โดยนำ {map_cm} ไปหารทั้งสองฝั่ง<br>👉 1 : ({real_cm:,} ÷ {map_cm})<br>👉 <b>1 : {scale_val:,}</b><br><br><b>ตอบ: มาตราส่วน 1 : {scale_val:,}</b></span>"
+
+            elif actual_sub_t == "เรขาคณิตประยุกต์ (หาพื้นที่แรเงา)":
+                def draw_shaded_svg(scenario, W, H, p1=0):
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="460" height="240">'
+                    max_w, max_h = 200, 140 
+                    scale = min(max_w / W, max_h / H)
+                    draw_w = W * scale
+                    draw_h = H * scale
+                    
+                    ox = (460 - draw_w) / 2
+                    oy = (240 - draw_h) / 2
+
+                    lbl_style = 'font-family:Sarabun; font-size:15px; font-weight:bold; fill:#c0392b;'
+                    lbl_style_sm = 'font-family:Sarabun; font-size:14px; font-weight:bold; fill:#2980b9;'
+                    
+                    if scenario == "frame":
+                        border_scale = p1 * scale
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
+                        svg += f'<rect x="{ox+border_scale}" y="{oy+border_scale}" width="{draw_w-2*border_scale}" height="{draw_h-2*border_scale}" fill="#ffffff" stroke="#2c3e50" stroke-width="2"/>'
+                        
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy - 10}" {lbl_style} text-anchor="middle">{W} ม.</text>'
+                        svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} ม.</text>'
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + border_scale/2 + 5}" {lbl_style_sm} text-anchor="middle">กว้าง {p1} ม.</text>'
+                        
+                    elif scenario == "corner_cut":
+                        cut_scale = p1 * scale
+                        pts = f"{ox},{oy} {ox+draw_w-cut_scale},{oy} {ox+draw_w-cut_scale},{oy+cut_scale} {ox+draw_w},{oy+cut_scale} {ox+draw_w},{oy+draw_h} {ox},{oy+draw_h}"
+                        svg += f'<polygon points="{pts}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="none" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>'
+                        
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ซม.</text>'
+                        svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} ซม.</text>'
+                        svg += f'<text x="{ox + draw_w - cut_scale/2}" y="{oy - 10}" {lbl_style_sm} text-anchor="middle">ตัด {p1}x{p1}</text>'
+
+                    elif scenario == "triangle_in_rect":
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
+                        svg += f'<polygon points="{ox},{oy+draw_h} {ox+draw_w},{oy+draw_h} {ox+draw_w/2},{oy}" fill="#ffffff" stroke="#2c3e50" stroke-width="2"/>'
+                        
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} นิ้ว</text>'
+                        svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} นิ้ว</text>'
+
+                    elif scenario == "cross_path":
+                        p_scale = p1 * scale
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="#ffffff" stroke="none"/>'
+                        svg += f'<rect x="{ox}" y="{oy + (draw_h - p_scale)/2}" width="{draw_w}" height="{p_scale}" fill="#bdc3c7" stroke="none"/>'
+                        svg += f'<rect x="{ox + (draw_w - p_scale)/2}" y="{oy}" width="{p_scale}" height="{draw_h}" fill="#bdc3c7" stroke="none"/>'
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="none" stroke="#2c3e50" stroke-width="3"/>'
+                        
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ม.</text>'
+                        svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} ม.</text>'
+                        svg += f'<text x="{ox + draw_w + 10}" y="{oy + draw_h/2 + 5}" {lbl_style_sm} text-anchor="start">กว้าง {p1} ม.</text>'
+
+                    elif scenario == "four_corners":
+                        c = p1 * scale
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="none" stroke="#7f8c8d" stroke-width="2" stroke-dasharray="5,5"/>'
+                        pts = f"{ox+c},{oy} {ox+draw_w-c},{oy} {ox+draw_w-c},{oy+c} {ox+draw_w},{oy+c} {ox+draw_w},{oy+draw_h-c} {ox+draw_w-c},{oy+draw_h-c} {ox+draw_w-c},{oy+draw_h} {ox+c},{oy+draw_h} {ox+c},{oy+draw_h-c} {ox},{oy+draw_h-c} {ox},{oy+c} {ox+c},{oy+c}"
+                        svg += f'<polygon points="{pts}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
+                        
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ซม.</text>'
+                        svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} ซม.</text>'
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy - 10}" {lbl_style_sm} text-anchor="middle">ตัดมุมละ {p1}x{p1}</text>'
+
+                    elif scenario == "midpoint_rhombus":
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="#ffffff" stroke="#2c3e50" stroke-width="3"/>'
+                        pts = f"{ox+draw_w/2},{oy} {ox+draw_w},{oy+draw_h/2} {ox+draw_w/2},{oy+draw_h} {ox},{oy+draw_h/2}"
+                        svg += f'<polygon points="{pts}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="2"/>'
+                        
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ซม.</text>'
+                        svg += f'<text x="{ox - 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="end">{H} ซม.</text>'
+
+                    elif scenario == "l_shape_path":
+                        p_scale = p1 * scale
+                        svg += f'<rect x="{ox}" y="{oy}" width="{draw_w}" height="{draw_h}" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
+                        svg += f'<rect x="{ox+p_scale}" y="{oy}" width="{draw_w-p_scale}" height="{draw_h-p_scale}" fill="#ffffff" stroke="#2c3e50" stroke-width="2"/>'
+                        
+                        svg += f'<text x="{ox + draw_w/2}" y="{oy + draw_h + 20}" {lbl_style} text-anchor="middle">{W} ม.</text>'
+                        svg += f'<text x="{ox + draw_w + 10}" y="{oy + draw_h/2 + 5}" {lbl_style} text-anchor="start">{H} ม.</text>'
+                        svg += f'<text x="{ox + p_scale/2}" y="{oy + draw_h/2 + 5}" {lbl_style_sm} text-anchor="middle">{p1} ม.</text>'
+
+                    svg += '</svg></div>'
+                    return svg
+
+                scenario = random.choice(["frame", "corner_cut", "triangle_in_rect", "cross_path", "four_corners", "midpoint_rhombus", "l_shape_path"])
+                
+                if scenario == "frame":
+                    W = random.randint(15, 30)
+                    H = random.randint(10, 20)
+                    while W <= H: W += random.randint(2, 5)
+                    border = random.randint(1, 3)
+                    inner_w = W - 2*border
+                    inner_h = H - 2*border
+                    area_out = W * H
+                    area_in = inner_w * inner_h
+                    ans = area_out - area_in
+                    
+                    svg = draw_shaded_svg("frame", W, H, border)
+                    q = f"สระว่ายน้ำมีทางเดินรอบขอบสระ (ส่วนที่แรเงา) รูปสี่เหลี่ยมผืนผ้าขนาดใหญ่ กว้าง <b>{H} เมตร</b> ยาว <b>{W} เมตร</b><br>ถ้าทางเดินกว้าง <b>{border} เมตร</b> เท่ากันโดยตลอด<br>จงหาพื้นที่ของทางเดินนี้?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาพื้นที่แรเงา - กรอบรูป):</b><br>👉 หลักการคิด: <b>พื้นที่ส่วนที่แรเงา = พื้นที่สี่เหลี่ยมรูปใหญ่(ข้างนอก) - พื้นที่สี่เหลี่ยมรูปเล็ก(ข้างใน)</b><br><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมรูปใหญ่ (ทั้งหมด)</b><br>👉 กว้าง {H} ม., ยาว {W} ม.<br>👉 พื้นที่รูปใหญ่ = {H} × {W} = <b>{area_out} ตารางเมตร</b><br><br><b>ขั้นที่ 2: หาขนาดของสี่เหลี่ยมรูปเล็ก (สีขาวข้างใน)</b><br>👉 ความกว้างด้านใน = กว้างรูปใหญ่ - (ขอบบน + ขอบล่าง) = {H} - ({border} + {border}) = <b>{inner_h} เมตร</b><br>👉 ความยาวด้านใน = ยาวรูปใหญ่ - (ขอบซ้าย + ขอบขวา) = {W} - ({border} + {border}) = <b>{inner_w} เมตร</b><br>👉 พื้นที่รูปเล็ก = {inner_h} × {inner_w} = <b>{area_in} ตารางเมตร</b><br><br><b>ขั้นที่ 3: หาพื้นที่ทางเดิน (แรเงา)</b><br>👉 นำพื้นที่รูปใหญ่ ลบ พื้นที่รูปเล็ก: {area_out} - {area_in} = <b>{ans} ตารางเมตร</b><br><br><b>ตอบ: {ans} ตารางเมตร</b></span>"
+
+                elif scenario == "corner_cut":
+                    W = random.randint(12, 25)
+                    H = random.randint(10, 20)
+                    while W <= H: W += random.randint(1, 4)
+                    cut = random.randint(2, 5)
+                    area_out = W * H
+                    area_cut = cut * cut
+                    ans = area_out - area_cut
+                    
+                    svg = draw_shaded_svg("corner_cut", W, H, cut)
+                    q = f"กระดาษรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} เซนติเมตร</b> ยาว <b>{W} เซนติเมตร</b><br>ถูกตัดมุมออก 1 มุม เป็นรูปสี่เหลี่ยมจัตุรัสยาวด้านละ <b>{cut} เซนติเมตร</b> (ดังรูป)<br>จงหาพื้นที่ของกระดาษส่วนที่เหลือ (ส่วนที่แรเงา)?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาพื้นที่แรเงา - ตัดมุม):</b><br>👉 หลักการคิด: <b>พื้นที่ส่วนที่แรเงา = พื้นที่กระดาษแผ่นเต็ม - พื้นที่ส่วนที่ถูกตัดออก</b><br><br><b>ขั้นที่ 1: หาพื้นที่กระดาษแผ่นเต็ม</b><br>👉 พื้นที่สี่เหลี่ยมผืนผ้า = กว้าง × ยาว<br>👉 พื้นที่แผ่นเต็ม = {H} × {W} = <b>{area_out} ตารางเซนติเมตร</b><br><br><b>ขั้นที่ 2: หาพื้นที่ส่วนที่ถูกตัดออก</b><br>👉 เป็นรูปสี่เหลี่ยมจัตุรัส ด้านละ {cut} ซม.<br>👉 พื้นที่ตัดออก = ด้าน × ด้าน = {cut} × {cut} = <b>{area_cut} ตารางเซนติเมตร</b><br><br><b>ขั้นที่ 3: หาพื้นที่ส่วนที่เหลือ (แรเงา)</b><br>👉 นำพื้นที่แผ่นเต็ม ลบ พื้นที่ตัดออก: {area_out} - {area_cut} = <b>{ans} ตารางเซนติเมตร</b><br><br><b>ตอบ: {ans} ตารางเซนติเมตร</b></span>"
+
+                elif scenario == "triangle_in_rect":
+                    W = random.randint(10, 24)
+                    if W % 2 != 0: W += 1
+                    H = random.randint(8, 20)
+                    area_out = W * H
+                    area_tri = (W * H) // 2
+                    ans = area_out - area_tri
+                    
+                    svg = draw_shaded_svg("triangle_in_rect", W, H)
+                    
+                    # ภาพประกอบสูตรลัดสามเหลี่ยม (ลากเส้นประผ่ากลาง)
+                    explain_svg = '''<div style="text-align:center; margin: 15px 0;">
+                    <svg width="240" height="140">
+                        <rect x="20" y="20" width="200" height="100" fill="#bdc3c7" stroke="#2c3e50" stroke-width="2"/>
+                        <polygon points="20,120 220,120 120,20" fill="#ffffff" stroke="#2c3e50" stroke-width="2"/>
+                        <line x1="120" y1="20" x2="120" y2="120" stroke="#e74c3c" stroke-dasharray="5,5" stroke-width="2"/>
+                        <text x="60" y="80" font-family="Sarabun" font-size="16" fill="#c0392b" font-weight="bold">เท่ากัน</text>
+                        <text x="180" y="80" font-family="Sarabun" font-size="16" fill="#c0392b" font-weight="bold">เท่ากัน</text>
+                    </svg>
+                    </div>'''
+
+                    q = f"รูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} นิ้ว</b> ยาว <b>{W} นิ้ว</b><br>มีรูปสามเหลี่ยมสีขาวเจาะอยู่ด้านใน โดยที่ฐานของสามเหลี่ยมพอดีกับความยาวของสี่เหลี่ยม (ดังรูป)<br>จงหาพื้นที่ของส่วนที่แรเงา?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาพื้นที่แรเงา - สามเหลี่ยมในสี่เหลี่ยม):</b><br>👉 หลักการคิด: <b>พื้นที่ส่วนที่แรเงา = พื้นที่สี่เหลี่ยม - พื้นที่สามเหลี่ยม(สีขาว)</b><br><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมผืนผ้า (ทั้งหมด)</b><br>👉 พื้นที่ = กว้าง × ยาว = {H} × {W} = <b>{area_out} ตารางนิ้ว</b><br><br><b>ขั้นที่ 2: หาพื้นที่รูปสามเหลี่ยม (สีขาว)</b><br>👉 ฐานของสามเหลี่ยม = ความยาวสี่เหลี่ยม = {W} นิ้ว<br>👉 ความสูงของสามเหลี่ยม = ความกว้างสี่เหลี่ยม = {H} นิ้ว<br>👉 พื้นที่สามเหลี่ยม = (1/2) × ฐาน × สูง = (1/2) × {W} × {H} = <b>{area_tri} ตารางนิ้ว</b><br><br><b>ขั้นที่ 3: หาพื้นที่แรเงา</b><br>👉 พื้นที่ทั้งหมด ลบ พื้นที่สามเหลี่ยม: {area_out} - {area_tri} = <b>{ans} ตารางนิ้ว</b><br><br><div style='background-color:#fef9e7; padding:10px; border-radius:5px; border-left: 4px solid #f39c12; margin: 10px 0;'><span style='color:#d35400; font-size:15px;'><i><b>💡 ทริคข้อสอบ (ทำไมถึงเป็นครึ่งหนึ่ง?):</b><br>{explain_svg}ถ้าเราลากเส้นประผ่าครึ่งรูป จะเห็นว่าสี่เหลี่ยมถูกแบ่งเป็น 2 ฝั่ง<br>และในแต่ละฝั่ง <b>พื้นที่แรเงา จะมีขนาดเท่ากับ พื้นที่สีขาวพอดีเป๊ะ!</b><br>ดังนั้น พื้นที่แรเงารวมกันก็คือ <b>'ครึ่งหนึ่ง'</b> ของสี่เหลี่ยมใหญ่ครับ ({area_out} ÷ 2 = {ans})</i></span></div><br><b>ตอบ: {ans} ตารางนิ้ว</b></span>"
+
+                elif scenario == "cross_path":
+                    W = random.randint(20, 40)
+                    H = random.randint(15, 25)
+                    path = random.randint(2, 4)
+                    area_h = W * path
+                    area_v = H * path
+                    area_mid = path * path
+                    ans = area_h + area_v - area_mid
+                    
+                    svg = draw_shaded_svg("cross_path", W, H, path)
+                    
+                    # ภาพประกอบอธิบายพื้นที่ทับซ้อนตรงกลาง
+                    explain_svg = '''<div style="text-align:center; margin: 15px 0;">
+                    <svg width="240" height="160">
+                        <rect x="20" y="20" width="200" height="120" fill="none" stroke="#bdc3c7" stroke-width="1"/>
+                        <rect x="20" y="60" width="200" height="40" fill="#aed6f1" stroke="none"/>
+                        <rect x="100" y="20" width="40" height="120" fill="#aed6f1" stroke="none"/>
+                        <rect x="100" y="60" width="40" height="40" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+                        <text x="120" y="85" font-family="Sarabun" font-size="14" fill="#ffffff" font-weight="bold" text-anchor="middle">ซ้ำ!</text>
+                    </svg>
+                    </div>'''
+
+                    q = f"สนามหญ้ารูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} เมตร</b> ยาว <b>{W} เมตร</b><br>มีทางเดินตัดกันเป็นรูปกากบาทตรงกลาง (ส่วนที่แรเงา) โดยทางเดินมีความกว้าง <b>{path} เมตร</b> เท่ากัน<br>จงหาพื้นที่ของทางเดินทั้งหมด?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ข้อสอบแข่งขัน - ทางเดินตัดกัน):</b><br><div style='background-color:#fce4e4; padding:10px; border-radius:5px; border-left: 4px solid #c0392b; margin: 10px 0;'><span style='color:#c0392b; font-size:15px;'><i><b>⚠️ จุดระวัง:</b> น้องๆ หลายคนมักจะเอา (พื้นที่แนวนอน + พื้นที่แนวตั้ง) แล้วตอบเลย ซึ่ง <b>ผิด!</b> ลองดูภาพด้านล่างครับ<br>{explain_svg}ตรงกลางที่ทางเดินตัดกัน (สีแดง) จะถูกนับไปแล้วตอนคิดแนวนอน และถูกนับซ้ำอีกตอนคิดแนวตั้ง เราจึงต้อง <b>ลบออก 1 ครั้ง</b> ครับ!</i></span></div><br><b>ขั้นที่ 1: หาพื้นที่ทางเดินแนวนอน และ แนวตั้ง</b><br>👉 ทางแนวนอน = ความยาวสนาม × ความกว้างทางเดิน = {W} × {path} = <b>{area_h} ตร.ม.</b><br>👉 ทางแนวตั้ง = ความกว้างสนาม × ความกว้างทางเดิน = {H} × {path} = <b>{area_v} ตร.ม.</b><br><br><b>ขั้นที่ 2: หาพื้นที่สี่เหลี่ยมจัตุรัสตรงกลาง (สีแดงที่ซ้อนทับกัน)</b><br>👉 พื้นที่ตรงกลาง = กว้างทางเดิน × กว้างทางเดิน = {path} × {path} = <b>{area_mid} ตร.ม.</b><br><br><b>ขั้นที่ 3: คำนวณพื้นที่ทางเดินที่แท้จริง</b><br>👉 พื้นที่ทางเดิน = แนวนอน + แนวตั้ง - ส่วนที่ซ้อนทับ<br>👉 พื้นที่ทางเดิน = {area_h} + {area_v} - {area_mid} = <b>{ans} ตารางเมตร</b><br><br><b>ตอบ: {ans} ตารางเมตร</b></span>"
+
+                elif scenario == "four_corners":
+                    W = random.randint(15, 30)
+                    H = random.randint(12, 20)
+                    cut = random.randint(2, 4)
+                    area_out = W * H
+                    area_1cut = cut * cut
+                    area_4cuts = 4 * area_1cut
+                    ans = area_out - area_4cuts
+                    
+                    svg = draw_shaded_svg("four_corners", W, H, cut)
+                    q = f"กระดาษรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} เซนติเมตร</b> ยาว <b>{W} เซนติเมตร</b><br>ถูกตัดมุมออก <b>ทั้ง 4 มุม</b> เป็นรูปสี่เหลี่ยมจัตุรัสยาวด้านละ <b>{cut} เซนติเมตร</b> เพื่อนำไปพับเป็นกล่อง (ดังรูป)<br>จงหาพื้นที่ของกระดาษส่วนที่เหลือ (ส่วนที่แรเงา)?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (หาพื้นที่แรเงา - ตัด 4 มุม):</b><br>👉 หลักการคิด: <b>พื้นที่ส่วนที่แรเงา = พื้นที่กระดาษแผ่นเต็ม - พื้นที่ส่วนที่ถูกตัดออก (4 ชิ้น)</b><br><br><b>ขั้นที่ 1: หาพื้นที่กระดาษแผ่นเต็ม</b><br>👉 พื้นที่ = กว้าง × ยาว = {H} × {W} = <b>{area_out} ตารางเซนติเมตร</b><br><br><b>ขั้นที่ 2: หาพื้นที่ส่วนที่ถูกตัดออกทั้งหมด</b><br>👉 ตัดออก 1 มุม = ด้าน × ด้าน = {cut} × {cut} = <b>{area_1cut} ตร.ซม.</b><br>👉 แต่เราตัดออก 4 มุม จึงต้องคูณ 4 = 4 × {area_1cut} = <b>{area_4cuts} ตร.ซม.</b><br><br><b>ขั้นที่ 3: หาพื้นที่ส่วนที่เหลือ (แรเงา)</b><br>👉 นำพื้นที่แผ่นเต็ม ลบ พื้นที่ถูกตัดทั้งหมด: {area_out} - {area_4cuts} = <b>{ans} ตารางเซนติเมตร</b><br><br><b>ตอบ: {ans} ตารางเซนติเมตร</b></span>"
+
+                elif scenario == "midpoint_rhombus":
+                    W = random.randint(12, 30)
+                    if W % 2 != 0: W += 1
+                    H = random.randint(10, 24)
+                    if H % 2 != 0: H += 1
+                    area_out = W * H
+                    ans = area_out // 2
+                    
+                    svg = draw_shaded_svg("midpoint_rhombus", W, H)
+                    
+                    explain_svg = '''<div style="text-align:center; margin: 15px 0;">
+                    <svg width="240" height="160">
+                        <rect x="20" y="20" width="200" height="120" fill="none" stroke="#2c3e50" stroke-width="2"/>
+                        <polygon points="120,20 220,80 120,140 20,80" fill="#bdc3c7" stroke="#2c3e50" stroke-width="2"/>
+                        <line x1="120" y1="20" x2="120" y2="140" stroke="#e74c3c" stroke-dasharray="5,5" stroke-width="2"/>
+                        <line x1="20" y1="80" x2="220" y2="80" stroke="#e74c3c" stroke-dasharray="5,5" stroke-width="2"/>
+                        <text x="50" y="45" font-family="Sarabun" font-size="16" fill="#2c3e50" font-weight="bold">1</text>
+                        <text x="190" y="45" font-family="Sarabun" font-size="16" fill="#2c3e50" font-weight="bold">2</text>
+                        <text x="50" y="125" font-family="Sarabun" font-size="16" fill="#2c3e50" font-weight="bold">3</text>
+                        <text x="190" y="125" font-family="Sarabun" font-size="16" fill="#2c3e50" font-weight="bold">4</text>
+                        <text x="90" y="65" font-family="Sarabun" font-size="16" fill="#c0392b" font-weight="bold">1</text>
+                        <text x="150" y="65" font-family="Sarabun" font-size="16" fill="#c0392b" font-weight="bold">2</text>
+                        <text x="90" y="105" font-family="Sarabun" font-size="16" fill="#c0392b" font-weight="bold">3</text>
+                        <text x="150" y="105" font-family="Sarabun" font-size="16" fill="#c0392b" font-weight="bold">4</text>
+                    </svg>
+                    </div>'''
+
+                    q = f"รูปสี่เหลี่ยมผืนผ้า กว้าง <b>{H} เซนติเมตร</b> ยาว <b>{W} เซนติเมตร</b><br>ถูกลากเส้นเชื่อม <b>จุดกึ่งกลาง</b> ของความยาวแต่ละด้าน เกิดเป็นรูปที่แรเงา (ดังรูป)<br>จงหาพื้นที่ของส่วนที่แรเงา?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 สี่เหลี่ยมแนบใน):</b><br>👉 การหาพื้นที่รูปแบบนี้ ถ้าเราวาดเส้นกากบาทแบ่งครึ่งรูป จะเห็นความลับซ่อนอยู่ครับ!<br>{explain_svg}👉 <i>สังเกตจากรูป: เมื่อลากเส้นประแบ่งครึ่ง สี่เหลี่ยมใหญ่จะถูกแบ่งเป็น 4 ส่วนย่อย</i><br>👉 <i>ในแต่ละส่วนย่อย เส้นขอบของสี่เหลี่ยมแรเงาจะ <b>'ผ่าครึ่งแนวทแยงมุม'</b> พอดีเป๊ะ! (แรเงาเบอร์ 1 เท่ากับ สีขาวเบอร์ 1)</i><br>👉 สรุปได้ว่า พื้นที่สีเทา รวมกันแล้วจะเท่ากับ พื้นที่สีขาว<br>👉 ทำให้เกิดเป็นสูตรลัดคือ <b>พื้นที่ส่วนที่แรเงา จะมีขนาดเท่ากับ 'ครึ่งหนึ่ง' ของรูปใหญ่เสมอ!</b><br><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมรูปใหญ่</b><br>👉 กว้าง × ยาว = {H} × {W} = <b>{area_out} ตารางเซนติเมตร</b><br><br><b>ขั้นที่ 2: หาพื้นที่แรเงา (ใช้สูตรลัด)</b><br>👉 พื้นที่แรเงา = พื้นที่รูปใหญ่ ÷ 2<br>👉 {area_out} ÷ 2 = <b>{ans} ตารางเซนติเมตร</b><br><br><b>ตอบ: {ans} ตารางเซนติเมตร</b></span>"
+
+                elif scenario == "l_shape_path":
+                    W = random.randint(15, 30)
+                    H = random.randint(12, 20)
+                    path = random.randint(2, 4)
+                    area_out = W * H
+                    inner_w = W - path
+                    inner_h = H - path
+                    area_in = inner_w * inner_h
+                    ans = area_out - area_in
+                    
+                    svg = draw_shaded_svg("l_shape_path", W, H, path)
+                    q = f"สระว่ายน้ำแห่งหนึ่งถูกสร้างทางเดิน (ส่วนที่แรเงา) ล้อมรอบเพียง <b>2 ด้าน</b> ดังรูป<br>ถ้าสระว่ายน้ำรวมทางเดิน กว้าง <b>{H} เมตร</b> ยาว <b>{W} เมตร</b> และทางเดินกว้าง <b>{path} เมตร</b><br>จงหาพื้นที่ของทางเดินรูปตัว L นี้?<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ทางเดินตัว L):</b><br>👉 หลักการคิดที่ง่ายที่สุดคือ: มองให้เป็น <b>กรอบรูปที่ถูกดันไปชิดมุม</b><br>👉 <b>พื้นที่ทางเดิน = พื้นที่สี่เหลี่ยมรูปใหญ่(รวมทางเดิน) - พื้นที่สี่เหลี่ยมรูปเล็ก(เฉพาะสระสีขาว)</b><br><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมรูปใหญ่ (ทั้งหมด)</b><br>👉 กว้าง {H} ม., ยาว {W} ม.<br>👉 พื้นที่รูปใหญ่ = {H} × {W} = <b>{area_out} ตารางเมตร</b><br><br><b>ขั้นที่ 2: หาขนาดของสี่เหลี่ยมรูปเล็ก (สีขาว)</b><br>👉 ความกว้างด้านใน = กว้างรวม - ความกว้างทางเดิน = {H} - {path} = <b>{inner_h} เมตร</b><br>👉 ความยาวด้านใน = ยาวรวม - ความกว้างทางเดิน = {W} - {path} = <b>{inner_w} เมตร</b><br>👉 พื้นที่รูปเล็ก = {inner_h} × {inner_w} = <b>{area_in} ตารางเมตร</b><br><br><b>ขั้นที่ 3: หาพื้นที่ทางเดินตัว L (แรเงา)</b><br>👉 นำพื้นที่รูปใหญ่ ลบ พื้นที่รูปเล็ก: {area_out} - {area_in} = <b>{ans} ตารางเมตร</b><br><br><b>ตอบ: {ans} ตารางเมตร</b></span>"
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
