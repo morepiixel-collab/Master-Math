@@ -4741,6 +4741,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 sol = f"<span style='color:#2c3e50;'><b>เฉลย:</b> มุมกาง {target_deg}° จัดเป็น <b>{a_type}</b></span>"
 
             elif actual_sub_t == "โจทย์ปัญหาเรื่องมุมจากเข็มนาฬิกา":
+                # 💡 1. ฟังก์ชันวาดนาฬิกาแบบอัพเกรด (Canvas 560x260)
                 def draw_clock_advanced_svg(hr_num, min_num, is_reflex=False):
                     import math
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="260">'
@@ -4750,7 +4751,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     # วาดตัวเรือน
                     svg += f'<circle cx="{cx}" cy="{cy}" r="{r_clock}" fill="#ffffff" stroke="#34495e" stroke-width="3"/>'
                     
-                    # 💡 เพิ่มสเกลละเอียด (60 ขีด ขีดละ 6 องศา)
+                    # 💡 แก้ไข: ปรับขีดสเกล (ชั่วโมง/นาที) เป็นสีน้ำเงินทั้งหมด
+                    tick_color = "#2980b9"
                     for i in range(60):
                         deg = i * 6
                         rad = math.radians(deg - 90)
@@ -4758,7 +4760,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         t_len = 8 if is_major else 4
                         x1, y1 = cx + (r_clock - t_len) * math.cos(rad), cy + (r_clock - t_len) * math.sin(rad)
                         x2, y2 = cx + r_clock * math.cos(rad), cy + r_clock * math.sin(rad)
-                        svg += f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#{"34495e" if is_major else "bdc3c7"}" stroke-width="{"2" if is_major else "1"}"/>'
+                        svg += f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{tick_color}" stroke-width="{"2.5" if is_major else "1"}"/>'
                         
                         if is_major:
                             num = 12 if i == 0 else i // 5
@@ -4766,18 +4768,22 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             svg += f'<text x="{tx}" y="{ty+4}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#34495e" text-anchor="middle">{num}</text>'
 
                     # คำนวณองศาเข็ม (นับจากเลข 12)
-                    # *หมายเหตุ: คิดแบบโจทย์คณิตศาสตร์ประถมศึกษา (เข็มสั้นชี้ตรงเลขพอดี)*
                     deg_min = min_num * 30  # เข็มยาว
                     deg_hr = hr_num * 30    # เข็มสั้น
                     
-                    rad_min = math.radians(deg_min - 90)
-                    rad_hr = math.radians(deg_hr - 90)
+                    # ปรับมุม SVG (0 องศาอยู่ที่แกน Y ด้านบน)
+                    a_min = (deg_min - 90) % 360
+                    a_hr = (deg_hr - 90) % 360
+                    
+                    rad_min = math.radians(a_min)
+                    rad_hr = math.radians(a_hr)
 
-                    # 💡 เพิ่มเส้นประจากปลายเข็มถึงขอบนาฬิกา
+                    # 💡 แก้ไข: เปลี่ยนเส้นประ Guild line เป็นสีแดง (#c0392b) และหนาขึ้น
+                    guide_color = "#c0392b"
                     def dash_line(rad):
                         x1, y1 = cx + 60 * math.cos(rad), cy + 60 * math.sin(rad)
                         x2, y2 = cx + (r_clock - 5) * math.cos(rad), cy + (r_clock - 5) * math.sin(rad)
-                        return f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#7f8c8d" stroke-width="1.5" stroke-dasharray="4"/>'
+                        return f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{guide_color}" stroke-width="1.8" stroke-dasharray="5,3"/>'
                     
                     svg += dash_line(rad_min)
                     svg += dash_line(rad_hr)
@@ -4787,21 +4793,44 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg += f'<line x1="{cx}" y1="{cy}" x2="{cx + 60*math.cos(rad_hr)}" y2="{cy + 60*math.sin(rad_hr)}" stroke="#e74c3c" stroke-width="6" stroke-linecap="round"/>'
                     svg += f'<circle cx="{cx}" cy="{cy}" r="5" fill="#2c3e50"/>'
 
-                    # วาดส่วนโค้งมุม
-                    diff = abs(deg_min - deg_hr)
-                    angle_val = diff if diff <= 180 else 360 - diff
+                    # 💡 แก้ไข: อัพเกรดเส้นโค้งวัดมุม (Orange Arc) ให้อัจฉริยะขึ้น
+                    # คำนวณระยะห่างมุมที่ถูกต้อง (มุมในไม่เกิน 180)
+                    angle_diff = abs(deg_min - deg_hr)
+                    angle_val = angle_diff if angle_diff <= 180 else 360 - angle_diff
                     
-                    # ถ้าโจทย์สั่งเป็นมุมกลับ
+                    # กำหนดค่าสุดท้ายที่จะแสดง (มุมใน หรือ มุมกลับ)
                     actual_display_angle = 360 - angle_val if is_reflex else angle_val
                     
-                    arc_r = 30
-                    large_arc = 1 if actual_display_angle > 180 else 0
-                    # ทิศทางการวาดเส้นโค้ง
-                    sweep = 1 # ตามเข็ม
+                    # ตัดตัดสินใจทิศทางการวาด (Clockwise vs Counter-Clockwise)
+                    # เราต้องการวาดจากเข็มสั้นไปเข็มยาวเสมอ
                     
-                    # จุดเริ่มและจุดจบของส่วนโค้ง
-                    x_start, y_start = cx + arc_r*math.cos(rad_hr), cy + arc_r*math.sin(rad_hr)
-                    x_end, y_end = cx + arc_r*math.cos(rad_min), cy + arc_r*math.sin(rad_min)
+                    # คำนวณมุม SVG ของเข็มทั้งสอง
+                    s_r = rad_hr
+                    e_r = rad_min
+                    
+                    # ตรวจสอบว่าต้องใช้ Large Arc flag หรือไม่ (ถ้ามุม > 180)
+                    large_arc = 1 if actual_display_angle > 180 else 0
+                    
+                    # ทิศทางการวาด (Sweep flag)
+                    # ตามปรกติ SVG จะวาดแบบ Large Arc เป็นไปตามเข็ม
+                    # เราต้องคำนวณทิศทางที่ถูกต้องระหว่าง hr -> min
+                    
+                    # หามุมSVGระหว่างสองเข็ม
+                    raw_diff = (a_min - a_hr) % 360
+                    
+                    if not is_reflex:
+                        # มุมปรกติ (<=180)
+                        if raw_diff <= 180: sweep = 1 # วาดตามเข็ม
+                        else: sweep = 0 # วาดทวนเข็ม
+                    else:
+                        # มุมกลับ (>180)
+                        if raw_diff <= 180: sweep = 0 # วาดทวนเข็ม
+                        else: sweep = 1 # วาดตามเข็ม
+                    
+                    # กำหนดรัศมีส่วนโค้ง
+                    arc_r = 35
+                    x_start, y_start = cx + arc_r*math.cos(s_r), cy + arc_r*math.sin(s_r)
+                    x_end, y_end = cx + arc_r*math.cos(e_r), cy + arc_r*math.sin(e_r)
                     
                     svg += f'<path d="M {x_start} {y_start} A {arc_r} {arc_r} 0 {large_arc} {sweep} {x_end} {y_end}" fill="none" stroke="#f39c12" stroke-width="3"/>'
                     
@@ -4811,7 +4840,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 h_nums = random.sample(range(1, 13), 2)
                 h1, h2 = h_nums[0], h_nums[1]
                 
-                # สุ่มว่าจะเป็นมุมปรกติ หรือ มุมกลับ (0=ปรกติ, 1=มุมกลับ)
+                # สุ่มว่าจะเป็นมุมปรกติ หรือ มุมกลับ (True=มุมกลับ)
                 is_reflex_mode = random.choice([True, False])
                 target_text = "มุมกลับ" if is_reflex_mode else "มุม"
                 
