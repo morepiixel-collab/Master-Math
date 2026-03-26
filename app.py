@@ -4655,8 +4655,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         <b>ตอบ: {p_names[1]} มี{c_item}ทั้งหมด {base} อัน</b></span>'''
 
             elif actual_sub_t == "สมการเชิงตรรกะและตาชั่งปริศนา":
-                # เช็คสถานะโหมดชาเลนจ์จากระบบของคุณ
-                is_challenge = st.session_state.get("challenge_mode", False)
+                # บังคับเปิดเป็น True เพื่อทดสอบว่าโจทย์ 4 แถวทำงานได้ปกติหรือไม่
+                is_challenge = True 
+                
+                if not is_challenge:
+                    scenario = random.choice(["diff_compare", "weight_sub"])
+                else:
+                    # สุ่มโหมด 4 แถวรัวๆ เพื่อดูผลลัพธ์
+                    scenario = random.choice(["sum_diff", "4_rows", "4_rows", "4_rows"])
                 
                 # สุ่มว่าข้อนี้จะเป็น "สมการเรขาคณิต" หรือ "ตาชั่งปริศนา"
                 puzzle_style = random.choice(["math_eq", "balance_scale"])
