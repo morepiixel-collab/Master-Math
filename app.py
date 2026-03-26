@@ -4577,9 +4577,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
             elif actual_sub_t == "สมการและตัวไม่ทราบค่าจากชีวิตประจำวัน":
                 is_challenge = st.session_state.get("challenge_mode", False)
-                # 🎲 สุ่มชื่อตัวแปรสากล (ใช้ตัวพิมพ์ใหญ่ทั้งหมด)
                 var_name = random.choice(["X", "Y", "A", "B", "N"])
-                # 🎲 สุ่มชื่อคนและสิ่งของ
                 names_pool = ["ต้นกล้า", "ใยไหม", "กอหญ้า", "ขุนเขา", "พรีม", "เตอร์", "ปั้น", "ข้าวหอม", "หมอก", "ฟ้าใส"]
                 items_pool = [
                     {"name": "ยางลบ", "unit": "ก้อน"}, {"name": "ไม้บรรทัด", "unit": "อัน"},
@@ -4589,7 +4587,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 ]
 
                 if not is_challenge:
-                    # --- โหมดธรรมดา: สุ่มสถานการณ์บวก/ลบ ---
+                    # --- โหมดธรรมดา ---
                     person = random.choice(names_pool)
                     item_info = random.choice(items_pool)
                     
@@ -4605,7 +4603,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         
                         sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
                         👉 <b>ขั้นที่ 1:</b> สร้างสมการจากเรื่องราว<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลที่เขียนสมการ:</b> เพราะราคาสิ่งของทั้งหมด ({qty} × {var_name}) เมื่อนำไปรวมกับค่าซื้อของเพิ่ม ({extra}) จะต้องมีค่าเท่ากับเงินที่จ่ายไป ({total}) พอดี</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลที่เขียนสมการ:</b> การซื้อของ {qty} ชิ้น ราคาชิ้นละ {var_name} บาท หมายถึงต้องจ่ายเงิน {var_name} บาท บวกซ้ำกัน {qty} ครั้ง (จึงเขียนสั้นๆ ได้ว่า <b>{qty} × {var_name}</b>) และเมื่อนำไปรวมกับเงินที่ซื้อของเพิ่ม ({extra}) จะต้องเท่ากับเงินที่จ่ายไปทั้งหมด ({total}) พอดี</span><br>
                         &nbsp;&nbsp;&nbsp;&nbsp; จะได้สมการเป็น: <span style="color:#2980b9;">({qty} × {var_name}) + {extra} = {total}</span><br>
                         👉 <b>ขั้นที่ 2:</b> กำจัด <span style="color:#e74c3c;">+ {extra}</span> โดยการ <b>ลบด้วย {extra} ทั้งสองข้าง</b><br>
                         &nbsp;&nbsp;&nbsp;&nbsp; ({qty} × {var_name}) + {extra} <span style="color:#e74c3c;">- {extra}</span> = {total} <span style="color:#e74c3c;">- {extra}</span><br>
@@ -4622,7 +4620,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         
                         sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
                         👉 <b>ขั้นที่ 1:</b> สร้างสมการจากเรื่องราว<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลที่เขียนสมการ:</b> เพราะเงินที่เตรียมไว้ซื้อของทั้งหมดคือ ({qty} × {var_name}) เมื่อทำหายไป ({lost}) จะต้องเหลือเงินเท่ากับยอดคงเหลือ ({remain_val}) พอดี</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลที่เขียนสมการ:</b> การเตรียมเงินซื้อของ {qty} ชิ้น ราคาชิ้นละ {var_name} บาท หมายถึงต้องใช้เงิน {var_name} บาท บวกกัน {qty} ครั้ง (จึงเขียนเป็น <b>{qty} × {var_name}</b>) แต่เมื่อถูกหักเงินที่ทำหายไป ({lost}) จะต้องเท่ากับเงินที่เหลืออยู่ ({remain_val}) พอดี</span><br>
                         &nbsp;&nbsp;&nbsp;&nbsp; จะได้สมการเป็น: <span style="color:#2980b9;">({qty} × {var_name}) - {lost} = {remain_val}</span><br>
                         👉 <b>ขั้นที่ 2:</b> กำจัด <span style="color:#e74c3c;">- {lost}</span> โดยการ <b>บวกด้วย {lost} ทั้งสองข้าง</b><br>
                         &nbsp;&nbsp;&nbsp;&nbsp; ({qty} × {var_name}) - {lost} <span style="color:#e74c3c;">+ {lost}</span> = {remain_val} <span style="color:#e74c3c;">+ {lost}</span><br>
@@ -4644,17 +4642,17 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     q = f"<b>{p_names[0]}</b> และ <b>{p_names[1]}</b> สะสม <b>{c_item}</b> รวมกันได้ <b>{total}</b> อัน <br>ถ้า <b>{p_names[0]}</b> มี {c_item} มากกว่า <b>{p_names[1]}</b> อยู่ <b>{diff}</b> อัน <br>อยากทราบว่า <b>{p_names[1]} มี{c_item}กี่อัน?</b> (ให้ {var_name} แทนจำนวน{c_item}ของ {p_names[1]})"
                     
                     sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ระดับท้าทาย):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> สร้างสมการจากเงื่อนไขผลรวม<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลที่เขียนสมการ:</b> ให้ {p_names[1]} มี {var_name} อัน ดังนั้น {p_names[0]} ซึ่งมีมากกว่า จะมี ({var_name} + {diff}) อัน เมื่อนำของทั้งสองคนมารวมกัน จะต้องเท่ากับยอดรวม ({total})</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้สมการเป็น: <span style="color:#2980b9;">{var_name} + ({var_name} + {diff}) = {total}</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; นำ {var_name} มารวมกัน จะได้: <span style="color:#2980b9;">(2 × {var_name}) + {diff} = {total}</span><br>
-                    👉 <b>ขั้นที่ 2:</b> กำจัด <span style="color:#e74c3c;">+ {diff}</span> โดยการ <b>ลบด้วย {diff} ทั้งสองข้าง</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; (2 × {var_name}) + {diff} <span style="color:#e74c3c;">- {diff}</span> = {total} <span style="color:#e74c3c;">- {diff}</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะเหลือ 2 × {var_name} = {total - diff}<br>
-                    👉 <b>ขั้นที่ 3:</b> กำจัด <span style="color:#e74c3c;">× 2</span> โดยการ <b>หารด้วย 2 ทั้งสองข้าง</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; (2 × {var_name}) <span style="color:#e74c3c;">÷ 2</span> = {total - diff} <span style="color:#e74c3c;">÷ 2</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {var_name} = <span style="color:#27ae60;"><b>{base}</b></span><br>
-                    <b>ตอบ: {p_names[1]} มี{c_item}ทั้งหมด {base} อัน</b></span>'''
+                        👉 <b>ขั้นที่ 1:</b> สร้างสมการจากเงื่อนไขผลรวม<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลที่เขียนสมการ:</b> ให้ {p_names[1]} มี {var_name} อัน ดังนั้น {p_names[0]} ซึ่งมีมากกว่า จะมี ({var_name} + {diff}) อัน เมื่อนำของทั้งสองคนมารวมกัน จะต้องเท่ากับยอดรวม ({total})</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จะได้สมการเป็น: <span style="color:#2980b9;">{var_name} + ({var_name} + {diff}) = {total}</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <i>(นำ {var_name} มาบวกกัน 2 ตัว จะกลายเป็น <b>2 × {var_name}</b>)</i> จะได้: <span style="color:#2980b9;">(2 × {var_name}) + {diff} = {total}</span><br>
+                        👉 <b>ขั้นที่ 2:</b> กำจัด <span style="color:#e74c3c;">+ {diff}</span> โดยการ <b>ลบด้วย {diff} ทั้งสองข้าง</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; (2 × {var_name}) + {diff} <span style="color:#e74c3c;">- {diff}</span> = {total} <span style="color:#e74c3c;">- {diff}</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จะเหลือ 2 × {var_name} = {total - diff}<br>
+                        👉 <b>ขั้นที่ 3:</b> กำจัด <span style="color:#e74c3c;">× 2</span> โดยการ <b>หารด้วย 2 ทั้งสองข้าง</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; (2 × {var_name}) <span style="color:#e74c3c;">÷ 2</span> = {total - diff} <span style="color:#e74c3c;">÷ 2</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {var_name} = <span style="color:#27ae60;"><b>{base}</b></span><br>
+                        <b>ตอบ: {p_names[1]} มี{c_item}ทั้งหมด {base} อัน</b></span>'''
 
             elif actual_sub_t == "สมการเชิงตรรกะและตาชั่งปริศนา":
                 val_a = random.randint(6, 12)
