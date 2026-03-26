@@ -4391,9 +4391,112 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 q = f"จากรูป มุม <b>{angle_name}</b> ที่มีขนาด <b>{angle}°</b> คือมุมชนิดใด?<br>{svg_html}<span style='font-size:18px; color:#7f8c8d;'>(มุมแหลม, มุมฉาก, มุมป้าน, มุมตรง, มุมกลับ)</span>"
                 sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สังเกตจากรูปภาพมุมกาง <b>{angle}°</b><br>👉 ซึ่งมุม {angle}° {reason}<br>👉 ดังนั้นมุม {angle_name} จึงจัดเป็น <b>{angle_type}</b><br><b>ตอบ: {angle_type}</b></span>"
             elif actual_sub_t == "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)":
-                def draw_angle_feature_local(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
-                    len_a = math.hypot(ax - vx, ay - vy)
-                    len_b = math.hypot(bx - vx, by - vy)
+                # 💡 1. ฟังก์ชันวาดไม้โปรแทรกเตอร์แบบละเอียดสมจริง
+                def draw_protractor_svg(deg1, deg2, p1_name, v_name, p2_name):
+                    import math
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="420" height="230">'
+                    cx, cy = 210, 190
+                    r_outer = 170
+                    r_inner = 110
+                    
+                    # พื้นหลังไม้โปรแทรกเตอร์
+                    svg += f'<path d="M {cx-r_outer-20} {cy} A {r_outer+20} {r_outer+20} 0 0 1 {cx+r_outer+20} {cy} Z" fill="#eef2f5" stroke="#bdc3c7" stroke-width="2"/>'
+                    svg += f'<path d="M {cx-r_outer} {cy} A {r_outer} {r_outer} 0 0 1 {cx+r_outer} {cy} Z" fill="none" stroke="#7f8c8d" stroke-width="1.5"/>'
+                    svg += f'<path d="M {cx-r_inner} {cy} A {r_inner} {r_inner} 0 0 1 {cx+r_inner} {cy} Z" fill="none" stroke="#7f8c8d" stroke-width="1.5"/>'
+                    svg += f'<line x1="{cx-r_outer-20}" y1="{cy}" x2="{cx+r_outer+20}" y2="{cy}" stroke="#95a5a6" stroke-width="2"/>'
+                    
+                    # สัญลักษณ์จุดกึ่งกลาง (จุดยอดมุม)
+                    svg += f'<line x1="{cx-15}" y1="{cy}" x2="{cx+15}" y2="{cy}" stroke="#c0392b" stroke-width="2"/>'
+                    svg += f'<line x1="{cx}" y1="{cy-15}" x2="{cx}" y2="{cy}" stroke="#c0392b" stroke-width="2"/>'
+                    
+                    # วาดขีดสเกลและตัวเลข 0-180
+                    for i in range(181):
+                        angle_rad = math.radians(i)
+                        cos_a = math.cos(angle_rad)
+                        sin_a = math.sin(angle_rad)
+                        
+                        if i % 10 == 0:
+                            tick_len = 15
+                            stroke_w = 2
+                            out_txt = str(180 - i) # วงนอก (0 อยู่ซ้าย)
+                            in_txt = str(i)        # วงใน (0 อยู่ขวา)
+                            
+                            tx_out = cx + (r_outer - 22) * cos_a
+                            ty_out = cy - (r_outer - 22) * sin_a
+                            tx_in = cx + (r_inner + 22) * cos_a
+                            ty_in = cy - (r_inner + 22) * sin_a
+                            
+                            # วาดตัวเลข (หลบซ้ายขวาให้สวยงาม)
+                            if i not in [0, 180]:
+                                svg += f'<text x="{tx_out}" y="{ty_out+4}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2c3e50" text-anchor="middle">{out_txt}</text>'
+                                svg += f'<text x="{tx_in}" y="{ty_in+4}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2980b9" text-anchor="middle">{in_txt}</text>'
+                            elif i == 0: 
+                                svg += f'<text x="{cx + r_outer - 20}" y="{cy - 5}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2c3e50" text-anchor="middle">180</text>'
+                                svg += f'<text x="{cx + r_inner + 15}" y="{cy - 5}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2980b9" text-anchor="middle">0</text>'
+                            elif i == 180:
+                                svg += f'<text x="{cx - r_outer + 20}" y="{cy - 5}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2c3e50" text-anchor="middle">0</text>'
+                                svg += f'<text x="{cx - r_inner - 15}" y="{cy - 5}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2980b9" text-anchor="middle">180</text>'
+
+                        elif i % 5 == 0:
+                            tick_len = 10
+                            stroke_w = 1.5
+                        else:
+                            tick_len = 5
+                            stroke_w = 1
+                            
+                        # ขีดวงนอก
+                        x1 = cx + r_outer * cos_a
+                        y1 = cy - r_outer * sin_a
+                        x2 = cx + (r_outer - tick_len) * cos_a
+                        y2 = cy - (r_outer - tick_len) * sin_a
+                        svg += f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#34495e" stroke-width="{stroke_w}"/>'
+                        
+                        # ขีดวงใน
+                        x3 = cx + r_inner * cos_a
+                        y3 = cy - r_inner * sin_a
+                        x4 = cx + (r_inner + tick_len) * cos_a
+                        y4 = cy - (r_inner + tick_len) * sin_a
+                        svg += f'<line x1="{x3}" y1="{y3}" x2="{x4}" y2="{y4}" stroke="#34495e" stroke-width="{stroke_w}"/>'
+
+                    # วาดแขนของมุม
+                    arm_len = 200
+                    rad1 = math.radians(deg1)
+                    rad2 = math.radians(deg2)
+                    
+                    x1_ray = cx + arm_len * math.cos(rad1)
+                    y1_ray = cy - arm_len * math.sin(rad1)
+                    svg += f'<line x1="{cx}" y1="{cy}" x2="{x1_ray}" y2="{y1_ray}" stroke="#e74c3c" stroke-width="3.5" stroke-linecap="round"/>'
+                    
+                    x2_ray = cx + arm_len * math.cos(rad2)
+                    y2_ray = cy - arm_len * math.sin(rad2)
+                    svg += f'<line x1="{cx}" y1="{cy}" x2="{x2_ray}" y2="{y2_ray}" stroke="#e74c3c" stroke-width="3.5" stroke-linecap="round"/>'
+                    
+                    svg += f'<circle cx="{cx}" cy="{cy}" r="5" fill="#c0392b"/>'
+                    
+                    # ป้ายกำกับชื่อมุม (A, B, C) พร้อมเส้นขอบตัวหนังสือให้อ่านง่าย
+                    lbl_bg = 'font-family:Sarabun; font-size:20px; font-weight:bold; fill:#e74c3c; stroke:#ffffff; stroke-width:4px; paint-order:stroke;'
+                    lbl_fg = 'font-family:Sarabun; font-size:20px; font-weight:bold; fill:#c0392b;'
+                    
+                    svg += f'<text x="{cx}" y="{cy+25}" {lbl_bg} text-anchor="middle">{v_name}</text>'
+                    svg += f'<text x="{cx}" y="{cy+25}" {lbl_fg} text-anchor="middle">{v_name}</text>'
+                    
+                    def add_lbl(rad_val, name):
+                        tx = cx + (arm_len - 5) * math.cos(rad_val)
+                        ty = cy - (arm_len - 5) * math.sin(rad_val)
+                        ty = ty - 10 if math.sin(rad_val) > 0.5 else ty + 5
+                        tx = tx + 15 if math.cos(rad_val) > 0 else tx - 15
+                        res = f'<text x="{tx}" y="{ty}" {lbl_bg} text-anchor="middle">{name}</text>'
+                        res += f'<text x="{tx}" y="{ty}" {lbl_fg} text-anchor="middle">{name}</text>'
+                        return res
+                        
+                    svg += add_lbl(rad1, p1_name)
+                    svg += add_lbl(rad2, p2_name)
+                    
+                    return svg + '</svg></div>'
+
+                # 💡 2. ฟังก์ชันวาดมุมประกอบสมการเส้นตรง (เหมือนเดิม แต่เปลี่ยนชื่อหลบบั๊ก)
+                def draw_angle_feature_pt(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
+                    len_a, len_b = math.hypot(ax - vx, ay - vy), math.hypot(bx - vx, by - vy)
                     if len_a == 0 or len_b == 0: return ""
                     sx, sy = vx + (ax - vx) * r_arc / len_a, vy + (ay - vy) * r_arc / len_a
                     ex, ey = vx + (bx - vx) * r_arc / len_b, vy + (by - vy) * r_arc / len_b
@@ -4402,39 +4505,56 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     mid_x, mid_y = (sx - vx)/r_arc + (ex - vx)/r_arc, (sy - vy)/r_arc + (ey - vy)/r_arc
                     len_mid = math.hypot(mid_x, mid_y)
                     tx, ty = (vx, vy - r_text) if len_mid == 0 else (vx + (mid_x / len_mid) * r_text, vy + (mid_y / len_mid) * r_text)
-                    ty += 4 
-                    font_size = "16px" if is_x else "13px"
-                    return arc_svg + f'<text x="{tx}" y="{ty}" font-size="{font_size}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
+                    return arc_svg + f'<text x="{tx}" y="{ty+4}" font-size="{"16px" if is_x else "13px"}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
 
-                def draw_angle_svg_local(mode, val1, val2, val3=""):
+                def draw_angle_svg_pt(val1, val2, val3="?"):
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="340" height="200">'
-                    lbl_style = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
+                    lbl_st = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
                     vx, vy, phi = 170, 160, val2 
                     ax, ay, cx, cy = 40, 160, 300, 160 
                     bx, by = vx + 120 * math.cos(math.radians(phi)), vy - 120 * math.sin(math.radians(phi))
                     svg += f'<line x1="{ax}" y1="{ay}" x2="{cx}" y2="{cy}" stroke="#34495e" stroke-width="4"/>'
                     svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#c0392b" stroke-width="3"/>'
-                    svg += f'<circle cx="{bx}" cy="{by}" r="3" fill="#c0392b"/>'
-                    svg += f'<text x="{ax-15}" y="{ay+5}" {lbl_style}>A</text>'
-                    svg += f'<text x="{cx+5}" y="{cy+5}" {lbl_style}>B</text>'
-                    svg += f'<text x="{bx-5}" y="{by-10}" {lbl_style}>C</text>'
-                    svg += f'<text x="{vx-5}" y="{vy+20}" {lbl_style}>O</text>'
-                    svg += draw_angle_feature_local(vx, vy, ax, ay, bx, by, 28, 45, f"{val1}°", "#2ecc71", "#c0392b")
-                    svg += draw_angle_feature_local(vx, vy, bx, by, cx, cy, 28, 45, val2 if val3=="" else val3, "#2ecc71", "#2980b9", is_x=True)
+                    svg += f'<circle cx="{bx}" cy="{by}" r="3" fill="#c0392b"/><text x="{ax-15}" y="{ay+5}" {lbl_st}>A</text><text x="{cx+5}" y="{cy+5}" {lbl_st}>B</text><text x="{bx-5}" y="{by-10}" {lbl_st}>C</text><text x="{vx-5}" y="{vy+20}" {lbl_st}>O</text>'
+                    svg += draw_angle_feature_pt(vx, vy, ax, ay, bx, by, 28, 45, f"{val1}°", "#2ecc71", "#c0392b")
+                    svg += draw_angle_feature_pt(vx, vy, bx, by, cx, cy, 28, 45, val3, "#2ecc71", "#2980b9", is_x=True)
                     return svg + '</svg></div>'
 
+                # 🎲 สุ่มตัวอักษรชื่อมุม
+                l_pool = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+                smpl = random.sample(l_pool, 3)
+                p1, v, p2 = smpl[0], smpl[1], smpl[2]
+                ang_name = f"{p1}{v}{p2}"
+
+                # สุ่มโหมดระหว่าง อ่านโปรแทรกเตอร์ vs คำนวณมุมเส้นตรง
                 mode = random.choice(["read_protractor", "calc_angle"])
+                
                 if mode == "read_protractor":
-                    base_deg = random.choice([0, 10, 20])
-                    angle = random.randint(30, 150)
-                    end_deg = base_deg + angle
-                    q = f"ในการวัดขนาดของมุม <b>AOB</b> ด้วยไม้โปรแทรกเตอร์<br>ถ้าแขน OA ชี้ที่สเกลตัวเลข <b>{base_deg}°</b> และแขน OB ชี้ที่สเกลตัวเลข <b>{end_deg}°</b><br>มุม AOB มีขนาดกี่องศา?"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 นำตัวเลขที่แขนของมุมทั้งสองข้างชี้มาลบกัน เพื่อหาขนาดความกว้างของมุม<br>👉 {end_deg}° - {base_deg}° = <b>{angle}°</b><br><b>ตอบ: {angle} องศา</b></span>"
+                    # สุ่มว่าแขนข้างนึงจะทาบกับ 0 พอดี (อ่านง่าย) หรือจะอยู่ตรงกลาง (อ่านยาก ต้องเอามาลบกัน)
+                    start_pos = random.choice(["right", "left", "random"])
+                    if start_pos == "right": base_deg = 0 # ทาบ 0 ด้านขวา (วงใน)
+                    elif start_pos == "left": base_deg = 180 # ทาบ 0 ด้านซ้าย (วงนอก)
+                    else: base_deg = random.choice([10, 20, 30, 40, 140, 150, 160]) # ไม่อยู่ที่ 0
+                    
+                    if base_deg < 90: angle = random.randint(25, 180 - base_deg)
+                    else: angle = random.randint(25, base_deg)
+                        
+                    if start_pos == "left" or (start_pos == "random" and base_deg > 90): end_deg = base_deg - angle
+                    else: end_deg = base_deg + angle
+                        
+                    svg_img = draw_protractor_svg(base_deg, end_deg, p1, v, p2)
+                    
+                    q = f"จากรูปการวัดขนาดของมุมด้วยไม้โปรแทรกเตอร์ มุม <b>{ang_name}</b> มีขนาดกี่องศา?<br>{svg_img}"
+                    
+                    if base_deg == 0 or base_deg == 180:
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 แขนของมุมข้างหนึ่ง ({v}{p1}) ทาบอยู่ที่ 0° พอดี<br>👉 ให้เราอ่านตัวเลขสเกลที่แขนของมุมอีกข้างหนึ่ง ({v}{p2}) ชี้อยู่<br>👉 จะเห็นว่าแขนชี้ที่สเกล <b>{angle}°</b> พอดี<br><b>ตอบ: {angle} องศา</b></span>"
+                    else:
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 แขน {v}{p1} ชี้ที่ตัวเลข {base_deg}° และแขน {v}{p2} ชี้ที่ตัวเลข {end_deg}°<br>👉 นำตัวเลขที่แขนทั้งสองข้างชี้มาลบกัน เพื่อหาความกว้างของมุม<br>👉 นำค่ามาก ลบ ค่าน้อย: |{end_deg}° - {base_deg}°| = <b>{angle}°</b><br><b>ตอบ: {angle} องศา</b></span>"
                 else:
-                    ans = random.randint(25, 160)
-                    svg = draw_angle_svg_local("straight", 180-ans, ans, "?")
-                    q = f"ถ้านำไม้โปรแทรกเตอร์มาวัดมุม <b>x</b> ในรูป จะได้ขนาดกี่องศา?<br>(กำหนดให้เส้นตรงด้านล่างคือ 180°)<br>{svg}"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 มุมบนเส้นตรงมีขนาดรวม 180°<br>👉 ถ้ามุมอีกฝั่งกาง {180-ans}° มุม x จะเท่ากับ 180° - {180-ans}° = <b>{ans}°</b><br><b>ตอบ: {ans} องศา</b></span>"
+                    ans = random.randint(25, 155)
+                    svg_img = draw_angle_svg_pt(180-ans, ans, "x")
+                    q = f"ถ้านำไม้โปรแทรกเตอร์มาวัดมุม <b>x</b> ในรูป จะได้ขนาดกี่องศา?<br>(กำหนดให้เส้นตรงด้านล่างคือ 180°)<br>{svg_img}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ไม้โปรแทรกเตอร์ครึ่งวงกลม (หรือมุมบนเส้นตรง) มีขนาดรวม 180°<br>👉 ถ้ามุมอีกฝั่งกาง {180-ans}° มุม x จะต้องบวกกันให้ได้ 180°<br>👉 คำนวณ: x = 180° - {180-ans}° = <b>{ans}°</b><br><b>ตอบ: {ans} องศา</b></span>"
 
             elif actual_sub_t == "การหาความยาวรอบรูปสี่เหลี่ยมมุมฉาก":
                 def draw_rect_svg_local(w_val, h_val, w_lbl, h_lbl, fill_color="#eaf2f8"):
