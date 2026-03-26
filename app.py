@@ -4160,6 +4160,65 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     q = f"สระว่ายน้ำแห่งหนึ่งถูกสร้างทางเดิน (ส่วนที่แรเงา) ล้อมรอบเพียง <b>2 ด้าน</b> ดังรูป<br>ถ้าสระว่ายน้ำรวมทางเดิน กว้าง <b>{H} เมตร</b> ยาว <b>{W} เมตร</b> และทางเดินกว้าง <b>{path} เมตร</b><br>จงหาพื้นที่ของทางเดินรูปตัว L นี้?<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ทางเดินตัว L):</b><br>👉 หลักการคิดที่ง่ายที่สุดคือ: มองให้เป็น <b>กรอบรูปที่ถูกดันไปชิดมุม</b><br>👉 <b>พื้นที่ทางเดิน = พื้นที่สี่เหลี่ยมรูปใหญ่(รวมทางเดิน) - พื้นที่สี่เหลี่ยมรูปเล็ก(เฉพาะสระสีขาว)</b><br><br><b>ขั้นที่ 1: หาพื้นที่สี่เหลี่ยมรูปใหญ่ (ทั้งหมด)</b><br>👉 กว้าง {H} ม., ยาว {W} ม.<br>👉 พื้นที่รูปใหญ่ = {H} × {W} = <b>{area_out} ตารางเมตร</b><br><br><b>ขั้นที่ 2: หาขนาดของสี่เหลี่ยมรูปเล็ก (สีขาว)</b><br>👉 ความกว้างด้านใน = กว้างรวม - ความกว้างทางเดิน = {H} - {path} = <b>{inner_h} เมตร</b><br>👉 ความยาวด้านใน = ยาวรวม - ความกว้างทางเดิน = {W} - {path} = <b>{inner_w} เมตร</b><br>👉 พื้นที่รูปเล็ก = {inner_h} × {inner_w} = <b>{area_in} ตารางเมตร</b><br><br><b>ขั้นที่ 3: หาพื้นที่ทางเดินตัว L (แรเงา)</b><br>👉 นำพื้นที่รูปใหญ่ ลบ พื้นที่รูปเล็ก: {area_out} - {area_in} = <b>{ans} ตารางเมตร</b><br><br><b>ตอบ: {ans} ตารางเมตร</b></span>"
 
+            elif actual_sub_t == "การแก้สมการ (บวก/ลบ)":
+                var = random.choice(["x", "y", "a", "m", "ก", "A"])
+                
+                if is_challenge:
+                    scenario = random.choice(["combine_first", "both_sides_num", "word_problem"])
+                    
+                    if scenario == "combine_first":
+                        a = random.randint(20, 80)
+                        b = random.randint(5, a - 5) 
+                        ans = random.randint(15, 50)
+                        c = ans + a - b
+                        
+                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} + {a} - {b} = {c}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - ยุบรวมตัวเลข):</b><br>👉 ก่อนจะย้ายข้าง ให้เราจัดการตัวเลขที่อยู่ฝั่งเดียวกันให้เรียบร้อยก่อนครับ<br><br><b>ขั้นที่ 1: ยุบรวมตัวเลขฝั่งซ้าย</b><br>👉 จาก {var} + <b>{a} - {b}</b> = {c}<br>👉 คำนวณ {a} - {b} = <b>{a-b}</b><br>👉 จะได้สมการใหม่ที่ดูง่ายขึ้นคือ: <b>{var} + {a-b} = {c}</b><br><br><b>ขั้นที่ 2: แก้สมการตามปกติ</b><br>👉 ย้าย +{a-b} ไปลบอีกฝั่ง<br>👉 {var} = {c} - {a-b}<br>👉 {var} = <b>{ans}</b><br><br><b>ตอบ: {ans}</b></span>"
+
+                    elif scenario == "both_sides_num":
+                        a = random.randint(15, 60)
+                        b = random.randint(20, 50)
+                        c = random.randint(10, 40)
+                        ans = b + c + a
+                        
+                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} - {a} = {b} + {c}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - คำนวณฝั่งตรงข้าม):</b><br>👉 สังเกตว่าฝั่งขวามีตัวเลขบวกกันอยู่ เราต้องคิดเลขฝั่งขวาให้เสร็จก่อนครับ<br><br><b>ขั้นที่ 1: คำนวณฝั่งขวา</b><br>👉 จาก {var} - {a} = <b>{b} + {c}</b><br>👉 คำนวณ {b} + {c} = <b>{b+c}</b><br>👉 จะได้สมการใหม่คือ: <b>{var} - {a} = {b+c}</b><br><br><b>ขั้นที่ 2: แก้สมการตามปกติ</b><br>👉 ย้าย -{a} ไปบวกอีกฝั่ง<br>👉 {var} = {b+c} + {a}<br>👉 {var} = <b>{ans}</b><br><br><b>ตอบ: {ans}</b></span>"
+
+                    elif scenario == "word_problem":
+                        ans = random.randint(45, 150)
+                        add_val = random.randint(20, 80)
+                        total = ans + add_val
+                        
+                        q = f"จำนวนจำนวนหนึ่ง เมื่อบวกเพิ่มไปอีก <b>{add_val}</b> จะมีค่าเท่ากับ <b>{total}</b><br>จงหาจำนวนจำนวนนั้น?"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - เปลี่ยนโจทย์เป็นสมการ):</b><br>👉 การแก้โจทย์ปัญหา เราต้องเปลี่ยนประโยคภาษาไทย ให้เป็นสัญลักษณ์ทางคณิตศาสตร์ครับ<br><br><b>ขั้นที่ 1: กำหนดตัวแปรและสร้างสมการ</b><br>👉 ให้ 'จำนวนจำนวนหนึ่ง' แทนด้วยตัวแปร <b>{var}</b><br>👉 'บวกเพิ่มไปอีก {add_val}' เขียนได้เป็น <b>+ {add_val}</b><br>👉 'จะมีค่าเท่ากับ {total}' เขียนได้เป็น <b>= {total}</b><br>👉 นำมาประกอบกันจะได้สมการ: <b>{var} + {add_val} = {total}</b><br><br><b>ขั้นที่ 2: แก้สมการ</b><br>👉 ย้าย +{add_val} ไปเป็น -{add_val} อีกฝั่ง<br>👉 {var} = {total} - {add_val}<br>👉 {var} = <b>{ans}</b><br><br><b>ตอบ: {ans}</b></span>"
+
+                else:
+                    scenario = random.choice(["add", "sub_normal", "sub_negative_var"])
+                    
+                    if scenario == "add":
+                        a = random.randint(15, 99)
+                        ans = random.randint(20, 99)
+                        b = a + ans
+                        
+                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} + {a} = {b}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 หลักการแก้สมการคือ เราต้องทำให้ตัวแปร <b>{var}</b> อยู่ฝั่งซ้ายตัวเดียวให้ได้<br>👉 ตอนนี้ {var} บวกอยู่กับ {a} เราต้องย้าย <b>+{a}</b> ไปอยู่อีกฝั่ง<br>👉 เมื่อย้ายข้ามเครื่องหมายเท่ากับ (=) ต้องเปลี่ยนจากบวก เป็น ลบ<br><br><b>แสดงขั้นตอน:</b><br>👉 {var} = {b} <b>- {a}</b><br>👉 {var} = <b>{ans}</b><br><br><b>ตอบ: {ans}</b></span>"
+                        
+                    elif scenario == "sub_normal":
+                        a = random.randint(15, 80)
+                        ans = random.randint(50, 150)
+                        b = ans - a
+                        
+                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} - {a} = {b}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 หลักการแก้สมการคือ เราต้องทำให้ตัวแปร <b>{var}</b> อยู่ฝั่งซ้ายตัวเดียวให้ได้<br>👉 ตอนนี้ {var} ลบอยู่กับ {a} เราต้องย้าย <b>-{a}</b> ไปอยู่อีกฝั่ง<br>👉 เมื่อย้ายข้ามเครื่องหมายเท่ากับ (=) ต้องเปลี่ยนจากลบ เป็น บวก<br><br><b>แสดงขั้นตอน:</b><br>👉 {var} = {b} <b>+ {a}</b><br>👉 {var} = <b>{ans}</b><br><br><b>ตอบ: {ans}</b></span>"
+                        
+                    elif scenario == "sub_negative_var":
+                        b = random.randint(15, 50)
+                        ans = random.randint(20, 70)
+                        a = b + ans
+                        
+                        q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a} - {var} = {b}</b></div>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br><div style='background-color:#fce4e4; padding:10px; border-radius:5px; border-left: 4px solid #c0392b; margin: 10px 0;'><span style='color:#c0392b; font-size:15px;'><i><b>🚨 จุดระวัง:</b> หน้าตัวแปร {var} มีเครื่องหมาย 'ลบ' ติดอยู่ ({a} <b>- {var}</b>) เราจะย้าย {a} ไปเฉยๆ ไม่ได้ เพราะ {var} จะติดลบ!</i></span></div><br><b>ขั้นที่ 1: ย้ายตัวแปร {var} ให้กลายเป็นบวกก่อน</b><br>👉 ย้าย <b>-{var}</b> จากฝั่งซ้าย ข้ามไปฝั่งขวา จะกลายเป็น <b>+{var}</b><br>👉 จะได้: <b>{a} = {b} + {var}</b><br><br><b>ขั้นที่ 2: ย้ายตัวเลขให้อยู่ด้วยกัน</b><br>👉 ตอนนี้ {var} เป็นบวกแล้ว แต่อยู่ฝั่งขวากับ {b}<br>👉 ให้ย้าย {b} จากฝั่งขวา กลับมาฝั่งซ้าย (เปลี่ยนจากบวกเป็นลบ)<br>👉 จะได้: <b>{a} - {b} = {var}</b><br><br><b>ขั้นที่ 3: คำนวณคำตอบ</b><br>👉 {a-b} = {var}<br>👉 หรือ <b>{var} = {ans}</b> นั่นเองครับ<br><br><b>ตอบ: {ans}</b></span>"
+
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
