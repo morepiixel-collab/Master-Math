@@ -4459,23 +4459,19 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg += f'<line x1="{cx}" y1="{cy}" x2="{cx + arm_len * math.cos(rad2)}" y2="{cy - arm_len * math.sin(rad2)}" stroke="#e74c3c" stroke-width="1.5" stroke-linecap="round"/>'
                     svg += f'<circle cx="{cx}" cy="{cy}" r="3" fill="#c0392b"/>'
                     
-                    # 💡 แก้บั๊กเด็ดขาด: ใช้ Attribute พื้นฐานของ SVG แทน style= (รอดพ้น HTML Sanitizer 100%)
-                    lbl_bg = 'font-family="Sarabun" font-size="18px" font-weight="bold" fill="#e74c3c" stroke="#ffffff" stroke-width="4px" paint-order="stroke"'
-                    lbl_fg = 'font-family="Sarabun" font-size="18px" font-weight="bold" fill="#c0392b"'
+                    lbl_attr = 'font-family="sans-serif" font-size="18" font-weight="bold" fill="#c0392b" text-anchor="middle"'
                     
-                    svg += f'<text x="{cx}" y="{cy+20}" {lbl_bg} text-anchor="middle">{v_name}</text>'
-                    svg += f'<text x="{cx}" y="{cy+20}" {lbl_fg} text-anchor="middle">{v_name}</text>'
+                    svg += f'<text x="{cx}" y="{cy+20}" {lbl_attr}>{v_name}</text>'
                     
-                    def add_lbl(rad_val, name):
-                        tx = cx + (arm_len + 15) * math.cos(rad_val)
-                        ty = cy - (arm_len + 15) * math.sin(rad_val)
-                        ty = ty - 4 if math.sin(rad_val) > 0.5 else ty + 6
-                        res = f'<text x="{tx}" y="{ty}" {lbl_bg} text-anchor="middle">{name}</text>'
-                        res += f'<text x="{tx}" y="{ty}" {lbl_fg} text-anchor="middle">{name}</text>'
-                        return res
-                        
-                    svg += add_lbl(rad1, p1_name)
-                    svg += add_lbl(rad2, p2_name)
+                    tx1 = cx + (arm_len + 15) * math.cos(rad1)
+                    ty1 = cy - (arm_len + 15) * math.sin(rad1)
+                    ty1 = ty1 - 4 if math.sin(rad1) > 0.5 else ty1 + 6
+                    svg += f'<text x="{tx1}" y="{ty1}" {lbl_attr}>{p1_name}</text>'
+                    
+                    tx2 = cx + (arm_len + 15) * math.cos(rad2)
+                    ty2 = cy - (arm_len + 15) * math.sin(rad2)
+                    ty2 = ty2 - 4 if math.sin(rad2) > 0.5 else ty2 + 6
+                    svg += f'<text x="{tx2}" y="{ty2}" {lbl_attr}>{p2_name}</text>'
                     
                     return svg + '</svg></div>'
 
@@ -4490,14 +4486,13 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     mid_x, mid_y = (sx - vx)/r_arc + (ex - vx)/r_arc, (sy - vy)/r_arc + (ey - vy)/r_arc
                     len_mid = math.hypot(mid_x, mid_y)
                     tx, ty = (vx, vy - r_text) if len_mid == 0 else (vx + (mid_x / len_mid) * r_text, vy + (mid_y / len_mid) * r_text)
-                    return arc_svg + f'<text x="{tx}" y="{ty+4}" font-size="{"15px" if is_x else "13px"}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
+                    return arc_svg + f'<text x="{tx}" y="{ty+4}" font-size="{"15" if is_x else "13"}" font-weight="bold" font-family="sans-serif" text-anchor="middle" fill="{color_text}">{label}</text>'
 
                 def draw_angle_svg_pt(val1, val2, val3="?"):
                     import math
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="160">'
                     
-                    # 💡 แก้บั๊กเด็ดขาด: ใช้ Attribute พื้นฐานของ SVG 
-                    lbl_st = 'font-family="Sarabun" font-size="18px" font-weight="bold" fill="#2c3e50"'
+                    lbl_attr = 'font-family="sans-serif" font-size="18" font-weight="bold" fill="#2c3e50"'
                     
                     vx, vy, phi = 280, 130, val2 
                     ax, ay, cx, cy = 80, 130, 480, 130 
@@ -4509,15 +4504,14 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg += f'<circle cx="{bx}" cy="{by}" r="3" fill="#c0392b"/>'
                     svg += f'<circle cx="{vx}" cy="{vy}" r="4" fill="#2c3e50"/>'
                     
-                    # พิมพ์ตัวหนังสือ A B C O ด้วยคุณสมบัติที่ถูกแก้ไขแล้ว
-                    svg += f'<text x="{ax-15}" y="{ay+5}" {lbl_st}>A</text>'
-                    svg += f'<text x="{cx+10}" y="{cy+5}" {lbl_st}>B</text>'
+                    svg += f'<text x="{ax-15}" y="{ay+5}" {lbl_attr}>A</text>'
+                    svg += f'<text x="{cx+10}" y="{cy+5}" {lbl_attr}>B</text>'
                     
                     cx_off = 10 if math.cos(math.radians(phi)) > 0 else -18
                     cy_off = -10 if math.sin(math.radians(phi)) > 0 else 18
-                    svg += f'<text x="{bx+cx_off}" y="{by+cy_off}" {lbl_st}>C</text>'
+                    svg += f'<text x="{bx+cx_off}" y="{by+cy_off}" {lbl_attr}>C</text>'
                     
-                    svg += f'<text x="{vx-5}" y="{vy+22}" {lbl_st}>O</text>'
+                    svg += f'<text x="{vx-5}" y="{vy+22}" {lbl_attr}>O</text>'
                     
                     svg += draw_angle_feature_pt(vx, vy, ax, ay, bx, by, 30, 48, f"{val1}°", "#e74c3c", "#c0392b")
                     svg += draw_angle_feature_pt(vx, vy, bx, by, cx, cy, 30, 48, val3, "#e74c3c", "#2980b9", is_x=True)
