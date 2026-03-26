@@ -4391,7 +4391,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 q = f"จากรูป มุม <b>{angle_name}</b> ที่มีขนาด <b>{angle}°</b> คือมุมชนิดใด?<br>{svg_html}<span style='font-size:18px; color:#7f8c8d;'>(มุมแหลม, มุมฉาก, มุมป้าน, มุมตรง, มุมกลับ)</span>"
                 sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สังเกตจากรูปภาพมุมกาง <b>{angle}°</b><br>👉 ซึ่งมุม {angle}° {reason}<br>👉 ดังนั้นมุม {angle_name} จึงจัดเป็น <b>{angle_type}</b><br><b>ตอบ: {angle_type}</b></span>"
             elif actual_sub_t == "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)":
-                # 1. ฟังก์ชันไม้โปรแทรกเตอร์ (ขนาดเดิม ดีอยู่แล้ว)
+                # 1. ฟังก์ชันไม้โปรแทรกเตอร์ (ขนาดมาตรฐาน 560x240)
                 def draw_protractor_svg(deg1, deg2, p1_name, v_name, p2_name):
                     import math
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="240">'
@@ -4429,26 +4429,34 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         svg += f'<text x="{tx}" y="{ty}" {attr}>{n}</text>'
                     return svg + '</svg></div>'
 
-                # 2. ฟังก์ชันมุมเส้นตรง (ย่อรูป แต่ Canvas กว้างเท่าเดิม 560)
+                # 2. ฟังก์ชันมุมเส้นตรง (ปรับ Canvas เป็น 560x240 เท่าไม้โปรฯ)
                 def draw_angle_svg_pt(val1, val2, val3="?"):
                     import math
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="160">'
-                    cx, cy = 280, 120
-                    ax, ay, bx, by = cx-150, cy, cx+150, cy # เส้นตรงสั้นลงเหลือ 300
+                    # 💡 ขยาย Canvas เป็น 560x240 ให้เท่ากับฟังก์ชันด้านบน
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="260">'
+                    cx, cy = 280, 140 
+                    ax, ay, bx, by = cx-150, cy, cx+150, cy 
                     rad = math.radians(val2)
-                    ex, ey = cx + 100*math.cos(rad), cy - 100*math.sin(rad) # แขนมุมสั้นลงเหลือ 100
+                    ex, ey = cx + 100*math.cos(rad), cy - 100*math.sin(rad)
+                    
                     svg += f'<line x1="{ax}" y1="{ay}" x2="{bx}" y2="{by}" stroke="#34495e" stroke-width="2.5"/>'
                     svg += f'<line x1="{cx}" y1="{cy}" x2="{ex}" y2="{ey}" stroke="#c0392b" stroke-width="1.2" stroke-linecap="round"/>'
+                    
                     attr = 'font-family="sans-serif" font-size="18" font-weight="bold" fill="#2c3e50" text-anchor="middle"'
-                    svg += f'<text x="{ax-20}" y="{ay+5}" {attr}>A</text><text x="{bx+20}" y="{by+5}" {attr}>B</text>'
-                    svg += f'<text x="{ex}" y="{ey-15}" {attr}>C</text><text x="{cx}" y="{cy+25}" {attr}>O</text>'
+                    svg += f'<text x="{ax-20}" y="{ay+5}" {attr}>A</text>'
+                    svg += f'<text x="{bx+20}" y="{by+5}" {attr}>B</text>'
+                    svg += f'<text x="{ex}" y="{ey-15}" {attr}>C</text>'
+                    svg += f'<text x="{cx}" y="{cy+25}" {attr}>O</text>'
+                    
                     r_arc = 25
                     def arc_p(s_deg, e_deg, lbl, col):
                         s_r, e_r = math.radians(s_deg), math.radians(e_deg)
                         x1, y1 = cx+r_arc*math.cos(s_r), cy-r_arc*math.sin(s_r)
                         x2, y2 = cx+r_arc*math.cos(e_r), cy-r_arc*math.sin(e_r)
                         m_r = (s_r+e_r)/2
-                        return f'<path d="M {x1} {y1} A {r_arc} {r_arc} 0 0 0 {x2} {y2}" fill="none" stroke="{col}" stroke-width="1.2"/><text x="{cx+(r_arc+20)*math.cos(m_r)}" y="{cy-(r_arc+20)*math.sin(m_r)+5}" font-family="sans-serif" font-size="14" font-weight="bold" fill="{col}" text-anchor="middle">{lbl}</text>'
+                        tx, ty = cx+(r_arc+20)*math.cos(m_r), cy-(r_arc+20)*math.sin(m_r)+5
+                        return f'<path d="M {x1} {y1} A {r_arc} {r_arc} 0 0 0 {x2} {y2}" fill="none" stroke="{col}" stroke-width="1.2"/><text x="{tx}" y="{ty}" font-family="sans-serif" font-size="14" font-weight="bold" fill="{col}" text-anchor="middle">{lbl}</text>'
+                    
                     svg += arc_p(0, val2, f"{val1}°", "#e74c3c")
                     svg += arc_p(val2, 180, val3, "#2980b9")
                     return svg + '</svg></div>'
@@ -4457,12 +4465,13 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 smpl = random.sample(l_pool, 3)
                 p1, v, p2 = smpl[0], smpl[1], smpl[2]
                 mode = random.choice(["read_protractor", "calc_angle"])
+                
                 if mode == "read_protractor":
                     base_deg = random.choice([0, 180, 20, 160])
                     angle = random.randint(30, 120)
                     end_deg = base_deg + angle if base_deg < 90 else base_deg - angle
                     q = f"จากรูปการวัดขนาดของมุมด้วยไม้โปรแทรกเตอร์ มุม <b>{p1}{v}{p2}</b> มีขนาดกี่องศา?<br>{draw_protractor_svg(base_deg, end_deg, p1, v, p2)}"
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำ:</b> ผลต่างองศาคือ |{base_deg} - {end_deg}| = <b>{abs(end_deg-base_deg)}°</b></span>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำ:</b> ผลต่างคือ |{base_deg} - {end_deg}| = <b>{abs(end_deg-base_deg)}°</b></span>"
                 else:
                     ans = random.randint(30, 150)
                     q = f"ถ้านำไม้โปรแทรกเตอร์มาวัดมุม <b>x</b> ในรูป จะได้ขนาดกี่องศา?<br>{draw_angle_svg_pt(180-ans, 180-ans, 'x')}"
