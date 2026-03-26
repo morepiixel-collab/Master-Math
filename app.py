@@ -5208,7 +5208,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 uA, uB = pair["uA"], pair["uB"]
                 
                 if not is_challenge:
-                    # --- โหมดธรรมดา: ทฤษฎีผลบวก-ผลต่าง พื้นฐาน ---
+                    # --- โหมดธรรมดา: สร้างตรรกะการปรับให้เท่ากัน ---
                     val_A = random.randint(30, 80)
                     val_B = random.randint(10, val_A - 10)
                     
@@ -5217,28 +5217,31 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     q = f"<b>{nameA}</b> 1 {uA} รวมกับ <b>{nameB}</b> 1 {uB} ราคารวมกัน <b>{sum_val}</b> บาท<br>ถ้า <b>{nameA}</b> 1 {uA} ราคาแพงกว่า <b>{nameB}</b> 1 {uB} อยู่ <b>{diff_val}</b> บาท<br>อยากทราบว่า <b>{nameA}</b> ราคา{uA}ละกี่บาท?"
                     
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (โหมดพื้นฐาน):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> วิเคราะห์โจทย์<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ผลบวก (ราคารวม) = {sum_val}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ผลต่าง (แพงกว่ากัน) = {diff_val}<br>
-                    👉 <b>ขั้นที่ 2:</b> ใช้สูตรลัดหาของที่แพงกว่า ({nameA})<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>สูตรลัดระดับแข่งขัน:</b> ราคาของชิ้นที่แพงกว่า = (ผลบวก + ผลต่าง) ÷ 2</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ราคา <b>{nameA}</b> = ({sum_val} + {diff_val}) ÷ 2<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; = {sum_val + diff_val} ÷ 2 = <span style="color:#e74c3c;"><b>{val_A}</b></span> บาท<br>
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (อธิบายตามหลักสมการ ไม่ใช้สูตรลัด):</b><br>
+                    👉 <b>ขั้นที่ 1:</b> เขียนสิ่งที่เรามีจากโจทย์<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; 1) {nameA} + {nameB} = {sum_val} บาท<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; 2) {nameA} แพงกว่า {nameB} อยู่ {diff_val} บาท<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เป้าหมาย:</b> การแก้สมการคือการ "ทำให้สองข้างเท่ากัน" ตอนนี้ราคาสินค้าสองชิ้นไม่เท่ากัน เราจะใช้วิธีปรับราคาให้มันเท่ากันก่อนครับ</span><br>
+                    👉 <b>ขั้นที่ 2:</b> ปรับราคาให้เท่ากับของที่ "แพงกว่า" ({nameA})<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; สมมติว่าเราอยากอัปเกรดให้ {nameB} (ของที่ถูกกว่า) มีราคา <b>แพงเท่ากับ</b> {nameA}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; เราก็ต้อง "สมมติว่าเพิ่มเงิน" ให้ {nameB} อีก {diff_val} บาท (ตามส่วนต่างของมัน)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; เมื่อราคาของแพงขึ้น ราคารวมของทั้งสองชิ้นก็ต้องบวกเพิ่มขึ้นด้วย: {sum_val} + {diff_val} = <span style="color:#2980b9;"><b>{sum_val + diff_val} บาท</b></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลที่ต้องทำแบบนี้:</b> เพราะตอนนี้เงิน {sum_val + diff_val} บาท คือราคาของ <b>{nameA} 2 {uA}</b> แล้วนะครับ! (เพราะ {nameB} ถูกสมมติราคาให้เท่ากับ {nameA} แล้วนั่นเอง)</span><br>
+                    👉 <b>ขั้นที่ 3:</b> หาราคา {nameA} แค่ 1 {uA}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ในเมื่อ {nameA} 2 {uA} ราคา {sum_val + diff_val} บาท<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ถ้าต้องการ {nameA} แค่ 1 {uA} ก็ต้องนำมาแบ่งครึ่ง (หารด้วย 2)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; {sum_val + diff_val} ÷ 2 = <span style="color:#e74c3c;"><b>{val_A} บาท</b></span><br>
                     <b>ตอบ: {nameA} ราคา{uA}ละ {val_A} บาท</b></span>'''
                     
                 else:
-                    # --- โหมดท้าทาย: รูปแบบโจทย์สมการตัดตัวแปร (ตามที่คุณผู้ใช้งานต้องการเป๊ะๆ) ---
+                    # --- โหมดท้าทาย: รูปแบบโจทย์สมการตัดตัวแปร (หักล้างกัน) ---
                     val_B = random.randint(8, 25)
-                    m = random.randint(2, 4) # สุ่มจำนวนเท่า (เช่น ปากกา 2 ด้าม, 3 ด้าม, 4 ด้าม)
-                    
-                    # สุ่มค่าของ A ให้น้อยกว่า ผลรวมของ B หลายๆ ด้าม เพื่อให้เกิดส่วนต่างที่เป็นบวก
+                    m = random.randint(2, 4) 
                     val_A = random.randint(val_B + 5, (val_B * m) - 2) 
                     
                     sum_val = val_A + val_B
                     diff_val = (val_B * m) - val_A
                     
-                    # สุ่มถามว่าจะให้หาค่าของ A หรือ B
                     ask_A = random.choice([True, False])
                     target_name = nameA if ask_A else nameB
                     target_u = uA if ask_A else uB
@@ -5246,24 +5249,27 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     q = f"<b>{nameA}</b> 1 {uA} รวมกับ <b>{nameB}</b> 1 {uB} ราคารวมกัน <b>{sum_val}</b> บาท<br><b>{nameB}</b> <b>{m}</b> {uB} ราคาแพงกว่า <b>{nameA}</b> 1 {uA} อยู่ <b>{diff_val}</b> บาท<br>อยากทราบว่า <b>{target_name}</b> ราคา{target_u}ละกี่บาท?"
                     
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคระดับแข่งขัน: การรวมประโยคหักล้าง):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> เขียนประโยคสัญลักษณ์จากโจทย์<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ประโยคที่ 1: ({nameA} 1 {uA}) + ({nameB} 1 {uB}) = {sum_val} บาท<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ประโยคที่ 2: ({nameB} {m} {uB}) - ({nameA} 1 {uA}) = {diff_val} บาท<br>
-                    👉 <b>ขั้นที่ 2:</b> นำทั้งสองประโยคมารวมกัน (นำของมารวมกัน และนำเงินมารวมกัน)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; นำของมารวมกันจะได้: ({nameA} 1 {uA} + {nameB} 1 {uB}) + ({nameB} {m} {uB} - {nameA} 1 {uA})<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>สังเกตให้ดี:</b> เรามี "{nameA} 1 {uA}" และมี "ลบ {nameA} 1 {uA}" มันจะ<b>หักล้างกันหายไปพอดี!</b></span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะเหลือแค่: {nameB} 1 {uB} รวมกับ {nameB} {m} {uB} = <span style="color:#2980b9;"><b>{nameB} {m+1} {uB}</b></span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; นำเงินมารวมกัน: {sum_val} + {diff_val} = <span style="color:#2980b9;"><b>{sum_val + diff_val} บาท</b></span><br>
-                    👉 <b>ขั้นที่ 3:</b> หาค่า {nameB}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้บทสรุปว่า: <b>{nameB} {m+1} {uB}</b> ราคา <b>{sum_val + diff_val}</b> บาท<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {nameB} 1 {uB} = {sum_val + diff_val} ÷ {m+1} = <span style="color:#27ae60;"><b>{val_B}</b></span> บาท<br>'''
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการรวมสมการเพื่อหักล้าง):</b><br>
+                    👉 <b>ขั้นที่ 1:</b> เปลี่ยนประโยคภาษาไทย ให้เป็น "สมการ"<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; สมการที่ 1 (ราคารวม): {nameA} 1 {uA} <span style="color:#e74c3c;"><b>+ {nameA}</b></span> = {sum_val} บาท  <span style="color:#95a5a6;">(หมายเหตุ: พิมพ์ผิด แก้เป็น {nameA} 1 {uA} + {nameB} 1 {uB} = {sum_val} บาท)</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>ขออภัยครับ พิมพ์ใหม่ให้ชัดเจน:</b></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; สมการที่ 1: {nameA} 1 {uA} <span style="color:#2980b9;"><b>+</b></span> {nameB} 1 {uB} = {sum_val} บาท<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; สมการที่ 2: {nameB} {m} {uB} <span style="color:#e74c3c;"><b>-</b></span> {nameA} 1 {uA} = {diff_val} บาท<br>
+                    👉 <b>ขั้นที่ 2:</b> นำสมการที่ 1 และ 2 มา "บวกรวมกัน" (เอาของมากองรวมกัน)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลที่ต้องนำมารวมกัน:</b> เพื่อสร้างความมหัศจรรย์ให้ตัวแปรหายไป! สังเกตว่าสมการแรกเรามี {nameA} (บวก) และสมการที่สองเราถูกหัก {nameA} ออก (ลบ) ถ้านำมารวมกัน {nameA} จะเจ๊ากัน (หักล้างเป็น 0) พอดีครับ</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ฝั่งซ้าย (ของรวมกัน): {nameB} 1 {uB} รวมกับ {nameB} {m} {uB} = <b>{nameB} {m+1} {uB}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ฝั่งขวา (เงินรวมกัน): {sum_val} + {diff_val} = <b>{sum_val + diff_val} บาท</b><br>
+                    👉 <b>ขั้นที่ 3:</b> สรุปผลหลังจากหักล้าง<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ว่า: <b>{nameB} {m+1} {uB} = {sum_val + diff_val} บาท</b><br>
+                    👉 <b>ขั้นที่ 4:</b> หาค่า {nameB} 1 {uB}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; นำเงินรวมไปแบ่งตามจำนวน {nameB}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; {sum_val + diff_val} ÷ {m+1} = <span style="color:#27ae60;"><b>{val_B} บาท</b></span><br>'''
                     
-                    # ถ้าโจทย์ถามหาของอีกชิ้น (A) ต้องเอาไปแทนค่าต่อ
                     if ask_A:
-                        sol += f'''👉 <b>ขั้นที่ 4:</b> หาค่า {nameA} ตามที่โจทย์ถาม<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp; จากประโยคแรกสุด: {nameA} 1 {uA} + {nameB}({val_B} บาท) = {sum_val} บาท<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {nameA} 1 {uA} = {sum_val} - {val_B} = <span style="color:#e74c3c;"><b>{val_A}</b></span> บาท<br>'''
+                        sol += f'''👉 <b>ขั้นที่ 5:</b> หาค่า {nameA} ตามที่โจทย์สั่ง<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; กลับไปดูสมการที่ 1: {nameA} 1 {uA} + {nameB} 1 {uB} (ซึ่งเรารู้แล้วว่าคือ {val_B} บาท) = {sum_val} บาท<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผล:</b> เมื่อเรารู้ราคาของสิ่งหนึ่งแล้ว ให้เอาไปแทนค่ากลับในบรรทัดแรกสุด เพื่อหาของอีกสิ่งได้เลยครับ</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {nameA} = {sum_val} - {val_B} = <span style="color:#e74c3c;"><b>{val_A} บาท</b></span><br>'''
                     
                     sol += f'''<b>ตอบ: {target_name} ราคา{target_u}ละ {target_ans} บาท</b></span>'''
 
