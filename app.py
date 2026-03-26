@@ -4718,6 +4718,32 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg = draw_angle_svg_local("straight", 180-ans, ans, "?")
                     q = f"ถ้านำไม้โปรแทรกเตอร์มาวัดมุม <b>x</b> ในรูป จะได้ขนาดกี่องศา?<br>(กำหนดให้เส้นตรงด้านล่างคือ 180°)<br>{svg}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 มุมบนเส้นตรงมีขนาดรวม 180°<br>👉 ถ้ามุมอีกฝั่งกาง {180-ans}° มุม x จะเท่ากับ 180° - {180-ans}° = <b>{ans}°</b><br><b>ตอบ: {ans} องศา</b></span>"
+            elif actual_sub_t == "การสร้างมุมตามขนาดที่กำหนด":
+                l_pool = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+                smpl = random.sample(l_pool, 3)
+                p1, v, p2 = smpl[0], smpl[1], smpl[2]
+                target_deg = random.choice([45, 60, 75, 120, 135, 150])
+                
+                # Canvas 560x260 เท่าไม้โปรฯ
+                svg = f'''
+                <div style="text-align:center; margin:15px 0;">
+                    <svg width="560" height="260">
+                        <line x1="230" y1="180" x2="430" y2="180" stroke="#34495e" stroke-width="2.5"/>
+                        <circle cx="230" cy="180" r="4" fill="#2c3e50"/>
+                        <text x="225" y="210" font-family="sans-serif" font-size="18" font-weight="bold" fill="#2c3e50" text-anchor="middle">{v}</text>
+                        <text x="445" y="185" font-family="sans-serif" font-size="18" font-weight="bold" fill="#2c3e50" text-anchor="middle">{p2}</text>
+                        <text x="280" y="60" font-family="sans-serif" font-size="14" fill="#95a5a6" text-anchor="middle">(ใช้ไม้โปรแทรกเตอร์สร้างมุม {v}{p1} ให้กาง {target_deg} องศา)</text>
+                    </svg>
+                </div>'''
+                q = f"จงใช้ไม้โปรแทรกเตอร์สร้างมุม <b>{p1}{v}{p2}</b> ให้มีขนาด <b>{target_deg} องศา</b> พร้อมระบุชนิดของมุม"
+                a_type = "มุมแหลม" if target_deg < 90 else "มุมฉาก" if target_deg == 90 else "มุมป้าน"
+                sol = f"<span style='color:#2c3e50;'><b>เฉลย:</b> มุมกาง {target_deg}° จัดเป็น <b>{a_type}</b></span>"
+
+            elif actual_sub_t == "โจทย์ปัญหาเรื่องมุมจากเข็มนาฬิกา":
+                hr_num = random.randint(1, 6)
+                ans_deg = hr_num * 30
+                q = f"เมื่อเข็มยาวชี้เลข 12 และเข็มสั้นชี้เลข <b>{hr_num}</b> เข็มทั้งสองทำมุมกันกี่องศา?"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำ:</b> 1 ช่องนาฬิกา = 30° ดังนั้น {hr_num} ช่อง = {hr_num} × 30 = <b>{ans_deg} องศา</b></span>"
 
             elif actual_sub_t == "การหาความยาวรอบรูปสี่เหลี่ยมมุมฉาก":
                 def draw_rect_svg_local(w_val, h_val, w_lbl, h_lbl, fill_color="#eaf2f8"):
