@@ -4315,17 +4315,75 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 แปลงคำอ่านเป็นตัวเลข โดยตัวเลขหลังคำว่า 'จุด' ให้เขียนเรียงกันทีละหลัก<br><b>ตอบ: {num_str}</b></span>"
 
             elif actual_sub_t == "การบอกชนิดของมุม":
-                angle = random.randint(10, 175)
+                # 💡 ฟังก์ชันวาดรูปมุมแบบอัตโนมัติตามองศา (อัปเกรดให้รองรับมุมกลับ)
+                def draw_basic_angle(deg):
+                    import math
+                    # ขยายขนาดพื้นที่วาดภาพ เพื่อไม่ให้มุมกลับทะลุกรอบ
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="300" height="240">'
+                    vx, vy = 150, 120
+                    arm_l = 100
+                    bx, by = vx + arm_l, vy
+                    rad = math.radians(deg)
+                    ax, ay = vx + arm_l * math.cos(rad), vy - arm_l * math.sin(rad)
+                    
+                    # วาดเส้นแขนของมุม
+                    svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#34495e" stroke-width="4" stroke-linecap="round"/>'
+                    svg += f'<line x1="{vx}" y1="{vy}" x2="{ax}" y2="{ay}" stroke="#34495e" stroke-width="4" stroke-linecap="round"/>'
+                    
+                    # วาดสัญลักษณ์มุม (ส่วนโค้ง หรือ สี่เหลี่ยมมุมฉาก)
+                    r = 20
+                    if deg == 90:
+                        svg += f'<polyline points="{vx},{vy-r} {vx+r},{vy-r} {vx+r},{vy}" fill="none" stroke="#e74c3c" stroke-width="3"/>'
+                    elif deg == 180:
+                        svg += f'<path d="M {vx+r} {vy} A {r} {r} 0 0 0 {vx-r} {vy}" fill="none" stroke="#e74c3c" stroke-width="3"/>'
+                    else:
+                        ex, ey = vx + r * math.cos(rad), vy - r * math.sin(rad)
+                        # ถ้าเป็นมุมกลับ (เกิน 180) ต้องให้พารามิเตอร์ large_arc เป็น 1 เพื่อวาดเส้นโค้งอ้อม
+                        large_arc = 1 if deg > 180 else 0
+                        svg += f'<path d="M {vx+r} {vy} A {r} {r} 0 {large_arc} 0 {ex} {ey}" fill="none" stroke="#e74c3c" stroke-width="3"/>'
+                        
+                    # จุดและชื่อจุด
+                    svg += f'<circle cx="{vx}" cy="{vy}" r="5" fill="#c0392b"/>'
+                    svg += f'<circle cx="{bx}" cy="{by}" r="5" fill="#c0392b"/>'
+                    svg += f'<circle cx="{ax}" cy="{ay}" r="5" fill="#c0392b"/>'
+                    lbl = 'font-family:Sarabun; font-size:18px; font-weight:bold; fill:#2c3e50;'
+                    svg += f'<text x="{vx-15}" y="{vy+20}" {lbl}>O</text>'
+                    svg += f'<text x="{bx+15}" y="{by+5}" {lbl}>B</text>'
+                    
+                    # จัดตำแหน่งตัวหนังสือ A ไม่ให้ทับกับเส้น
+                    ax_off = 15 if ax >= vx else -25
+                    ay_off = 5 if ay >= vy else -10
+                    svg += f'<text x="{ax+ax_off}" y="{ay-ay_off}" {lbl}>A</text>'
+                    
+                    # ตัวเลขมุม (ขยับออกไปตามรัศมี)
+                    tx = vx + (r+25) * math.cos(rad/2)
+                    ty = vy - (r+25) * math.sin(rad/2)
+                    svg += f'<text x="{tx}" y="{ty+5}" font-family="Sarabun" font-size="16" font-weight="bold" fill="#e74c3c" text-anchor="middle">{deg}°</text>'
+                    return svg + '</svg></div>'
+
+                # ปรับระบบสุ่มให้ครอบคลุมทั้ง 5 ชนิด
+                angle = random.randint(15, 345) # สุ่มได้ถึง 345 องศา (มุมกลับ)
+                
+                # ล็อกสเปกเพิ่มโอกาสออกมุมฉากกับมุมตรงให้เจอบ่อยขึ้นหน่อย
+                roll = random.random()
+                if roll < 0.15: angle = 90
+                elif roll < 0.30: angle = 180
+                
                 if angle < 90:
                     angle_type, reason = "มุมแหลม", "มีขนาดน้อยกว่า 90 องศา"
-                elif 85 < angle < 95:
-                    angle, angle_type, reason = 90, "มุมฉาก", "มีขนาดเท่ากับ 90 องศาพอดี"
+                elif angle == 90:
+                    angle_type, reason = "มุมฉาก", "มีขนาดเท่ากับ 90 องศาพอดี"
+                elif angle < 180:
+                    angle_type, reason = "มุมป้าน", "มีขนาดมากกว่า 90 องศา แต่น้อยกว่า 180 องศา"
                 elif angle == 180:
                     angle_type, reason = "มุมตรง", "มีขนาดเท่ากับ 180 องศาพอดี"
                 else:
-                    angle_type, reason = "มุมป้าน", "มีขนาดมากกว่า 90 องศา แต่น้อยกว่า 180 องศา"
-                q = f"มุมที่มีขนาด <b>{angle}°</b> คือมุมชนิดใด?<br><span style='font-size:18px; color:#7f8c8d;'>(มุมแหลม, มุมฉาก, มุมป้าน, มุมตรง)</span>"
-                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 มุม {angle}° {reason}<br>👉 ดังนั้นจึงจัดเป็น <b>{angle_type}</b><br><b>ตอบ: {angle_type}</b></span>"
+                    angle_type, reason = "มุมกลับ", "มีขนาดมากกว่า 180 องศา แต่น้อยกว่า 360 องศา"
+                    
+                svg_html = draw_basic_angle(angle)
+                
+                q = f"จากรูป มุม AOB ที่มีขนาด <b>{angle}°</b> คือมุมชนิดใด?<br>{svg_html}<span style='font-size:18px; color:#7f8c8d;'>(มุมแหลม, มุมฉาก, มุมป้าน, มุมตรง, มุมกลับ)</span>"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สังเกตจากรูปภาพมุมกาง <b>{angle}°</b><br>👉 ซึ่งมุม {angle}° {reason}<br>👉 ดังนั้นมุม AOB จึงจัดเป็น <b>{angle_type}</b><br><b>ตอบ: {angle_type}</b></span>"
 
             elif actual_sub_t == "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)":
                 def draw_angle_feature_local(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
