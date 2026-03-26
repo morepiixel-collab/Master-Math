@@ -4660,8 +4660,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 if not is_challenge:
                     scenario = random.choice(["diff_compare", "weight_sub"])
                 else:
-                    # เพิ่มโหมด 4 แถวสุดโหด เข้าไปในระดับท้าทาย
-                    scenario = random.choice(["sum_diff", "4_rows"]) 
+                    # 💡 ปรับสัดส่วนให้สุ่มเจอโหมด 4 แถว ได้บ่อยขึ้นมาก
+                    scenario = random.choice(["sum_diff", "4_rows", "4_rows", "4_rows"]) 
                 
                 shapes = [
                     {"type": "circle", "color": "#e74c3c", "name": "วงกลมสีแดง"},
@@ -4670,7 +4670,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     {"type": "star", "color": "#f1c40f", "name": "ดาวสีเหลือง"}
                 ]
                 
-                # ถ้าเป็น 4 แถว จะดึงรูปทรงมาใช้ทั้ง 4 แบบเลย
                 num_shapes = 4 if scenario == "4_rows" else 3
                 selected = random.sample(shapes, num_shapes)
                 s1, s2, s3 = selected[0], selected[1], selected[2]
@@ -4738,7 +4737,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     val_a = random.randint(15, 35)
                     val_b = random.randint(25, 60)
                     val_c = random.randint(10, 30)
-                    
                     ans1 = (val_a * 2) + val_b
                     ans2 = val_a + val_b
                     ans3 = val_b + (val_c * 2)
@@ -4746,7 +4744,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
                     svg += f'<rect x="90" y="65" width="380" height="1" fill="#ecf0f1"/>'
                     svg += f'<rect x="90" y="125" width="380" height="1" fill="#ecf0f1"/>'
-                    
                     svg += draw_eq_row(40, [s1, "+", s1, "+", s2, "=", {"type":"box", "val":ans1}])
                     svg += draw_eq_row(100, [s1, "+", s2, "=", {"type":"box", "val":ans2}])
                     svg += draw_eq_row(160, [s2, "+", s3, "+", s3, "=", {"type":"box", "val":ans3}])
@@ -4773,14 +4770,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     val_a = random.randint(12, 25)
                     val_b = val_a * 2
                     val_c = random.randint(15, 45)
-                    
                     ans2 = (val_b * 2) + val_a 
                     ans3 = val_b + val_c
                     
                     svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
                     svg += f'<rect x="90" y="65" width="380" height="1" fill="#ecf0f1"/>'
                     svg += f'<rect x="90" y="125" width="380" height="1" fill="#ecf0f1"/>'
-                    
                     svg += draw_eq_row(40, [s1, "+", s1, "=", s2])
                     svg += draw_eq_row(100, [s2, "+", s2, "+", s1, "=", {"type":"box", "val":ans2}])
                     svg += draw_eq_row(160, [s2, "+", s3, "=", {"type":"box", "val":ans3}])
@@ -4805,7 +4800,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     val_a = random.randint(35, 80)
                     val_b = random.randint(15, val_a - 10) 
                     val_c = random.randint(4, 9)
-                    
                     sum_val = val_a + val_b
                     diff_val = val_a - val_b
                     ans3 = (val_a * val_c) - val_b
@@ -4813,7 +4807,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
                     svg += f'<rect x="90" y="65" width="380" height="1" fill="#ecf0f1"/>'
                     svg += f'<rect x="90" y="125" width="380" height="1" fill="#ecf0f1"/>'
-                    
                     svg += draw_eq_row(40, [s1, "+", s2, "=", {"type":"box", "val":sum_val}])
                     svg += draw_eq_row(100, [s1, "-", s2, "=", {"type":"box", "val":diff_val}])
                     svg += draw_eq_row(160, [s1, "x", s3, "-", s2, "=", {"type":"box", "val":ans3}])
@@ -4837,24 +4830,21 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s3['name']} = {ans3 + val_b} ÷ {val_a} = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
                     <b>ตอบ: {s3['name']} มีค่าเท่ากับ {val_c}</b></span>'''
                     
-                else:
+                elif scenario == "4_rows":
                     # --- โหมด 4 แถว สุดโหด (Chain Substitution ระดับแข่งขัน) ---
                     val_a = random.randint(5, 12)
                     val_b = random.randint(3, 9)
                     val_c = random.randint(12, 25)
                     val_d = random.randint(20, 50)
-                    
                     ans1 = val_a * 2
                     ans2 = val_a * val_b
                     ans3 = val_b + val_c + val_b
                     ans4 = val_c + val_d - val_a
                     
                     svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="260">'
-                    # เส้นคั่น 3 เส้น
                     svg += f'<rect x="90" y="65" width="380" height="1" fill="#ecf0f1"/>'
                     svg += f'<rect x="90" y="125" width="380" height="1" fill="#ecf0f1"/>'
                     svg += f'<rect x="90" y="185" width="380" height="1" fill="#ecf0f1"/>'
-                    
                     svg += draw_eq_row(40, [s1, "+", s1, "=", {"type":"box", "val":ans1}])
                     svg += draw_eq_row(100, [s1, "x", s2, "=", {"type":"box", "val":ans2}])
                     svg += draw_eq_row(160, [s2, "+", s3, "+", s2, "=", {"type":"box", "val":ans3}])
