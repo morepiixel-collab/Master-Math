@@ -4391,21 +4391,21 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 q = f"จากรูป มุม <b>{angle_name}</b> ที่มีขนาด <b>{angle}°</b> คือมุมชนิดใด?<br>{svg_html}<span style='font-size:18px; color:#7f8c8d;'>(มุมแหลม, มุมฉาก, มุมป้าน, มุมตรง, มุมกลับ)</span>"
                 sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สังเกตจากรูปภาพมุมกาง <b>{angle}°</b><br>👉 ซึ่งมุม {angle}° {reason}<br>👉 ดังนั้นมุม {angle_name} จึงจัดเป็น <b>{angle_type}</b><br><b>ตอบ: {angle_type}</b></span>"
             elif actual_sub_t == "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)":
+                # 💡 1. ฟังก์ชันวาดไม้โปรแทรกเตอร์แบบละเอียด (ลดสเกลลง 30% ให้กะทัดรัด)
                 def draw_protractor_svg(deg1, deg2, p1_name, v_name, p2_name):
                     import math
-                    # 💡 ขยายความกว้างกรอบเป็น 560 และขยับจุดกึ่งกลาง cx เป็น 280 เพื่อไม่ให้ตัวอักษรตกขอบ
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="260">'
-                    cx, cy = 280, 220
-                    r_outer = 170
-                    r_inner = 110
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="400" height="200">'
+                    cx, cy = 200, 160
+                    r_outer = 120
+                    r_inner = 80
                     
-                    svg += f'<path d="M {cx-r_outer-20} {cy} A {r_outer+20} {r_outer+20} 0 0 1 {cx+r_outer+20} {cy} Z" fill="#eef2f5" stroke="#bdc3c7" stroke-width="2"/>'
-                    svg += f'<path d="M {cx-r_outer} {cy} A {r_outer} {r_outer} 0 0 1 {cx+r_outer} {cy} Z" fill="none" stroke="#7f8c8d" stroke-width="1.5"/>'
-                    svg += f'<path d="M {cx-r_inner} {cy} A {r_inner} {r_inner} 0 0 1 {cx+r_inner} {cy} Z" fill="none" stroke="#7f8c8d" stroke-width="1.5"/>'
-                    svg += f'<line x1="{cx-r_outer-20}" y1="{cy}" x2="{cx+r_outer+20}" y2="{cy}" stroke="#95a5a6" stroke-width="2"/>'
+                    svg += f'<path d="M {cx-r_outer-15} {cy} A {r_outer+15} {r_outer+15} 0 0 1 {cx+r_outer+15} {cy} Z" fill="#eef2f5" stroke="#bdc3c7" stroke-width="1.5"/>'
+                    svg += f'<path d="M {cx-r_outer} {cy} A {r_outer} {r_outer} 0 0 1 {cx+r_outer} {cy} Z" fill="none" stroke="#7f8c8d" stroke-width="1"/>'
+                    svg += f'<path d="M {cx-r_inner} {cy} A {r_inner} {r_inner} 0 0 1 {cx+r_inner} {cy} Z" fill="none" stroke="#7f8c8d" stroke-width="1"/>'
+                    svg += f'<line x1="{cx-r_outer-15}" y1="{cy}" x2="{cx+r_outer+15}" y2="{cy}" stroke="#95a5a6" stroke-width="1.5"/>'
                     
-                    svg += f'<line x1="{cx-15}" y1="{cy}" x2="{cx+15}" y2="{cy}" stroke="#c0392b" stroke-width="2"/>'
-                    svg += f'<line x1="{cx}" y1="{cy-15}" x2="{cx}" y2="{cy}" stroke="#c0392b" stroke-width="2"/>'
+                    svg += f'<line x1="{cx-10}" y1="{cy}" x2="{cx+10}" y2="{cy}" stroke="#c0392b" stroke-width="1.5"/>'
+                    svg += f'<line x1="{cx}" y1="{cy-10}" x2="{cx}" y2="{cy}" stroke="#c0392b" stroke-width="1.5"/>'
                     
                     for i in range(181):
                         angle_rad = math.radians(i)
@@ -4413,32 +4413,32 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         sin_a = math.sin(angle_rad)
                         
                         if i % 10 == 0:
-                            tick_len = 15
-                            stroke_w = 2
+                            tick_len = 10
+                            stroke_w = 1.5
                             out_txt = str(180 - i)
                             in_txt = str(i)
                             
-                            tx_out = cx + (r_outer - 22) * cos_a
-                            ty_out = cy - (r_outer - 22) * sin_a
-                            tx_in = cx + (r_inner + 22) * cos_a
-                            ty_in = cy - (r_inner + 22) * sin_a
+                            tx_out = cx + (r_outer - 15) * cos_a
+                            ty_out = cy - (r_outer - 15) * sin_a
+                            tx_in = cx + (r_inner + 15) * cos_a
+                            ty_in = cy - (r_inner + 15) * sin_a
                             
                             if i not in [0, 180]:
-                                svg += f'<text x="{tx_out}" y="{ty_out+4}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2c3e50" text-anchor="middle">{out_txt}</text>'
-                                svg += f'<text x="{tx_in}" y="{ty_in+4}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2980b9" text-anchor="middle">{in_txt}</text>'
+                                svg += f'<text x="{tx_out}" y="{ty_out+3}" font-family="sans-serif" font-size="9" font-weight="bold" fill="#2c3e50" text-anchor="middle">{out_txt}</text>'
+                                svg += f'<text x="{tx_in}" y="{ty_in+3}" font-family="sans-serif" font-size="9" font-weight="bold" fill="#2980b9" text-anchor="middle">{in_txt}</text>'
                             elif i == 0: 
-                                svg += f'<text x="{cx + r_outer - 20}" y="{cy - 5}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2c3e50" text-anchor="middle">180</text>'
-                                svg += f'<text x="{cx + r_inner + 15}" y="{cy - 5}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2980b9" text-anchor="middle">0</text>'
+                                svg += f'<text x="{cx + r_outer - 15}" y="{cy - 3}" font-family="sans-serif" font-size="9" font-weight="bold" fill="#2c3e50" text-anchor="middle">180</text>'
+                                svg += f'<text x="{cx + r_inner + 10}" y="{cy - 3}" font-family="sans-serif" font-size="9" font-weight="bold" fill="#2980b9" text-anchor="middle">0</text>'
                             elif i == 180:
-                                svg += f'<text x="{cx - r_outer + 20}" y="{cy - 5}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2c3e50" text-anchor="middle">0</text>'
-                                svg += f'<text x="{cx - r_inner - 15}" y="{cy - 5}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2980b9" text-anchor="middle">180</text>'
+                                svg += f'<text x="{cx - r_outer + 15}" y="{cy - 3}" font-family="sans-serif" font-size="9" font-weight="bold" fill="#2c3e50" text-anchor="middle">0</text>'
+                                svg += f'<text x="{cx - r_inner - 10}" y="{cy - 3}" font-family="sans-serif" font-size="9" font-weight="bold" fill="#2980b9" text-anchor="middle">180</text>'
 
                         elif i % 5 == 0:
-                            tick_len = 10
-                            stroke_w = 1.5
-                        else:
-                            tick_len = 5
+                            tick_len = 7
                             stroke_w = 1
+                        else:
+                            tick_len = 4
+                            stroke_w = 0.5
                             
                         x1 = cx + r_outer * cos_a
                         y1 = cy - r_outer * sin_a
@@ -4452,30 +4452,30 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         y4 = cy - (r_inner + tick_len) * sin_a
                         svg += f'<line x1="{x3}" y1="{y3}" x2="{x4}" y2="{y4}" stroke="#34495e" stroke-width="{stroke_w}"/>'
 
-                    arm_len = 200
+                    arm_len = 140
                     rad1 = math.radians(deg1)
                     rad2 = math.radians(deg2)
                     
                     x1_ray = cx + arm_len * math.cos(rad1)
                     y1_ray = cy - arm_len * math.sin(rad1)
-                    svg += f'<line x1="{cx}" y1="{cy}" x2="{x1_ray}" y2="{y1_ray}" stroke="#e74c3c" stroke-width="3.5" stroke-linecap="round"/>'
+                    svg += f'<line x1="{cx}" y1="{cy}" x2="{x1_ray}" y2="{y1_ray}" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round"/>'
                     
                     x2_ray = cx + arm_len * math.cos(rad2)
                     y2_ray = cy - arm_len * math.sin(rad2)
-                    svg += f'<line x1="{cx}" y1="{cy}" x2="{x2_ray}" y2="{y2_ray}" stroke="#e74c3c" stroke-width="3.5" stroke-linecap="round"/>'
+                    svg += f'<line x1="{cx}" y1="{cy}" x2="{x2_ray}" y2="{y2_ray}" stroke="#e74c3c" stroke-width="2.5" stroke-linecap="round"/>'
                     
-                    svg += f'<circle cx="{cx}" cy="{cy}" r="5" fill="#c0392b"/>'
+                    svg += f'<circle cx="{cx}" cy="{cy}" r="4" fill="#c0392b"/>'
                     
-                    lbl_bg = 'font-family:Sarabun; font-size:22px; font-weight:bold; fill:#e74c3c; stroke:#ffffff; stroke-width:5px; paint-order:stroke;'
-                    lbl_fg = 'font-family:Sarabun; font-size:22px; font-weight:bold; fill:#c0392b;'
+                    lbl_bg = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#e74c3c; stroke:#ffffff; stroke-width:3px; paint-order:stroke;'
+                    lbl_fg = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#c0392b;'
                     
-                    svg += f'<text x="{cx}" y="{cy+25}" {lbl_bg} text-anchor="middle">{v_name}</text>'
-                    svg += f'<text x="{cx}" y="{cy+25}" {lbl_fg} text-anchor="middle">{v_name}</text>'
+                    svg += f'<text x="{cx}" y="{cy+20}" {lbl_bg} text-anchor="middle">{v_name}</text>'
+                    svg += f'<text x="{cx}" y="{cy+20}" {lbl_fg} text-anchor="middle">{v_name}</text>'
                     
                     def add_lbl(rad_val, name):
-                        tx = cx + (arm_len + 25) * math.cos(rad_val)
-                        ty = cy - (arm_len + 25) * math.sin(rad_val)
-                        ty = ty - 5 if math.sin(rad_val) > 0.5 else ty + 8
+                        tx = cx + (arm_len + 15) * math.cos(rad_val)
+                        ty = cy - (arm_len + 15) * math.sin(rad_val)
+                        ty = ty - 4 if math.sin(rad_val) > 0.5 else ty + 6
                         res = f'<text x="{tx}" y="{ty}" {lbl_bg} text-anchor="middle">{name}</text>'
                         res += f'<text x="{tx}" y="{ty}" {lbl_fg} text-anchor="middle">{name}</text>'
                         return res
@@ -4485,6 +4485,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     return svg + '</svg></div>'
 
+                # 💡 2. ฟังก์ชันวาดมุมประกอบสมการเส้นตรง (ลดสเกลลง 30%)
                 def draw_angle_feature_pt(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
                     import math
                     len_a, len_b = math.hypot(ax - vx, ay - vy), math.hypot(bx - vx, by - vy)
@@ -4492,29 +4493,28 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sx, sy = vx + (ax - vx) * r_arc / len_a, vy + (ay - vy) * r_arc / len_a
                     ex, ey = vx + (bx - vx) * r_arc / len_b, vy + (by - vy) * r_arc / len_b
                     sweep = 1 if (sx - vx) * (ey - vy) - (sy - vy) * (ex - vx) > 0 else 0
-                    arc_svg = f'<path d="M {sx} {sy} A {r_arc} {r_arc} 0 0 {sweep} {ex} {ey}" fill="none" stroke="{color_arc}" stroke-width="3"/>'
+                    arc_svg = f'<path d="M {sx} {sy} A {r_arc} {r_arc} 0 0 {sweep} {ex} {ey}" fill="none" stroke="{color_arc}" stroke-width="2"/>'
                     mid_x, mid_y = (sx - vx)/r_arc + (ex - vx)/r_arc, (sy - vy)/r_arc + (ey - vy)/r_arc
                     len_mid = math.hypot(mid_x, mid_y)
                     tx, ty = (vx, vy - r_text) if len_mid == 0 else (vx + (mid_x / len_mid) * r_text, vy + (mid_y / len_mid) * r_text)
-                    return arc_svg + f'<text x="{tx}" y="{ty+4}" font-size="{"16px" if is_x else "13px"}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
+                    return arc_svg + f'<text x="{tx}" y="{ty+4}" font-size="{"13px" if is_x else "11px"}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
 
                 def draw_angle_svg_pt(val1, val2, val3="?"):
                     import math
-                    # ขยายหน้ากระดาษแบบเส้นตรงเป็น 560 เหมือนกัน
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
-                    lbl_st = 'font-family:Sarabun; font-size:18px; font-weight:bold; fill:#2c3e50;'
-                    vx, vy, phi = 280, 160, val2 
-                    ax, ay, cx, cy = 60, 160, 500, 160 
-                    bx, by = vx + 150 * math.cos(math.radians(phi)), vy - 150 * math.sin(math.radians(phi))
-                    svg += f'<line x1="{ax}" y1="{ay}" x2="{cx}" y2="{cy}" stroke="#34495e" stroke-width="4"/>'
-                    svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#c0392b" stroke-width="3"/>'
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="400" height="150">'
+                    lbl_st = 'font-family:Sarabun; font-size:14px; font-weight:bold; fill:#2c3e50;'
+                    vx, vy, phi = 200, 120, val2 
+                    ax, ay, cx, cy = 40, 120, 360, 120 
+                    bx, by = vx + 105 * math.cos(math.radians(phi)), vy - 105 * math.sin(math.radians(phi))
+                    svg += f'<line x1="{ax}" y1="{ay}" x2="{cx}" y2="{cy}" stroke="#34495e" stroke-width="3"/>'
+                    svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#c0392b" stroke-width="2.5"/>'
                     svg += f'<circle cx="{bx}" cy="{by}" r="3" fill="#c0392b"/>'
-                    svg += f'<text x="{ax-20}" y="{ay+5}" {lbl_st}>A</text>'
+                    svg += f'<text x="{ax-15}" y="{ay+5}" {lbl_st}>A</text>'
                     svg += f'<text x="{cx+10}" y="{cy+5}" {lbl_st}>B</text>'
-                    svg += f'<text x="{bx-10}" y="{by-15}" {lbl_st}>C</text>'
-                    svg += f'<text x="{vx-5}" y="{vy+25}" {lbl_st}>O</text>'
-                    svg += draw_angle_feature_pt(vx, vy, ax, ay, bx, by, 28, 45, f"{val1}°", "#2ecc71", "#c0392b")
-                    svg += draw_angle_feature_pt(vx, vy, bx, by, cx, cy, 28, 45, val3, "#2ecc71", "#2980b9", is_x=True)
+                    svg += f'<text x="{bx-8}" y="{by-12}" {lbl_st}>C</text>'
+                    svg += f'<text x="{vx-5}" y="{vy+20}" {lbl_st}>O</text>'
+                    svg += draw_angle_feature_pt(vx, vy, ax, ay, bx, by, 20, 32, f"{val1}°", "#2ecc71", "#c0392b")
+                    svg += draw_angle_feature_pt(vx, vy, bx, by, cx, cy, 20, 32, val3, "#2ecc71", "#2980b9", is_x=True)
                     return svg + '</svg></div>'
 
                 l_pool = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -4549,7 +4549,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg_img = draw_angle_svg_pt(180-ans, ans, "x")
                     q = f"ถ้านำไม้โปรแทรกเตอร์มาวัดมุม <b>x</b> ในรูป จะได้ขนาดกี่องศา?<br>(กำหนดให้เส้นตรงด้านล่างคือ 180°)<br>{svg_img}"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ไม้โปรแทรกเตอร์ครึ่งวงกลม (หรือมุมบนเส้นตรง) มีขนาดรวม 180°<br>👉 ถ้ามุมอีกฝั่งกาง {180-ans}° มุม x จะต้องบวกกันให้ได้ 180°<br>👉 คำนวณ: x = 180° - {180-ans}° = <b>{ans}°</b><br><b>ตอบ: {ans} องศา</b></span>"
-
             elif actual_sub_t == "การหาความยาวรอบรูปสี่เหลี่ยมมุมฉาก":
                 def draw_rect_svg_local(w_val, h_val, w_lbl, h_lbl, fill_color="#eaf2f8"):
                     scale = 140 / max(w_val, h_val)
