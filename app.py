@@ -4424,6 +4424,269 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b> : <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} - {a:,} = {c:,}</b></div>"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้ายตัวเลข <b>-{a:,}</b> ไปอยู่อีกฝั่ง โดยเปลี่ยนเครื่องหมายลบเป็นบวก<br>👉 จะได้: {var} = {c:,} + {a:,}<br>👉 คำนวณ: {var} = <b>{ans:,}</b><br><b>ตอบ: {ans:,}</b></span>"
 
+            elif actual_sub_t == "การอ่านและการเขียนตัวเลข":
+                num = random.randint(100000, 999999) if not is_challenge else random.randint(1000000, 99999999)
+                thai_text = generate_thai_number_text(str(num))
+                mode = random.choice(["to_text", "to_num"])
+                if mode == "to_text":
+                    q = f"จงเขียนตัวเลข <b>{num:,}</b> เป็นตัวหนังสือภาษาไทย"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 อ่านตามหลักจากซ้ายไปขวา (ร้อยล้าน สิบล้าน ล้าน แสน หมื่น พัน ร้อย สิบ หน่วย)<br><b>ตอบ: {thai_text}</b></span>"
+                else:
+                    q = f"จงเขียนคำอ่าน <b>\"{thai_text}\"</b> เป็นตัวเลขฮินดูอารบิก"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 แปลงจากคำอ่านเป็นตัวเลขทีละหลัก และอย่าลืมใส่เครื่องหมายจุลภาค (,)<br><b>ตอบ: {num:,}</b></span>"
+
+            elif actual_sub_t == "หลัก ค่าประจำหลัก และรูปกระจาย":
+                num = random.randint(100000, 9999999) if not is_challenge else random.randint(10000000, 999999999)
+                num_str = str(num)
+                mode = random.choice(["expanded", "digit_value"])
+                if mode == "expanded":
+                    q = f"จงเขียนจำนวน <b>{num:,}</b> ให้อยู่ในรูปกระจาย"
+                    expanded = " + ".join([f"{int(d) * (10**(len(num_str)-i-1))}" for i, d in enumerate(num_str) if d != '0'])
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 นำค่าของเลขโดดในแต่ละหลักมาเขียนบวกกัน (หลักใดเป็น 0 ไม่ต้องนำมาเขียน)<br><b>ตอบ: {expanded}</b></span>"
+                else:
+                    target_idx = random.randint(0, len(num_str)-1)
+                    while num_str[target_idx] == '0':
+                        target_idx = random.randint(0, len(num_str)-1)
+                    target_digit = num_str[target_idx]
+                    place_names = ["หน่วย", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน", "สิบล้าน", "ร้อยล้าน"]
+                    place = place_names[len(num_str) - target_idx - 1]
+                    val = int(target_digit) * (10**(len(num_str) - target_idx - 1))
+                    q = f"จากจำนวน <b>{num:,}</b> เลขโดด <b>{target_digit}</b> (ตัวที่ขีดเส้นใต้) อยู่ในหลักใด และมีค่าเท่าใด?<br><span style='font-size:24px;'>{num_str[:target_idx]}<u>{target_digit}</u>{num_str[target_idx+1:]}</span>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 เลขโดด <b>{target_digit}</b> อยู่ในหลัก<b>{place}</b><br>👉 จึงมีค่าเท่ากับ <b>{val:,}</b><br><b>ตอบ: หลัก{place} มีค่า {val:,}</b></span>"
+
+            elif actual_sub_t == "การเปรียบเทียบและเรียงลำดับ":
+                count = random.randint(4, 5)
+                base = random.randint(100000, 999999) if not is_challenge else random.randint(1000000, 9999999)
+                nums = [base + random.randint(-50000, 50000) for _ in range(count)]
+                nums = list(set(nums))
+                while len(nums) < count:
+                    nums.append(base + random.randint(-50000, 50000))
+                    nums = list(set(nums))
+                order = random.choice(["น้อยไปมาก", "มากไปน้อย"])
+                nums_str = ", ".join([f"{n:,}" for n in nums])
+                sorted_nums = sorted(nums) if order == "น้อยไปมาก" else sorted(nums, reverse=True)
+                sorted_str = ", ".join([f"{n:,}" for n in sorted_nums])
+                q = f"จงเรียงลำดับจำนวนต่อไปนี้จาก<b>{order}</b>:<br><div style='text-align:center; font-size:22px; margin: 10px 0; color:#2980b9;'>{nums_str}</div>"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 เปรียบเทียบจำนวนหลัก และค่าของเลขโดดทีละหลักจากซ้ายไปขวา<br>👉 เรียงลำดับจาก{order} จะได้:<br><b>ตอบ: {sorted_str}</b></span>"
+
+            elif actual_sub_t == "ค่าประมาณเป็นจำนวนเต็มสิบ เต็มร้อย เต็มพัน":
+                target = random.choice(["สิบ", "ร้อย", "พัน"])
+                num = random.randint(1234, 99999) if not is_challenge else random.randint(100000, 999999)
+                if target == "สิบ":
+                    check_val = num % 10
+                    round_base = (num // 10) * 10
+                    if check_val >= 5: ans, explain = round_base + 10, f"หลักหน่วยคือเลข {check_val} (ตั้งแต่ 5 ขึ้นไป) จึงปัดขึ้น"
+                    else: ans, explain = round_base, f"หลักหน่วยคือเลข {check_val} (น้อยกว่า 5) จึงปัดทิ้งเป็น 0"
+                elif target == "ร้อย":
+                    check_val = (num % 100) // 10
+                    round_base = (num // 100) * 100
+                    if check_val >= 5: ans, explain = round_base + 100, f"หลักสิบคือเลข {check_val} (ตั้งแต่ 5 ขึ้นไป) จึงปัดขึ้น"
+                    else: ans, explain = round_base, f"หลักสิบคือเลข {check_val} (น้อยกว่า 5) จึงปัดทิ้งเป็น 0"
+                else:
+                    check_val = (num % 1000) // 100
+                    round_base = (num // 1000) * 1000
+                    if check_val >= 5: ans, explain = round_base + 1000, f"หลักร้อยคือเลข {check_val} (ตั้งแต่ 5 ขึ้นไป) จึงปัดขึ้น"
+                    else: ans, explain = round_base, f"หลักร้อยคือเลข {check_val} (น้อยกว่า 5) จึงปัดทิ้งเป็น 0"
+                q = f"จงหาค่าประมาณเป็น<b>จำนวนเต็ม{target}</b> ของ <b>{num:,}</b>"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 การหาค่าประมาณเป็นจำนวนเต็ม{target} ให้พิจารณาเลขโดดในหลักที่อยู่ติดกันทางขวา<br>👉 ในข้อนี้ {explain}<br><b>ตอบ: {ans:,}</b></span>"
+
+            elif actual_sub_t == "การบวก (แบบตั้งหลัก)":
+                a = random.randint(100000, 999999) if not is_challenge else random.randint(1000000, 9999999)
+                b = random.randint(100000, 999999) if not is_challenge else random.randint(1000000, 9999999)
+                ans = a + b
+                q_base = f"จงหาผลบวกของ <b>{a:,} + {b:,}</b>"
+                table_html = generate_vertical_table_html(a, b, "+", result=ans, is_key=False)
+                table_key = generate_vertical_table_html(a, b, "+", result=ans, is_key=True)
+                q = f"{q_base}<br>{table_html}"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>ตั้งหลักให้ตรงกัน แล้วบวกจากหลักหน่วย (ขวาไปซ้าย)<br>{table_key}</span>"
+
+            elif actual_sub_t == "การลบ (แบบตั้งหลัก)":
+                a = random.randint(100000, 999999) if not is_challenge else random.randint(1000000, 9999999)
+                b = random.randint(50000, a - 1000)
+                ans = a - b
+                q_base = f"จงหาผลลบของ <b>{a:,} - {b:,}</b>"
+                table_html = generate_vertical_table_html(a, b, "-", result=ans, is_key=False)
+                table_key = generate_vertical_table_html(a, b, "-", result=ans, is_key=True)
+                q = f"{q_base}<br>{table_html}"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>ตั้งหลักให้ตรงกัน ลบจากขวาไปซ้าย หากหลักใดตัวตั้งน้อยกว่าให้ยืมหลักข้างหน้า<br>{table_key}</span>"
+
+            elif actual_sub_t == "การคูณ (แบบตั้งหลัก)":
+                a = random.randint(100, 9999) if not is_challenge else random.randint(5000, 99999)
+                b = random.randint(12, 99) if not is_challenge else random.randint(101, 999)
+                ans = a * b
+                q_base = f"จงหาผลคูณของ <b>{a:,} × {b:,}</b>"
+                table_html = generate_vertical_table_html(a, b, "×", result=ans, is_key=False)
+                table_key = generate_vertical_table_html(a, b, "×", result=ans, is_key=True)
+                q = f"{q_base}<br>{table_html}"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>นำตัวคูณแต่ละหลักไปคูณตัวตั้ง แล้วนำผลคูณในแต่ละบรรทัดมาบวกกัน<br>{table_key}</span>"
+
+            elif actual_sub_t == "การหารยาว":
+                divisor = random.randint(2, 9) if not is_challenge else random.randint(11, 99)
+                quotient = random.randint(1000, 9999)
+                remainder = random.randint(0, divisor - 1)
+                dividend = (divisor * quotient) + remainder
+                equation_html = f"<div style='font-size: 24px; margin-bottom: 10px;'><b>{dividend:,} ÷ {divisor:,} = ?</b></div>"
+                table_html = generate_long_division_step_by_step_html(divisor, dividend, equation_html, is_key=False)
+                table_key = generate_long_division_step_by_step_html(divisor, dividend, equation_html, is_key=True)
+                q = f"จงหาผลหารโดยวิธีหารยาว<br>{table_html}"
+                ans_txt = f"{quotient:,}" if remainder == 0 else f"{quotient:,} เศษ {remainder:,}"
+                sol = f"<span style='color:#2c3e50;'><b>เฉลยวิธีทำ (หารยาว):</b><br>{table_key}<br><b>ตอบ: {ans_txt}</b></span>"
+
+            elif actual_sub_t == "แปลงเศษเกินเป็นจำนวนคละ":
+                den = random.randint(3, 12) if not is_challenge else random.randint(13, 25)
+                whole = random.randint(2, 9)
+                num_rem = random.randint(1, den - 1)
+                num_total = (whole * den) + num_rem
+                frac_str = f_html(num_total, den)
+                mixed_str = generate_mixed_number_html(whole, num_rem, den)
+                q = f"จงแปลงเศษเกินต่อไปนี้ให้เป็นจำนวนคละ<br><br><div style='text-align:center; font-size:26px;'>{frac_str} = <span style='color:#2980b9;'>?</span></div>"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 นำตัวเศษ (ด้านบน) หารด้วยตัวส่วน (ด้านล่าง)<br>👉 นำ {num_total} ÷ {den} <br>👉 จะได้ <b>{whole}</b> และเหลือเศษ <b>{num_rem}</b><br>👉 นำมาเขียนเป็นจำนวนคละได้คือ <b>{mixed_str}</b><br><b>ตอบ: {mixed_str}</b></span>"
+
+            elif actual_sub_t == "การอ่านและการเขียนทศนิยม":
+                dp = random.randint(1, 3)
+                whole = random.randint(0, 99)
+                if dp == 1:
+                    dec = random.randint(1, 9)
+                    num_str = f"{whole}.{dec}"
+                elif dp == 2:
+                    dec = random.randint(1, 99)
+                    num_str = f"{whole}.{dec:02d}"
+                else:
+                    dec = random.randint(1, 999)
+                    num_str = f"{whole}.{dec:03d}"
+                thai_whole = generate_thai_number_text(str(whole)) if whole > 0 else "ศูนย์"
+                thai_dec = "".join([["ศูนย์","หนึ่ง","สอง","สาม","สี่","ห้า","หก","เจ็ด","แปด","เก้า"][int(d)] for d in num_str.split(".")[1]])
+                thai_read = f"{thai_whole}จุด{thai_dec}"
+                mode = random.choice(["to_text", "to_num"])
+                if mode == "to_text":
+                    q = f"จงเขียนทศนิยม <b>{num_str}</b> เป็นคำอ่าน"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ตัวเลขหน้าจุดทศนิยมให้อ่านแบบจำนวนนับปกติ<br>👉 ตัวเลขหลังจุดทศนิยมให้อ่านเรียงตัว<br><b>ตอบ: {thai_read}</b></span>"
+                else:
+                    q = f"จงเขียนคำอ่าน <b>\"{thai_read}\"</b> ให้เป็นตัวเลขทศนิยม"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 แปลงคำอ่านเป็นตัวเลข โดยตัวเลขหลังคำว่า 'จุด' ให้เขียนเรียงกันทีละหลัก<br><b>ตอบ: {num_str}</b></span>"
+
+            elif actual_sub_t == "การบอกชนิดของมุม":
+                angle = random.randint(10, 175)
+                if angle < 90:
+                    angle_type, reason = "มุมแหลม", "มีขนาดน้อยกว่า 90 องศา"
+                elif 85 < angle < 95:
+                    angle, angle_type, reason = 90, "มุมฉาก", "มีขนาดเท่ากับ 90 องศาพอดี"
+                elif angle == 180:
+                    angle_type, reason = "มุมตรง", "มีขนาดเท่ากับ 180 องศาพอดี"
+                else:
+                    angle_type, reason = "มุมป้าน", "มีขนาดมากกว่า 90 องศา แต่น้อยกว่า 180 องศา"
+                q = f"มุมที่มีขนาด <b>{angle}°</b> คือมุมชนิดใด?<br><span style='font-size:18px; color:#7f8c8d;'>(มุมแหลม, มุมฉาก, มุมป้าน, มุมตรง)</span>"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 มุม {angle}° {reason}<br>👉 ดังนั้นจึงจัดเป็น <b>{angle_type}</b><br><b>ตอบ: {angle_type}</b></span>"
+
+            elif actual_sub_t == "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)":
+                def draw_angle_feature_local(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
+                    len_a = math.hypot(ax - vx, ay - vy)
+                    len_b = math.hypot(bx - vx, by - vy)
+                    if len_a == 0 or len_b == 0: return ""
+                    sx, sy = vx + (ax - vx) * r_arc / len_a, vy + (ay - vy) * r_arc / len_a
+                    ex, ey = vx + (bx - vx) * r_arc / len_b, vy + (by - vy) * r_arc / len_b
+                    sweep = 1 if (sx - vx) * (ey - vy) - (sy - vy) * (ex - vx) > 0 else 0
+                    arc_svg = f'<path d="M {sx} {sy} A {r_arc} {r_arc} 0 0 {sweep} {ex} {ey}" fill="none" stroke="{color_arc}" stroke-width="3"/>'
+                    mid_x, mid_y = (sx - vx)/r_arc + (ex - vx)/r_arc, (sy - vy)/r_arc + (ey - vy)/r_arc
+                    len_mid = math.hypot(mid_x, mid_y)
+                    tx, ty = (vx, vy - r_text) if len_mid == 0 else (vx + (mid_x / len_mid) * r_text, vy + (mid_y / len_mid) * r_text)
+                    ty += 4 
+                    font_size = "16px" if is_x else "13px"
+                    return arc_svg + f'<text x="{tx}" y="{ty}" font-size="{font_size}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
+
+                def draw_angle_svg_local(mode, val1, val2, val3=""):
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="340" height="200">'
+                    lbl_style = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
+                    vx, vy, phi = 170, 160, val2 
+                    ax, ay, cx, cy = 40, 160, 300, 160 
+                    bx, by = vx + 120 * math.cos(math.radians(phi)), vy - 120 * math.sin(math.radians(phi))
+                    svg += f'<line x1="{ax}" y1="{ay}" x2="{cx}" y2="{cy}" stroke="#34495e" stroke-width="4"/>'
+                    svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#c0392b" stroke-width="3"/>'
+                    svg += f'<circle cx="{bx}" cy="{by}" r="3" fill="#c0392b"/>'
+                    svg += f'<text x="{ax-15}" y="{ay+5}" {lbl_style}>A</text>'
+                    svg += f'<text x="{cx+5}" y="{cy+5}" {lbl_style}>B</text>'
+                    svg += f'<text x="{bx-5}" y="{by-10}" {lbl_style}>C</text>'
+                    svg += f'<text x="{vx-5}" y="{vy+20}" {lbl_style}>O</text>'
+                    svg += draw_angle_feature_local(vx, vy, ax, ay, bx, by, 28, 45, f"{val1}°", "#2ecc71", "#c0392b")
+                    svg += draw_angle_feature_local(vx, vy, bx, by, cx, cy, 28, 45, val2 if val3=="" else val3, "#2ecc71", "#2980b9", is_x=True)
+                    return svg + '</svg></div>'
+
+                mode = random.choice(["read_protractor", "calc_angle"])
+                if mode == "read_protractor":
+                    base_deg = random.choice([0, 10, 20])
+                    angle = random.randint(30, 150)
+                    end_deg = base_deg + angle
+                    q = f"ในการวัดขนาดของมุม <b>AOB</b> ด้วยไม้โปรแทรกเตอร์<br>ถ้าแขน OA ชี้ที่สเกลตัวเลข <b>{base_deg}°</b> และแขน OB ชี้ที่สเกลตัวเลข <b>{end_deg}°</b><br>มุม AOB มีขนาดกี่องศา?"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 นำตัวเลขที่แขนของมุมทั้งสองข้างชี้มาลบกัน เพื่อหาขนาดความกว้างของมุม<br>👉 {end_deg}° - {base_deg}° = <b>{angle}°</b><br><b>ตอบ: {angle} องศา</b></span>"
+                else:
+                    ans = random.randint(25, 160)
+                    svg = draw_angle_svg_local("straight", 180-ans, ans, "?")
+                    q = f"ถ้านำไม้โปรแทรกเตอร์มาวัดมุม <b>x</b> ในรูป จะได้ขนาดกี่องศา?<br>(กำหนดให้เส้นตรงด้านล่างคือ 180°)<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 มุมบนเส้นตรงมีขนาดรวม 180°<br>👉 ถ้ามุมอีกฝั่งกาง {180-ans}° มุม x จะเท่ากับ 180° - {180-ans}° = <b>{ans}°</b><br><b>ตอบ: {ans} องศา</b></span>"
+
+            elif actual_sub_t == "การหาความยาวรอบรูปสี่เหลี่ยมมุมฉาก":
+                def draw_rect_svg_local(w_val, h_val, w_lbl, h_lbl, fill_color="#eaf2f8"):
+                    scale = 140 / max(w_val, h_val)
+                    dw, dh = w_val * scale, h_val * scale
+                    svg = f'<div style="text-align:center; margin: 15px 0;"><svg width="300" height="200">'
+                    svg += f'<rect x="{150 - dw/2}" y="{100 - dh/2}" width="{dw}" height="{dh}" fill="{fill_color}" stroke="#2980b9" stroke-width="3"/>'
+                    svg += f'<text x="150" y="{100 - dh/2 - 10}" font-family="Sarabun" font-size="16" font-weight="bold" fill="#c0392b" text-anchor="middle">{w_lbl}</text>'
+                    svg += f'<text x="{150 + dw/2 + 10}" y="100" font-family="Sarabun" font-size="16" font-weight="bold" fill="#c0392b" text-anchor="start" dominant-baseline="middle">{h_lbl}</text>'
+                    return svg + '</svg></div>'
+
+                is_square = random.choice([True, False])
+                if is_square:
+                    side = random.randint(5, 25)
+                    peri = 4 * side
+                    svg = draw_rect_svg_local(side, side, f"{side} ม.", f"{side} ม.", "#fdf2e9")
+                    q = f"จงหาความยาวรอบรูปของ<b>สี่เหลี่ยมจัตุรัส</b>ต่อไปนี้<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สูตรความยาวรอบรูปสี่เหลี่ยมจัตุรัส = 4 × ความยาวด้าน<br>👉 4 × {side} = <b>{peri} เมตร</b><br><b>ตอบ: {peri} เมตร</b></span>"
+                else:
+                    w, h = random.randint(4, 15), random.randint(16, 30)
+                    peri = 2 * (w + h)
+                    svg = draw_rect_svg_local(h, w, f"{h} ซม.", f"{w} ซม.", "#e8f8f5")
+                    q = f"จงหาความยาวรอบรูปของ<b>สี่เหลี่ยมผืนผ้า</b>ต่อไปนี้<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สูตรความยาวรอบรูปสี่เหลี่ยมผืนผ้า = 2 × (กว้าง + ยาว)<br>👉 กว้าง + ยาว = {w} + {h} = {w+h}<br>👉 2 × {w+h} = <b>{peri} เซนติเมตร</b><br><b>ตอบ: {peri} เซนติเมตร</b></span>"
+
+            elif actual_sub_t == "การหาพื้นที่รูปสี่เหลี่ยมมุมฉาก":
+                def draw_rect_svg_local(w_val, h_val, w_lbl, h_lbl, fill_color="#eaf2f8"):
+                    scale = 140 / max(w_val, h_val)
+                    dw, dh = w_val * scale, h_val * scale
+                    svg = f'<div style="text-align:center; margin: 15px 0;"><svg width="300" height="200">'
+                    svg += f'<rect x="{150 - dw/2}" y="{100 - dh/2}" width="{dw}" height="{dh}" fill="{fill_color}" stroke="#2980b9" stroke-width="3"/>'
+                    svg += f'<text x="150" y="{100 - dh/2 - 10}" font-family="Sarabun" font-size="16" font-weight="bold" fill="#c0392b" text-anchor="middle">{w_lbl}</text>'
+                    svg += f'<text x="{150 + dw/2 + 10}" y="100" font-family="Sarabun" font-size="16" font-weight="bold" fill="#c0392b" text-anchor="start" dominant-baseline="middle">{h_lbl}</text>'
+                    return svg + '</svg></div>'
+
+                is_square = random.choice([True, False])
+                if is_square:
+                    side = random.randint(5, 25)
+                    area = side * side
+                    svg = draw_rect_svg_local(side, side, f"{side} ม.", f"{side} ม.", "#fdf2e9")
+                    q = f"จงหาพื้นที่ของ<b>สี่เหลี่ยมจัตุรัส</b>ต่อไปนี้<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สูตรพื้นที่สี่เหลี่ยมจัตุรัส = ด้าน × ด้าน<br>👉 {side} × {side} = <b>{area:,} ตารางเมตร</b><br><b>ตอบ: {area:,} ตารางเมตร</b></span>"
+                else:
+                    w, h = random.randint(4, 15), random.randint(16, 30)
+                    area = w * h
+                    svg = draw_rect_svg_local(h, w, f"{h} ซม.", f"{w} ซม.", "#e8f8f5")
+                    q = f"จงหาพื้นที่ของ<b>สี่เหลี่ยมผืนผ้า</b>ต่อไปนี้<br>{svg}"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สูตรพื้นที่สี่เหลี่ยมผืนผ้า = กว้าง × ยาว<br>👉 {w} × {h} = <b>{area:,} ตารางเซนติเมตร</b><br><b>ตอบ: {area:,} ตารางเซนติเมตร</b></span>"
+
+            elif actual_sub_t == "การแก้สมการ (บวก/ลบ)":
+                var = random.choice(["A", "B", "x", "y", "ก", "ข"])
+                a = random.randint(1000, 9999) if not is_challenge else random.randint(15000, 50000)
+                op = random.choice(["+", "-"])
+                if op == "+":
+                    ans = random.randint(1000, 9999) if not is_challenge else random.randint(15000, 50000)
+                    c = ans + a
+                    q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b> : <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} + {a:,} = {c:,}</b></div>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้ายตัวเลข <b>+{a:,}</b> ไปอยู่อีกฝั่ง โดยเปลี่ยนเครื่องหมายบวกเป็นลบ<br>👉 จะได้: {var} = {c:,} - {a:,}<br>👉 คำนวณ: {var} = <b>{ans:,}</b><br><b>ตอบ: {ans:,}</b></span>"
+                else:
+                    c = random.randint(1000, 9999) if not is_challenge else random.randint(15000, 50000)
+                    ans = c + a
+                    q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b> : <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} - {a:,} = {c:,}</b></div>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้ายตัวเลข <b>-{a:,}</b> ไปอยู่อีกฝั่ง โดยเปลี่ยนเครื่องหมายลบเป็นบวก<br>👉 จะได้: {var} = {c:,} + {a:,}<br>👉 คำนวณ: {var} = <b>{ans:,}</b><br><b>ตอบ: {ans:,}</b></span>"
+
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
