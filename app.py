@@ -4657,167 +4657,113 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             elif actual_sub_t == "สมการเชิงตรรกะและตาชั่งปริศนา":
                 is_challenge = st.session_state.get("challenge_mode", False)
                 
-                # สุ่มรูปแบบโจทย์
-                if not is_challenge:
-                    scenario = random.choice(["2_normal", "2_reverse"])
-                else:
-                    scenario = random.choice(["2_combo", "3_scales"])
-                    
-                # 🎲 ฐานข้อมูลรูปทรงและชุดตัวแปร
-                shapes_pool = [
-                    {"type": "circle", "color": "#e74c3c"},     # วงกลมสีแดง
-                    {"type": "square", "color": "#2980b9"},     # สี่เหลี่ยมสีน้ำเงิน
-                    {"type": "triangle", "color": "#8e44ad"},   # สามเหลี่ยมสีม่วง
-                    {"type": "hexagon", "color": "#16a085"}     # หกเหลี่ยมสีเขียวเข้ม
+                # 🎲 กำหนดรูปทรงและสีสัน
+                shapes = [
+                    {"type": "circle", "color": "#e74c3c", "name": "วงกลม"},
+                    {"type": "square", "color": "#3498db", "name": "สี่เหลี่ยม"},
+                    {"type": "triangle", "color": "#2ecc71", "name": "สามเหลี่ยม"},
+                    {"type": "star", "color": "#f1c40f", "name": "ดาว"}
                 ]
-                vars_pool = [("A", "B", "C"), ("X", "Y", "Z"), ("P", "Q", "R")]
+                selected = random.sample(shapes, 3)
+                s1, s2, s3 = selected[0], selected[1], selected[2]
                 
-                selected_shapes = random.sample(shapes_pool, 3)
-                selected_vars = random.choice(vars_pool)
-                
-                # จับคู่ตัวแปรกับรูปทรง
-                obj1 = {"shape": selected_shapes[0]["type"], "color": selected_shapes[0]["color"], "let": selected_vars[0]}
-                obj2 = {"shape": selected_shapes[1]["type"], "color": selected_shapes[1]["color"], "let": selected_vars[1]}
-                obj3 = {"shape": selected_shapes[2]["type"], "color": selected_shapes[2]["color"], "let": selected_vars[2]}
-                
-                # สุ่มค่าน้ำหนัก
-                val1 = random.randint(12, 25)
-                val2 = random.randint(30, 60)
-                val3 = random.randint(80, 150)
-                
-                # ฟังก์ชันวาดบล็อกรูปทรงพร้อมตัวอักษร
-                def draw_obj(cx, cy, obj):
-                    if obj["shape"] == "circle":
-                        s = f'<circle cx="{cx}" cy="{cy}" r="18" fill="{obj["color"]}" stroke="#2c3e50" stroke-width="2"/>'
-                        s += f'<text x="{cx}" y="{cy+6}" font-family="sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">{obj["let"]}</text>'
-                    elif obj["shape"] == "square":
-                        s = f'<rect x="{cx-16}" y="{cy-16}" width="32" height="32" rx="4" fill="{obj["color"]}" stroke="#2c3e50" stroke-width="2"/>'
-                        s += f'<text x="{cx}" y="{cy+6}" font-family="sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">{obj["let"]}</text>'
-                    elif obj["shape"] == "triangle":
-                        s = f'<polygon points="{cx},{cy-18} {cx-18},{cy+14} {cx+18},{cy+14}" fill="{obj["color"]}" stroke="#2c3e50" stroke-width="2" stroke-linejoin="round"/>'
-                        s += f'<text x="{cx}" y="{cy+8}" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{obj["let"]}</text>'
-                    else: # hexagon
-                        s = f'<polygon points="{cx},{cy-18} {cx-16},{cy-9} {cx-16},{cy+9} {cx},{cy+18} {cx+16},{cy+9} {cx+16},{cy-9}" fill="{obj["color"]}" stroke="#2c3e50" stroke-width="2"/>'
-                        s += f'<text x="{cx}" y="{cy+6}" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{obj["let"]}</text>'
-                    return s
+                # ฟังก์ชันวาดรูปทรง SVG
+                def draw_shape(cx, cy, shape_type, color):
+                    if shape_type == "circle":
+                        return f'<circle cx="{cx}" cy="{cy}" r="16" fill="{color}" stroke="#2c3e50" stroke-width="2"/>'
+                    elif shape_type == "square":
+                        return f'<rect x="{cx-15}" y="{cy-15}" width="30" height="30" rx="4" fill="{color}" stroke="#2c3e50" stroke-width="2"/>'
+                    elif shape_type == "triangle":
+                        return f'<polygon points="{cx},{cy-16} {cx-16},{cy+14} {cx+16},{cy+14}" fill="{color}" stroke="#2c3e50" stroke-width="2" stroke-linejoin="round"/>'
+                    else: # star
+                        return f'<polygon points="{cx},{cy-18} {cx+4},{cy-5} {cx+18},{cy-5} {cx+7},{cy+4} {cx+11},{cy+17} {cx},{cy+9} {cx-11},{cy+17} {cx-7},{cy+4} {cx-18},{cy-5} {cx-4},{cy-5}" fill="{color}" stroke="#2c3e50" stroke-width="1.5" stroke-linejoin="round"/>'
 
-                # ฟังก์ชันวาดตาชั่งและจัดกึ่งกลาง
-                def draw_row(cy, items, total_w):
-                    row_svg = f'<rect x="90" y="{cy}" width="180" height="5" fill="#34495e" rx="2"/><rect x="175" y="{cy+5}" width="10" height="15" fill="#7f8c8d"/><rect x="150" y="{cy+20}" width="60" height="8" fill="#2c3e50" rx="2"/>'
-                    t_width = sum([(qty * sp) for _, qty, sp, _ in items])
-                    curr_x = 180 - (t_width / 2)
-                    for obj_data, qty, sp, y_off in items:
-                        for i in range(qty):
-                            cx = curr_x + (sp / 2) + (i * sp)
-                            row_svg += draw_obj(cx, cy - y_off, obj_data)
-                        curr_x += (qty * sp)
-                    row_svg += f'<text x="320" y="{cy+5}" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
-                    row_svg += f'<rect x="370" y="{cy-18}" width="90" height="40" rx="6" fill="#f39c12"/><text x="415" y="{cy+8}" font-family="sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">{total_w}</text>'
+                # ฟังก์ชันวาดสมการ 1 บรรทัด
+                def draw_eq_row(y, items, result_val):
+                    row_svg = ""
+                    start_x = 120
+                    spacing = 50
+                    for i, item in enumerate(items):
+                        cx = start_x + (i * spacing)
+                        if item in ["+", "-", "x", "="]:
+                            # ถ้าเป็นเครื่องหมาย ให้ขยับ x ลงมานิดหน่อยเพื่อความสวยงาม
+                            display_op = "×" if item == "x" else item
+                            row_svg += f'<text x="{cx}" y="{y+8}" font-family="sans-serif" font-size="26" font-weight="bold" fill="#2c3e50" text-anchor="middle">{display_op}</text>'
+                        else:
+                            row_svg += draw_shape(cx, y, item["type"], item["color"])
+                    
+                    # ใส่ผลลัพธ์
+                    res_x = start_x + (len(items) * spacing)
+                    row_svg += f'<rect x="{res_x-25}" y="{y-20}" width="60" height="40" rx="6" fill="#f39c12"/><text x="{res_x+5}" y="{y+7}" font-family="sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">{result_val}</text>'
                     return row_svg
 
-                spacing, y_offset = 38, 20
-
-                if scenario == "2_normal" or scenario == "2_reverse":
-                    qty1 = random.randint(3, 5) 
-                    qty2 = random.randint(1, 2) 
-                    qty_mix1 = random.randint(1, 2)
+                if not is_challenge:
+                    # --- โหมดธรรมดา: การบวกลบพื้นฐาน ---
+                    val1 = random.randint(5, 12)
+                    val2 = random.randint(3, 9)
+                    val3 = random.randint(10, 25)
                     
-                    w1 = val1 * qty1
-                    w2 = (val1 * qty_mix1) + (val2 * qty2)
+                    ans1 = val1 * 3
+                    ans2 = val1 + (val2 * 2)
+                    ans3 = val2 + val3
                     
-                    svg_h = 240
-                    svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="{svg_h}">'
-                    
-                    if scenario == "2_normal":
-                        svg += draw_row(80, [(obj1, qty1, spacing, y_offset)], w1)
-                        svg += draw_row(180, [(obj1, qty_mix1, spacing, y_offset), (obj2, qty2, spacing, y_offset)], w2)
-                        step1_text = f"พิจารณาตาชั่งด้านบน ({obj1['let']} {qty1} ชิ้น = {w1})"
-                    else:
-                        svg += draw_row(80, [(obj1, qty_mix1, spacing, y_offset), (obj2, qty2, spacing, y_offset)], w2)
-                        svg += draw_row(180, [(obj1, qty1, spacing, y_offset)], w1)
-                        step1_text = f"พิจารณาตาชั่งด้านล่าง ({obj1['let']} {qty1} ชิ้น = {w1})"
+                    svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
+                    svg += draw_eq_row(40, [s1, "+", s1, "+", s1, "="], ans1)
+                    svg += draw_eq_row(100, [s1, "+", s2, "+", s2, "="], ans2)
+                    svg += draw_eq_row(160, [s2, "+", s3, "="], ans3)
                     svg += '</svg></div>'
                     
-                    q = f"พิจารณาภาพตาชั่งสมดุลด้านล่างนี้ จงวิเคราะห์ความสัมพันธ์และหาว่า <b>{obj2['let']} 1 ชิ้น มีค่าเท่ากับเท่าใด?</b><br>{svg}"
+                    q = f"จงวิเคราะห์ปริศนาสมการรูปทรงด้านล่างนี้ แล้วหาว่า <b>{s3['name']} 1 รูป มีค่าเท่ากับเท่าใด?</b><br>{svg}"
                     
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (วิเคราะห์ตัวแปร):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> {step1_text}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เคล็ดลับ:</b> กวาดสายตาหาตาชั่งที่มีรูปทรงแค่แบบเดียวก่อนเสมอ เพื่อหารูปทรงนั้นให้ได้ 1 ชิ้น</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้สมการ: {qty1} × {obj1['let']} = {w1}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {obj1['let']} 1 ชิ้น = {w1} ÷ {qty1} = <span style="color:#e74c3c;"><b>{val1}</b></span><br>
-                    👉 <b>ขั้นที่ 2:</b> พิจารณาตาชั่งที่มีรูปทรงผสมกัน ({obj1['let']} {qty_mix1} ชิ้น + {obj2['let']} {qty2} ชิ้น = {w2})<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; นำค่า {obj1['let']} ไปแทนค่า: {val1} × {qty_mix1} ชิ้น = <span style="color:#2980b9;"><b>{val1 * qty_mix1}</b></span><br>
-                    👉 <b>ขั้นที่ 3:</b> สร้างสมการเพื่อหาค่า {obj2['let']}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">{val1 * qty_mix1} + ({qty2} × {obj2['let']}) = {w2}</span><br>
-                    👉 <b>ขั้นที่ 4:</b> กำจัด <span style="color:#e74c3c;">+ {val1 * qty_mix1}</span> โดยการลบออกทั้งสองข้าง<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ({qty2} × {obj2['let']}) = {w2} - {val1 * qty_mix1} = {w2 - (val1 * qty_mix1)}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {obj2['let']} = <span style="color:#27ae60;"><b>{val2}</b></span><br>
-                    <b>ตอบ: {obj2['let']} มีค่าเท่ากับ {val2}</b></span>'''
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (วิเคราะห์สมการรูปทรง):</b><br>
+                    👉 <b>ขั้นที่ 1:</b> สังเกตบรรทัดบนสุด ({s1['name']} บวกกัน 3 รูป = {ans1})<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เคล็ดลับ:</b> เริ่มแก้จากบรรทัดที่มีรูปทรงหน้าตาเหมือนกันทั้งหมดก่อนเสมอ</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; {s1['name']} 1 รูป = {ans1} ÷ 3 = <span style="color:#e74c3c;"><b>{val1}</b></span><br>
+                    👉 <b>ขั้นที่ 2:</b> พิจารณาบรรทัดที่สอง ({s1['name']} + {s2['name']} + {s2['name']} = {ans2})<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {s1['name']} ที่รู้แล้วลงไป: จะได้ {val1} + ({s2['name']} 2 รูป) = {ans2}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; กำจัด + {val1} ด้วยการลบออก: {s2['name']} 2 รูป = {ans2} - {val1} = {ans2 - val1}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s2['name']} 1 รูป = {ans2 - val1} ÷ 2 = <span style="color:#2980b9;"><b>{val2}</b></span><br>
+                    👉 <b>ขั้นที่ 3:</b> พิจารณาบรรทัดสุดท้าย ({s2['name']} + {s3['name']} = {ans3})<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {s2['name']} ลงไป: จะได้สมการ <span style="color:#2980b9;">{val2}</span> + {s3['name']} = {ans3}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s3['name']} = {ans3} - {val2} = <span style="color:#27ae60;"><b>{val3}</b></span><br>
+                    <b>ตอบ: {s3['name']} มีค่าเท่ากับ {val3}</b></span>'''
                     
-                elif scenario == "2_combo":
-                    # --- โหมดหาผลรวม Combo ---
-                    qty1 = random.randint(2, 4) 
-                    qty2 = 1 
-                    qty_mix1 = 2
-                    w1 = val1 * qty1
-                    w2 = (val1 * qty_mix1) + (val2 * qty2)
+                else:
+                    # --- โหมดท้าทาย: มีการคูณ และ การผสมสมการ ---
+                    val1 = random.choice([4, 5, 6, 7, 8, 9]) # ใช้เลขที่คูณตัวเองแล้วลงตัว
+                    val2 = random.randint(3, 8)
+                    val3 = random.randint(15, 30)
                     
-                    ask_1 = random.randint(2, 4)
-                    ask_2 = random.randint(1, 3)
-                    final_ans = (val1 * ask_1) + (val2 * ask_2)
+                    ans1 = val1 * val1
+                    ans2 = val1 * val2
+                    ans3 = val2 + val3 - val1
                     
-                    svg_h = 240
-                    svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="{svg_h}">'
-                    svg += draw_row(80, [(obj1, qty1, spacing, y_offset)], w1)
-                    svg += draw_row(180, [(obj1, qty_mix1, spacing, y_offset), (obj2, qty2, spacing, y_offset)], w2)
+                    final_q_ans = val3 + val2
+                    
+                    svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
+                    svg += draw_eq_row(40, [s1, "x", s1, "="], ans1)
+                    svg += draw_eq_row(100, [s1, "x", s2, "="], ans2)
+                    svg += draw_eq_row(160, [s2, "+", s3, "-", s1, "="], ans3)
                     svg += '</svg></div>'
                     
-                    q = f"พิจารณาภาพตาชั่งสมดุลด้านล่างนี้ จงวิเคราะห์ความสัมพันธ์และหาว่า <b>({ask_1} × {obj1['let']}) + ({ask_2} × {obj2['let']}) มีค่ารวมกันเท่าใด?</b><br>{svg}"
+                    q = f"จงวิเคราะห์ปริศนาสมการรูปทรงด้านล่างนี้ แล้วหาว่า <b>({s3['name']} + {s2['name']}) มีค่ารวมกันเท่าใด?</b><br>{svg}"
                     
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (โหมดประยุกต์หาผลรวม):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> หาค่า {obj1['let']} จากตาชั่งด้านบน<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {obj1['let']} 1 ชิ้น = {w1} ÷ {qty1} = <span style="color:#e74c3c;"><b>{val1}</b></span><br>
-                    👉 <b>ขั้นที่ 2:</b> หาค่า {obj2['let']} จากตาชั่งด้านล่าง<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; นำค่า {obj1['let']} แทนลงไป: {val1} × {qty_mix1} ชิ้น = {val1 * qty_mix1}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; หักออกจากผลรวม: ค่าของ {obj2['let']} = {w2} - {val1 * qty_mix1} = <span style="color:#2980b9;"><b>{val2}</b></span><br>
-                    👉 <b>ขั้นที่ 3:</b> หาคำตอบตามที่โจทย์สั่ง<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>โจทย์ถามหา:</b> นำ {ask_1} ไปคูณ {obj1['let']} แล้วบวกกับ {ask_2} คูณ {obj2['let']}</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ({ask_1} × {val1}) + ({ask_2} × {val2}) = {val1 * ask_1} + {val2 * ask_2} = <span style="color:#27ae60;"><b>{final_ans}</b></span><br>
-                    <b>ตอบ: มีค่ารวมกันเท่ากับ {final_ans}</b></span>'''
-
-                else: 
-                    # --- โหมด 3 ตาชั่ง (3 ตัวแปรสุดโหด) ---
-                    qty1 = random.randint(2, 4)
-                    qty_mix1 = random.randint(1, 2)
-                    qty2 = random.randint(1, 2)
-                    qty_mix2 = 1
-                    qty3 = 1
-                    
-                    w1 = val1 * qty1
-                    w2 = (val1 * qty_mix1) + (val2 * qty2)
-                    w3 = (val2 * qty_mix2) + (val3 * qty3)
-                    
-                    svg_h = 340
-                    svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="{svg_h}">'
-                    svg += draw_row(60, [(obj1, qty1, spacing, y_offset)], w1)
-                    svg += draw_row(160, [(obj1, qty_mix1, spacing, y_offset), (obj2, qty2, spacing, y_offset)], w2)
-                    svg += draw_row(260, [(obj2, qty_mix2, spacing, y_offset), (obj3, qty3, spacing, y_offset)], w3)
-                    svg += '</svg></div>'
-                    
-                    q = f"พิจารณาภาพตาชั่งสมดุล 3 เครื่อง ด้านล่างนี้ จงวิเคราะห์และหาว่า <b>{obj3['let']} 1 ชิ้น มีค่าเท่าใด?</b><br>{svg}"
-                    
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (แก้สมการตัวแปร 3 ชั้น):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> หาค่า <span style="color:#e74c3c;"><b>{obj1['let']}</b></span> จากตาชั่งแถวบนสุด<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผล:</b> เริ่มจากตาชั่งที่มีตัวแปรเดียว เพื่อนำไปแทนค่าเป็นทอดๆ (Substitution)</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {obj1['let']} 1 ชิ้น = {w1} ÷ {qty1} = <span style="color:#e74c3c;"><b>{val1}</b></span><br>
-                    👉 <b>ขั้นที่ 2:</b> หาค่า <span style="color:#2980b9;"><b>{obj2['let']}</b></span> จากตาชั่งแถวกลาง<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {obj1['let']} ลงไป: {val1} × {qty_mix1} = {val1 * qty_mix1}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้สมการ: {val1 * qty_mix1} + ({qty2} × {obj2['let']}) = {w2}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {obj2['let']} = ({w2} - {val1 * qty_mix1}) ÷ {qty2} = <span style="color:#2980b9;"><b>{val2}</b></span><br>
-                    👉 <b>ขั้นที่ 3:</b> หาค่า <span style="color:#27ae60;"><b>{obj3['let']}</b></span> จากตาชั่งแถวล่างสุด<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {obj2['let']} ลงไป: จะได้สมการ {val2 * qty_mix2} + ({qty3} × {obj3['let']}) = {w3}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {obj3['let']} = ({w3} - {val2 * qty_mix2}) ÷ {qty3} = <span style="color:#27ae60;"><b>{val3}</b></span><br>
-                    <b>ตอบ: {obj3['let']} มีค่าเท่ากับ {val3}</b></span>'''
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ระดับท้าทาย: สมการประยุกต์):</b><br>
+                    👉 <b>ขั้นที่ 1:</b> สังเกตบรรทัดบนสุด ({s1['name']} × {s1['name']} = {ans1})<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>การวิเคราะห์:</b> ต้องหาตัวเลขที่หน้าตาเหมือนกัน (ตัวเดียวกัน) คูณกันแล้วได้ {ans1}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; เนื่องจาก {val1} × {val1} = {ans1} ดังนั้น {s1['name']} = <span style="color:#e74c3c;"><b>{val1}</b></span><br>
+                    👉 <b>ขั้นที่ 2:</b> พิจารณาบรรทัดที่สอง ({s1['name']} × {s2['name']} = {ans2})<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {s1['name']} ลงไป: <span style="color:#e74c3c;">{val1}</span> × {s2['name']} = {ans2}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; กำจัด × {val1} ด้วยการหารออก: {s2['name']} = {ans2} ÷ {val1} = <span style="color:#2980b9;"><b>{val2}</b></span><br>
+                    👉 <b>ขั้นที่ 3:</b> พิจารณาบรรทัดสุดท้าย ({s2['name']} + {s3['name']} - {s1['name']} = {ans3})<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าที่รู้แล้วลงไป: <span style="color:#2980b9;">{val2}</span> + {s3['name']} - <span style="color:#e74c3c;">{val1}</span> = {ans3}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จัดกลุ่มตัวเลข: {s3['name']} + ({val2} - {val1}) = {ans3} <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; {s3['name']} + ({val2 - val1}) = {ans3} <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s3['name']} = {ans3} - ({val2 - val1}) = <span style="color:#27ae60;"><b>{val3}</b></span><br>
+                    👉 <b>ขั้นที่ 4:</b> หาคำตอบสุดท้าย<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>โจทย์ถามหา:</b> {s3['name']} + {s2['name']}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; นำค่ามาบวกกัน: {val3} + {val2} = <span style="color:#8e44ad;"><b>{final_q_ans}</b></span><br>
+                    <b>ตอบ: มีค่ารวมกันเท่ากับ {final_q_ans}</b></span>'''
 
             elif actual_sub_t == "โจทย์ปัญหาสมการ: ตาชั่งผลไม้":
                 # สุ่มรูปแบบโจทย์ 4 สไตล์เพื่อความไม่จำเจ
