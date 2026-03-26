@@ -4693,95 +4693,174 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 <b>ตอบ: {val_a + val_b}</b></span>'''
 
             elif actual_sub_t == "โจทย์ปัญหาสมการ: ตาชั่งผลไม้":
-                # ปูพื้นฐานระบบสมการ (System of Equations) ผ่านภาพผลไม้ที่เด็กจับต้องได้
-                val_apple = random.randint(15, 30)
-                val_melon = random.randint(45, 90)
+                is_challenge = st.session_state.get("challenge_mode", False)
                 
-                w1 = val_apple * 3
-                w2 = (val_apple * 2) + val_melon
+                # 🎲 ฐานข้อมูลผลไม้หลากชนิด พร้อมสีสันสำหรับวาดรูป
+                small_fruits = [
+                    {"name": "แอปเปิล", "color": "#e74c3c", "leaf": "#2ecc71"},
+                    {"name": "ส้ม", "color": "#f39c12", "leaf": "#27ae60"},
+                    {"name": "มังคุด", "color": "#8e44ad", "leaf": "#2ecc71"},
+                    {"name": "มะเขือเทศ", "color": "#ff6b81", "leaf": "#2ed573"}
+                ]
+                large_fruits = [
+                    {"name": "เมลอน", "color": "#2ecc71", "stroke": "#27ae60"},
+                    {"name": "แตงโม", "color": "#1abc9c", "stroke": "#16a085"},
+                    {"name": "ส้มโอ", "color": "#badc58", "stroke": "#6ab04c"}
+                ]
                 
-                def draw_fruit_balance():
+                s_fruit = random.choice(small_fruits)
+                l_fruit = random.choice(large_fruits)
+                
+                # สุ่มค่าน้ำหนักพื้นฐาน
+                val_s = random.randint(20, 50)
+                val_l = random.randint(150, 300)
+                
+                # 🎲 สุ่มจำนวนผลไม้ในแต่ละตาชั่งให้หลากหลาย
+                if not is_challenge:
+                    qty_s1 = random.randint(3, 5) # ตาชั่งล่าง: ผลไม้เล็กล้วน 3-5 ผล
+                    qty_s2 = random.randint(1, 2) # ตาชั่งบน: ผลไม้เล็ก 1-2 ผล
+                    qty_l2 = 1                    # ตาชั่งบน: ผลไม้ใหญ่ 1 ผล
+                else:
+                    qty_s1 = random.randint(4, 6) # ตาชั่งล่าง: ผลไม้เล็กล้วน 4-6 ผล
+                    qty_s2 = random.randint(2, 3) # ตาชั่งบน: ผลไม้เล็ก 2-3 ผล
+                    qty_l2 = random.randint(1, 2) # ตาชั่งบน: ผลไม้ใหญ่ 1-2 ผล (ท้าทายขึ้น!)
+                
+                w1 = val_s * qty_s1
+                w2 = (val_s * qty_s2) + (val_l * qty_l2)
+                
+                def draw_dynamic_balance():
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="220">'
-                    # วาดแอปเปิล
-                    def draw_apple(cx, cy):
-                        return f'<circle cx="{cx}" cy="{cy}" r="18" fill="#e74c3c"/><path d="M {cx} {cy-18} Q {cx+10} {cy-30} {cx+20} {cy-20} Q {cx+10} {cy-15} {cx} {cy-18}" fill="#2ecc71"/>'
-                    # วาดเมลอน
-                    def draw_melon(cx, cy):
-                        return f'<circle cx="{cx}" cy="{cy}" r="28" fill="#27ae60"/><circle cx="{cx}" cy="{cy}" r="24" fill="#2ecc71" stroke="#27ae60" stroke-width="2" stroke-dasharray="4,2"/>'
+                    # ฟังก์ชันวาดผลไม้เล็ก
+                    def draw_s(cx, cy):
+                        return f'<circle cx="{cx}" cy="{cy}" r="16" fill="{s_fruit["color"]}"/><path d="M {cx} {cy-16} Q {cx+8} {cy-25} {cx+15} {cy-18} Q {cx+8} {cy-12} {cx} {cy-16}" fill="{s_fruit["leaf"]}" stroke="#2c3e50" stroke-width="0.5"/>'
+                    # ฟังก์ชันวาดผลไม้ใหญ่
+                    def draw_l(cx, cy):
+                        return f'<circle cx="{cx}" cy="{cy}" r="25" fill="{l_fruit["color"]}"/><circle cx="{cx}" cy="{cy}" r="21" fill="none" stroke="{l_fruit["stroke"]}" stroke-width="2" stroke-dasharray="4,2"/>'
 
-                    # เครื่องชั่ง 1 (ซ้ายล่าง: แอปเปิล 3 ผล)
-                    svg += '<rect x="40" y="160" width="160" height="6" fill="#34495e"/>'
-                    svg += '<rect x="115" y="166" width="10" height="30" fill="#7f8c8d"/>'
-                    svg += '<rect x="80" y="196" width="80" height="10" fill="#2c3e50"/>'
-                    svg += draw_apple(70, 142) + draw_apple(110, 142) + draw_apple(150, 142)
-                    svg += f'<rect x="220" y="125" width="85" height="40" rx="5" fill="#f39c12"/><text x="262" y="152" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{w1} กรัม</text>'
-                    svg += '<text x="210" y="152" font-family="sans-serif" font-size="24" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
+                    # เครื่องชั่ง 1 (ซ้ายล่าง: ผลไม้เล็กล้วน)
+                    svg += '<rect x="10" y="170" width="220" height="6" fill="#34495e" rx="3"/>'
+                    svg += '<rect x="115" y="176" width="10" height="20" fill="#7f8c8d"/>'
+                    svg += '<rect x="80" y="196" width="80" height="10" fill="#2c3e50" rx="2"/>'
+                    start_x1 = 120 - (qty_s1 * 18)
+                    for i in range(qty_s1):
+                        svg += draw_s(start_x1 + (i * 35), 153)
+                    svg += f'<rect x="250" y="145" width="85" height="35" rx="5" fill="#f39c12"/><text x="292" y="168" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{w1} กรัม</text>'
+                    svg += '<text x="238" y="168" font-family="sans-serif" font-size="24" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
                     
-                    # เครื่องชั่ง 2 (ขวาบน: แอปเปิล 2 + เมลอน 1)
-                    svg += '<rect x="330" y="80" width="180" height="6" fill="#34495e"/>'
-                    svg += '<rect x="415" y="86" width="10" height="30" fill="#7f8c8d"/>'
-                    svg += '<rect x="380" y="116" width="80" height="10" fill="#2c3e50"/>'
-                    svg += draw_apple(360, 62) + draw_apple(400, 62) + draw_melon(465, 52)
-                    svg += f'<rect x="220" y="45" width="85" height="40" rx="5" fill="#f39c12"/><text x="262" y="72" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{w2} กรัม</text>'
-                    svg += '<text x="320" y="72" font-family="sans-serif" font-size="24" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
+                    # เครื่องชั่ง 2 (ขวาบน: ผลไม้เล็ก + ผลไม้ใหญ่)
+                    svg += '<rect x="310" y="80" width="240" height="6" fill="#34495e" rx="3"/>'
+                    svg += '<rect x="425" y="86" width="10" height="20" fill="#7f8c8d"/>'
+                    svg += '<rect x="390" y="106" width="80" height="10" fill="#2c3e50" rx="2"/>'
+                    
+                    # วาดผลไม้บนเครื่องชั่งที่ 2
+                    start_x2 = 335
+                    for i in range(qty_s2):
+                        svg += draw_s(start_x2 + (i * 35), 63)
+                    start_l_x = start_x2 + (qty_s2 * 35) + 15
+                    for i in range(qty_l2):
+                        svg += draw_l(start_l_x + (i * 55), 54)
+                        
+                    svg += f'<rect x="190" y="55" width="85" height="35" rx="5" fill="#f39c12"/><text x="232" y="78" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{w2} กรัม</text>'
+                    svg += '<text x="285" y="78" font-family="sans-serif" font-size="24" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
                     
                     return svg + '</svg></div>'
 
-                q = f"คุณแม่นำผลไม้ไปชั่งน้ำหนักบนเครื่องชั่ง 2 เครื่อง ดังภาพด้านล่าง <br>จงวิเคราะห์ความสัมพันธ์แล้วหาว่า <b>เมลอน 1 ผล มีน้ำหนักกี่กรัม?</b><br>{draw_fruit_balance()}"
+                q = f"คุณแม่นำผลไม้ไปชั่งน้ำหนักบนเครื่องชั่ง 2 เครื่อง ดังภาพด้านล่าง <br>จงวิเคราะห์ความสัมพันธ์แล้วหาว่า <b>{l_fruit['name']} 1 ผล มีน้ำหนักกี่กรัม?</b><br>{draw_dynamic_balance()}"
                 
-                sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ระดับแข่งขัน):</b><br>
-                👉 <b>ขั้นที่ 1:</b> สังเกตเครื่องชั่งด้านล่าง (แอปเปิล 3 ผล = {w1} กรัม)<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลสำคัญ:</b> เราต้องเริ่มจากเครื่องชั่งที่มีผลไม้ชนิดเดียวก่อน เพื่อหาค่าน้ำหนักของ 1 ผลได้ทันที</span><br>
-                &nbsp;&nbsp;&nbsp;&nbsp; จะได้สมการ: 3 × A = {w1}<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; น้ำหนักแอปเปิล 1 ผล = {w1} ÷ 3 = <span style="color:#e74c3c;"><b>{val_apple} กรัม</b></span><br>
-                👉 <b>ขั้นที่ 2:</b> พิจารณาเครื่องชั่งด้านบน (แอปเปิล 2 ผล + เมลอน 1 ผล = {w2} กรัม)<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; นำน้ำหนักแอปเปิลที่รู้แล้วมาแทนค่า: แอปเปิล 2 ผล หนัก {val_apple} × 2 = <span style="color:#e74c3c;"><b>{val_apple * 2} กรัม</b></span><br>
-                👉 <b>ขั้นที่ 3:</b> สร้างสมการเพื่อหาน้ำหนักเมลอน (M)<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; (น้ำหนักแอปเปิล 2 ผล) + (น้ำหนักเมลอน) = {w2}<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">{val_apple * 2} + M = {w2}</span><br>
-                👉 <b>ขั้นที่ 4:</b> กำจัด <span style="color:#e74c3c;">+ {val_apple * 2}</span> โดยการลบออกทั้งสองข้าง<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; {val_apple * 2} + M <span style="color:#e74c3c;">- {val_apple * 2}</span> = {w2} <span style="color:#e74c3c;">- {val_apple * 2}</span><br>
-                &nbsp;&nbsp;&nbsp;&nbsp; M = {w2} - {val_apple * 2} = <span style="color:#27ae60;"><b>{val_melon} กรัม</b></span><br>
-                <b>ตอบ: เมลอน 1 ผล หนัก {val_melon} กรัม</b></span>'''
+                target_find = f"{l_fruit['name']} 1 ผล" if qty_l2 == 1 else f"{l_fruit['name']} {qty_l2} ผล แล้วนำไปหาร {qty_l2}"
+                
+                sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (วิเคราะห์ระบบสมการ):</b><br>
+                👉 <b>ขั้นที่ 1:</b> สังเกตเครื่องชั่งด้านล่าง ({s_fruit['name']} {qty_s1} ผล = {w1} กรัม)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลสำคัญ:</b> เราต้องเริ่มแก้ปัญหาจากเครื่องชั่งที่มีของชนิดเดียวก่อน เพื่อหาค่าน้ำหนักของ 1 ผลได้โดยการหาร</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; เขียนเป็นสมการ: {qty_s1} × น้ำหนัก{s_fruit['name']} = {w1}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; น้ำหนัก{s_fruit['name']} 1 ผล = {w1} ÷ {qty_s1} = <span style="color:#e74c3c;"><b>{val_s} กรัม</b></span><br>
+                👉 <b>ขั้นที่ 2:</b> พิจารณาเครื่องชั่งด้านบน ({s_fruit['name']} {qty_s2} ผล + {l_fruit['name']} {qty_l2} ผล = {w2} กรัม)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าน้ำหนัก{s_fruit['name']}ที่เราเพิ่งหาได้ลงไป: {s_fruit['name']} {qty_s2} ผล จะหนักรวม {val_s} × {qty_s2} = <span style="color:#e74c3c;"><b>{val_s * qty_s2} กรัม</b></span><br>
+                👉 <b>ขั้นที่ 3:</b> สร้างสมการเพื่อหาน้ำหนักของ {l_fruit['name']} (ให้ N แทนน้ำหนัก {l_fruit['name']} 1 ผล)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; (น้ำหนัก{s_fruit['name']}) + (น้ำหนัก{l_fruit['name']}) = น้ำหนักรวม<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">{val_s * qty_s2} + ({qty_l2} × N) = {w2}</span><br>
+                👉 <b>ขั้นที่ 4:</b> กำจัด <span style="color:#e74c3c;">+ {val_s * qty_s2}</span> ออกไปจากตาชั่ง โดยการลบออกทั้งสองข้าง<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; {val_s * qty_s2} + ({qty_l2} × N) <span style="color:#e74c3c;">- {val_s * qty_s2}</span> = {w2} <span style="color:#e74c3c;">- {val_s * qty_s2}</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; จะเหลือ ({qty_l2} × N) = {w2 - (val_s * qty_s2)}<br>'''
+                
+                if qty_l2 > 1:
+                    sol += f'''👉 <b>ขั้นที่ 5:</b> เนื่องจากเราได้น้ำหนักของ {l_fruit['name']} {qty_l2} ผล ต้องหารด้วย {qty_l2} เพื่อหา 1 ผล<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; N = {w2 - (val_s * qty_s2)} <span style="color:#e74c3c;">÷ {qty_l2}</span> = <span style="color:#27ae60;"><b>{val_l} กรัม</b></span><br>'''
+                    
+                sol += f'''<b>ตอบ: {l_fruit['name']} 1 ผล หนัก {val_l} กรัม</b></span>'''
 
             elif actual_sub_t == "โจทย์ปัญหาสมการ: นับหัวและขาสัตว์":
-                # สุดยอดโจทย์คลาสสิกของข้อสอบแข่งขัน ปูพื้นฐานการสมมติตัวแปร
-                chickens = random.randint(5, 12)
-                pigs = random.randint(3, 9)
-                total_heads = chickens + pigs
-                total_legs = (chickens * 2) + (pigs * 4)
+                is_challenge = st.session_state.get("challenge_mode", False)
                 
-                def draw_animal_legs():
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="120">'
-                    # วาดไก่ (2 ขา)
-                    svg += '<rect x="130" y="30" width="80" height="40" rx="10" fill="#f1c40f"/>'
-                    svg += '<text x="170" y="55" font-family="sans-serif" font-size="16" font-weight="bold" fill="#2c3e50" text-anchor="middle">ไก่</text>'
-                    svg += '<line x1="155" y1="70" x2="155" y2="90" stroke="#2c3e50" stroke-width="3"/><line x1="185" y1="70" x2="185" y2="90" stroke="#2c3e50" stroke-width="3"/>'
-                    svg += '<text x="170" y="110" font-family="sans-serif" font-size="14" font-weight="bold" fill="#e74c3c" text-anchor="middle">มี 2 ขา</text>'
+                # 🎲 ฐานข้อมูลสัตว์ (เพิ่มความหลากหลาย)
+                animals_2 = [
+                    {"name": "ไก่", "legs": 2, "color": "#f1c40f"}, {"name": "เป็ด", "legs": 2, "color": "#e67e22"},
+                    {"name": "ห่าน", "legs": 2, "color": "#ecf0f1"}, {"name": "นกกระจอกเทศ", "legs": 2, "color": "#bdc3c7"}
+                ]
+                animals_4 = [
+                    {"name": "หมู", "legs": 4, "color": "#ffb8c6"}, {"name": "วัว", "legs": 4, "color": "#a4b0be"},
+                    {"name": "ม้า", "legs": 4, "color": "#d35400"}, {"name": "แพะ", "legs": 4, "color": "#ecf0f1"}
+                ]
+                animals_6_8 = [
+                    {"name": "มด", "legs": 6, "color": "#c0392b"}, {"name": "แมงมุม", "legs": 8, "color": "#2c3e50"}
+                ]
+                
+                if not is_challenge:
+                    a1 = random.choice(animals_2)
+                    a2 = random.choice(animals_4)
+                    t_heads = random.randint(15, 30) # จำนวนรวมเยอะขึ้น ท้าทายกว่าเดิม
+                else:
+                    # โหมดท้าทาย: สัตว์ 4 ขา กับ แมลง (6 ขา หรือ 8 ขา)
+                    a1 = random.choice(animals_4)
+                    a2 = random.choice(animals_6_8)
+                    t_heads = random.randint(20, 40)
                     
-                    # วาดหมู (4 ขา)
-                    svg += '<rect x="350" y="30" width="80" height="40" rx="10" fill="#ffb8c6"/>'
-                    svg += '<text x="390" y="55" font-family="sans-serif" font-size="16" font-weight="bold" fill="#2c3e50" text-anchor="middle">หมู</text>'
-                    svg += '<line x1="360" y1="70" x2="360" y2="90" stroke="#2c3e50" stroke-width="3"/><line x1="375" y1="70" x2="375" y2="90" stroke="#2c3e50" stroke-width="3"/>'
-                    svg += '<line x1="405" y1="70" x2="405" y2="90" stroke="#2c3e50" stroke-width="3"/><line x1="420" y1="70" x2="420" y2="90" stroke="#2c3e50" stroke-width="3"/>'
-                    svg += '<text x="390" y="110" font-family="sans-serif" font-size="14" font-weight="bold" fill="#e74c3c" text-anchor="middle">มี 4 ขา</text>'
+                # สุ่มจำนวนสัตว์แต่ละชนิด
+                count_a1 = random.randint(5, t_heads - 5)
+                count_a2 = t_heads - count_a1
+                
+                total_legs = (count_a1 * a1['legs']) + (count_a2 * a2['legs'])
+                leg_diff = a2['legs'] - a1['legs']
+                
+                def draw_dynamic_legs():
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="120">'
+                    # สัตว์ตัวที่ 1 (ขาน้อยกว่า)
+                    svg += f'<rect x="130" y="30" width="100" height="40" rx="10" fill="{a1["color"]}" stroke="#2c3e50" stroke-width="1"/>'
+                    svg += f'<text x="180" y="55" font-family="sans-serif" font-size="16" font-weight="bold" fill="#2c3e50" text-anchor="middle">{a1["name"]}</text>'
+                    # วาดขาตามจำนวนจริง
+                    for i in range(a1["legs"]):
+                        lx = 145 + (i * (70 / (a1["legs"] - 1 if a1["legs"]>1 else 1)))
+                        svg += f'<line x1="{lx}" y1="70" x2="{lx}" y2="90" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/>'
+                    svg += f'<text x="180" y="110" font-family="sans-serif" font-size="14" font-weight="bold" fill="#e74c3c" text-anchor="middle">สัตว์ {a1["legs"]} ขา</text>'
+                    
+                    # สัตว์ตัวที่ 2 (ขามากกว่า)
+                    svg += f'<rect x="330" y="30" width="100" height="40" rx="10" fill="{a2["color"]}" stroke="#2c3e50" stroke-width="1"/>'
+                    svg += f'<text x="380" y="55" font-family="sans-serif" font-size="16" font-weight="bold" fill="#2c3e50" text-anchor="middle">{a2["name"]}</text>'
+                    for i in range(a2["legs"]):
+                        lx = 340 + (i * (80 / (a2["legs"] - 1)))
+                        svg += f'<line x1="{lx}" y1="70" x2="{lx}" y2="90" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/>'
+                    svg += f'<text x="380" y="110" font-family="sans-serif" font-size="14" font-weight="bold" fill="#e74c3c" text-anchor="middle">สัตว์ {a2["legs"]} ขา</text>'
                     return svg + '</svg></div>'
 
-                target = random.choice(["ไก่", "หมู"])
-                q = f"ลุงชัยเลี้ยง <b>ไก่</b> และ <b>หมู</b> ไว้ในฟาร์ม ถ้านับหัวรวมกันได้ <b>{total_heads} หัว</b> และนับขารวมกันได้ <b>{total_legs} ขา</b><br>อยากทราบว่าในฟาร์มนี้มี <b>{target} ทั้งหมดกี่ตัว?</b><br>{draw_animal_legs()}"
+                target_animal = random.choice([a1, a2])
+                q = f"คุณตาเลี้ยง <b>{a1['name']}</b> และ <b>{a2['name']}</b> ไว้ในฟาร์ม ถ้านับหัวสัตว์ทั้งสองชนิดรวมกันได้ <b>{t_heads} หัว</b> และนับขารวมกันได้ <b>{total_legs} ขา</b><br>อยากทราบว่าในฟาร์มนี้มี <b>{target_animal['name']} ทั้งหมดกี่ตัว?</b><br>{draw_dynamic_legs()}"
                 
-                sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการสมมติ):</b><br>
-                👉 <b>ขั้นที่ 1:</b> สมมติให้สัตว์ทั้งหมด {total_heads} ตัว เป็น <b>"ไก่"</b> (เพราะมีขาน้อยกว่า)<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; ถ้ามีไก่ {total_heads} ตัว จะมีขารวม: {total_heads} × 2 = <span style="color:#2980b9;"><b>{total_heads * 2} ขา</b></span><br>
+                assumed_legs = t_heads * a1['legs']
+                missing_legs = total_legs - assumed_legs
+                
+                sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการสมมติยอดฮิต):</b><br>
+                👉 <b>ขั้นที่ 1:</b> สมมติให้สัตว์ทั้งหมด {t_heads} ตัว เป็น <b>"{a1['name']}"</b> (เลือกตัวที่มีขาน้อยกว่าเสมอเพื่อตั้งเป็นฐาน)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลที่ต้องสมมติ:</b> เพื่อให้เราคำนวณจำนวนขาขั้นต่ำที่จะเป็นไปได้ หากสัตว์ทุกตัวมีขาเท่ากัน</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; ถ้ามี{a1['name']}ทั้งหมด {t_heads} ตัว จะมีขารวม: {t_heads} × {a1['legs']} = <span style="color:#2980b9;"><b>{assumed_legs} ขา</b></span><br>
                 👉 <b>ขั้นที่ 2:</b> หาจำนวนขาที่ "ขาดหายไป" จากความเป็นจริง<br>
                 &nbsp;&nbsp;&nbsp;&nbsp; โจทย์บอกว่าความจริงมีขารวม {total_legs} ขา<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; ขาที่หายไปคือ: {total_legs} - {total_heads * 2} = <span style="color:#e74c3c;"><b>{total_legs - (total_heads * 2)} ขา</b></span><br>
-                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;">(<b>ทำไมขาถึงหายไป?</b> เพราะความจริงมี "หมู" อยู่ด้วย แต่เราเผลอนับหมูทุกตัวเป็นไก่ ซึ่งหมู 1 ตัว มีขามากกว่าไก่ 4 - 2 = <b>2 ขา</b>)</span><br>
-                👉 <b>ขั้นที่ 3:</b> หาจำนวนหมู (เอาขาที่หายไป มาเติมให้หมูตัวละ 2 ขา)<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; จำนวนหมู = {total_legs - (total_heads * 2)} ÷ 2 = <span style="color:#27ae60;"><b>{pigs} ตัว</b></span><br>
-                👉 <b>ขั้นที่ 4:</b> หาจำนวนไก่ (จากจำนวนหัวทั้งหมด)<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; จำนวนไก่ = หัวทั้งหมด {total_heads} - หมู {pigs} = <span style="color:#27ae60;"><b>{chickens} ตัว</b></span><br>
-                <b>ตอบ: ลุงชัยเลี้ยง{target}ทั้งหมด {pigs if target=="หมู" else chickens} ตัว</b></span>'''
+                &nbsp;&nbsp;&nbsp;&nbsp; ขาที่หายไปจากที่เราสมมติไว้คือ: {total_legs} - {assumed_legs} = <span style="color:#e74c3c;"><b>{missing_legs} ขา</b></span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;">(<b>ทำไมขาถึงหายไป?</b> เพราะความจริงมี "{a2['name']}" ปนอยู่ด้วย แต่เราเผลอนับ{a2['name']}ทุกตัวเป็น{a1['name']} ซึ่ง{a2['name']} 1 ตัว มีขามากกว่า{a1['name']}อยู่ {a2['legs']} - {a1['legs']} = <b>{leg_diff} ขา</b>)</span><br>
+                👉 <b>ขั้นที่ 3:</b> หาจำนวน {a2['name']} (ตัวที่ขาเยอะกว่า)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; นำขาที่หายไป มาแจกคืนให้{a2['name']}ตัวละ {leg_diff} ขา: {missing_legs} ÷ {leg_diff} = <span style="color:#27ae60;"><b>{count_a2} ตัว</b></span><br>
+                👉 <b>ขั้นที่ 4:</b> หาจำนวน {a1['name']} (ตัวที่ขาน้อยกว่า)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; นำหัวทั้งหมดไปลบออก: {t_heads} - {count_a2} = <span style="color:#27ae60;"><b>{count_a1} ตัว</b></span><br>
+                <b>ตอบ: ฟาร์มนี้มี{target_animal['name']}ทั้งหมด {count_a1 if target_animal['name'] == a1['name'] else count_a2} ตัว</b></span>'''
 
             elif actual_sub_t == "ค่าประมาณเป็นจำนวนเต็มสิบ เต็มร้อย เต็มพัน":
                 target = random.choice(["สิบ", "ร้อย", "พัน"])
