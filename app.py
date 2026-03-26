@@ -5208,7 +5208,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 uA, uB = pair["uA"], pair["uB"]
                 
                 if not is_challenge:
-                    # --- โหมดธรรมดา: วิธีแทนค่าตัวแปร (ตามลายมือผู้ใช้งานเป๊ะๆ) ---
                     val_A = random.randint(30, 80)
                     val_B = random.randint(10, val_A - 10)
                     
@@ -5224,6 +5223,11 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     &nbsp;&nbsp;&nbsp;&nbsp; จากโจทย์ เขียนประโยคสัญลักษณ์ได้ดังนี้:<br>
                     &nbsp;&nbsp;&nbsp;&nbsp; 1) ราคารวมกัน {sum_val} บาท ➞ <b>x + y = {sum_val}</b> &nbsp;&nbsp;&nbsp;&nbsp; --- (สมการที่ ①)<br>
                     &nbsp;&nbsp;&nbsp;&nbsp; 2) แพงกว่ากัน {diff_val} บาท ➞ <b>x - {diff_val} = y</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --- (สมการที่ ②)<br>
+                    <br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>🤔 ทำไม "แพงกว่า"...ถึงใช้เครื่องหมายลบ (-)?</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>คำอธิบาย:</b> เพราะ <b>x</b> คือของที่แพงกว่า ถ้าเราอยากรู้ราคาของที่ถูกกว่า (<b>y</b>) เราก็ต้องเอาของแพง (<b>x</b>) ไป <b>"หักออก"</b> ด้วยส่วนต่างนั่นเองครับ!<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; 💡 <i>(ถ้าเด็กๆ ถามว่า "หนูอยากเขียนเป็นเครื่องหมายบวก ได้ไหมคะ?" <b>ตอบว่า ได้แน่นอนครับ!</b> เราสามารถเขียนเป็น <b>y + {diff_val} = x</b> (ของถูก + ส่วนต่าง = ของแพง) ก็มีความหมายเหมือนกันเป๊ะเลย! แต่ที่เราจัดรูปเป็น <b>x - {diff_val} = y</b> ก็เพื่อเตรียมเอาตัว <b>y</b> ทั้งก้อนไปแทนค่าในสมการแรกให้ง่ายขึ้นครับ)</i></span><br>
+                    <br>
                     👉 <b>ขั้นที่ 2: แก้สมการ (นำสมการที่ ② ไปแทนค่าในสมการที่ ①)</b><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลการแทนค่า:</b> ในเมื่อเรารู้ว่า y มีค่าเท่ากับ (x - {diff_val}) เราก็แค่เอา (x - {diff_val}) ไปวางแทนที่ตัว y ในสมการแรก เพื่อให้เหลือแค่ตัวแปร x ตัวเดียวครับ</span><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; จากสมการที่ ①: x + <b>y</b> = {sum_val}<br>
@@ -5238,7 +5242,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     <b>ตอบ: {nameA} ราคา{uA}ละ {val_A} บาท</b></span>'''
                     
                 else:
-                    # --- โหมดท้าทาย: วิธีแทนค่าตัวแปร แบบประยุกต์ ---
                     val_B = random.randint(8, 25)
                     m = random.randint(2, 4) 
                     val_A = random.randint(val_B + 5, (val_B * m) - 2) 
@@ -5262,7 +5265,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     👉 <b>ขั้นที่ 2: จัดรูปสมการและแทนค่า</b><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; จากสมการที่ ② เราสามารถย้ายข้างเพื่อหาค่า x ได้ดังนี้:<br>
                     &nbsp;&nbsp;&nbsp;&nbsp; ย้าย -x ไปฝั่งขวา และย้าย {diff_val} มาฝั่งซ้าย: <b>{m}y - {diff_val} = x</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผล:</b> ตอนนี้เรารู้แล้วว่าตัว x มีค่าเท่ากับ ({m}y - {diff_val}) ให้นำก้อนนี้ไปแทนที่ x ในสมการที่ ①</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>ความหมายก็คือ:</b> ราคาของ {nameB} {m} {uB} ({m}y) หักออกด้วยส่วนต่าง ({diff_val}) จะมีค่าเท่ากับราคาของ {nameA} (x) พอดีครับ</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลการแทนค่า:</b> ตอนนี้เรารู้แล้วว่าตัว x มีค่าก้อนเท่ากับ ({m}y - {diff_val}) ให้นำก้อนนี้ไปแทนที่ x ในสมการที่ ①</span><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; จากสมการที่ ①: <b>x</b> + y = {sum_val}<br>
                     &nbsp;&nbsp;&nbsp;&nbsp; เปลี่ยน x เป็น ({m}y - {diff_val}): <b>({m}y - {diff_val}) + y = {sum_val}</b><br>
                     👉 <b>ขั้นที่ 3: ย้ายข้างสมการเพื่อหาค่า y (ราคา {nameB})</b><br>
