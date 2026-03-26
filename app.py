@@ -4284,11 +4284,13 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 whole = random.randint(2, 9)
                 num_rem = random.randint(1, den - 1)
                 num_total = (whole * den) + num_rem
-                frac_str = f_html(num_total, den)
+                
+                # 💡 ใช้ globals() เพื่อบังคับเรียกฟังก์ชันเศษส่วนตัวหลัก แก้บั๊กการตั้งชื่อชนกัน
+                frac_str = globals()['f_html'](num_total, den)
                 mixed_str = generate_mixed_number_html(whole, num_rem, den)
+                
                 q = f"จงแปลงเศษเกินต่อไปนี้ให้เป็นจำนวนคละ<br><br><div style='text-align:center; font-size:26px;'>{frac_str} = <span style='color:#2980b9;'>?</span></div>"
                 sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 นำตัวเศษ (ด้านบน) หารด้วยตัวส่วน (ด้านล่าง)<br>👉 นำ {num_total} ÷ {den} <br>👉 จะได้ <b>{whole}</b> และเหลือเศษ <b>{num_rem}</b><br>👉 นำมาเขียนเป็นจำนวนคละได้คือ <b>{mixed_str}</b><br><b>ตอบ: {mixed_str}</b></span>"
-
             elif actual_sub_t == "การอ่านและการเขียนทศนิยม":
                 dp = random.randint(1, 3)
                 whole = random.randint(0, 99)
