@@ -4693,9 +4693,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 <b>ตอบ: {val_a + val_b}</b></span>'''
 
             elif actual_sub_t == "โจทย์ปัญหาสมการ: ตาชั่งผลไม้":
-                is_challenge = st.session_state.get("challenge_mode", False)
+                # 💡 ให้ระบบสุ่มเองเลยว่าข้อนี้จะเป็น 2 ตาชั่ง หรือ 3 ตาชั่ง
+                level = random.choice([2, 3])
                 
-                # 🎲 ฐานข้อมูลผลไม้ 3 ขนาด
+                # ฐานข้อมูลผลไม้ 3 ขนาด
                 small_fruits = [
                     {"name": "สตรอว์เบอร์รี", "color": "#ff4757", "leaf": "#2ed573"},
                     {"name": "มะนาว", "color": "#7bed9f", "leaf": "#2ed573"}
@@ -4714,13 +4715,39 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 m_f = random.choice(medium_fruits)
                 l_f = random.choice(large_fruits)
                 
-                # สุ่มน้ำหนัก
-                val_s = random.randint(10, 25)
-                val_m = random.randint(40, 90)
-                val_l = random.randint(150, 350)
+                # สุ่มน้ำหนักผลไม้แต่ละขนาด
+                val_s = random.randint(12, 30)
+                val_m = random.randint(45, 90)
+                val_l = random.randint(150, 300)
                 
-                if not is_challenge:
-                    # โหมดธรรมดา: 2 ตาชั่ง (ใช้ผลไม้ กลาง กับ ใหญ่)
+                # ฟังก์ชันวาดผลไม้
+                def draw_s(cx, cy): return f'<circle cx="{cx}" cy="{cy}" r="12" fill="{s_f["color"]}"/><path d="M {cx} {cy-12} Q {cx+4} {cy-18} {cx+8} {cy-14} Q {cx+4} {cy-10} {cx} {cy-12}" fill="{s_f["leaf"]}" stroke="#2c3e50" stroke-width="0.5"/>'
+                def draw_m(cx, cy): return f'<circle cx="{cx}" cy="{cy}" r="16" fill="{m_f["color"]}"/><path d="M {cx} {cy-16} Q {cx+6} {cy-24} {cx+12} {cy-18} Q {cx+6} {cy-12} {cx} {cy-16}" fill="{m_f["leaf"]}" stroke="#2c3e50" stroke-width="0.5"/>'
+                def draw_l(cx, cy): return f'<circle cx="{cx}" cy="{cy}" r="24" fill="{l_f["color"]}"/><circle cx="{cx}" cy="{cy}" r="20" fill="none" stroke="{l_f["stroke"]}" stroke-width="2" stroke-dasharray="4,2"/>'
+
+                # ฟังก์ชันอัจฉริยะ วาดตาชั่งและจัดกึ่งกลางผลไม้อัตโนมัติ
+                def draw_row(cy, items, total_w):
+                    row_svg = f'<rect x="90" y="{cy}" width="180" height="5" fill="#34495e" rx="2"/><rect x="175" y="{cy+5}" width="10" height="15" fill="#7f8c8d"/><rect x="150" y="{cy+20}" width="60" height="8" fill="#2c3e50" rx="2"/>'
+                    t_width = sum([(qty * sp) for _, qty, sp, _ in items])
+                    curr_x = 180 - (t_width / 2)
+                    
+                    for draw_fn, qty, sp, y_off in items:
+                        for i in range(qty):
+                            cx = curr_x + (sp / 2) + (i * sp)
+                            row_svg += draw_fn(cx, cy - y_off)
+                        curr_x += (qty * sp)
+                        
+                    row_svg += f'<text x="320" y="{cy+5}" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
+                    row_svg += f'<rect x="370" y="{cy-18}" width="100" height="40" rx="6" fill="#f39c12"/><text x="420" y="{cy+8}" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{total_w} กรัม</text>'
+                    return row_svg
+
+                # ระยะห่างของผลไม้แต่ละขนาด
+                s_sp, s_y = 26, 13
+                m_sp, m_y = 34, 17
+                l_sp, l_y = 50, 25
+
+                if level == 2:
+                    # --- โหมด 2 ตาชั่ง (กลาง กับ ใหญ่) ---
                     qty_m1 = random.randint(3, 5) 
                     qty_m2 = random.randint(1, 2) 
                     qty_l2 = 1                    
@@ -4728,12 +4755,31 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     w1 = val_m * qty_m1
                     w2 = (val_m * qty_m2) + (val_l * qty_l2)
                     
-                    target_fruit = l_f['name']
-                    target_val = val_l
-                else:
-                    # โหมดท้าทาย: 3 ตาชั่ง (ใช้ผลไม้ เล็ก กลาง ใหญ่)
+                    svg_h = 240
+                    svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="{svg_h}">'
+                    svg += draw_row(80, [(draw_m, qty_m1, m_sp, m_y)], w1)
+                    svg += draw_row(180, [(draw_m, qty_m2, m_sp, m_y), (draw_l, qty_l2, l_sp, l_y)], w2)
+                    svg += '</svg></div>'
+                    
+                    q = f"คุณแม่นำผลไม้ไปชั่งน้ำหนักบนเครื่องชั่ง 2 เครื่อง ดังภาพด้านล่าง <br>จงวิเคราะห์ความสัมพันธ์แล้วหาว่า <b>{l_f['name']} 1 ผล มีน้ำหนักกี่กรัม?</b><br>{svg}"
+                    
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (แก้ระบบสมการ):</b><br>
+                    👉 <b>ขั้นที่ 1:</b> สังเกตเครื่องชั่งด้านบน ({m_f['name']} {qty_m1} ผล = {w1} กรัม)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลสำคัญ:</b> เราต้องเริ่มแก้ปัญหาจากตาชั่งที่มีของชนิดเดียวก่อน เพื่อหาค่าน้ำหนัก 1 ผลได้โดยการหาร</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; น้ำหนัก {m_f['name']} 1 ผล = {w1} ÷ {qty_m1} = <span style="color:#e74c3c;"><b>{val_m} กรัม</b></span><br>
+                    👉 <b>ขั้นที่ 2:</b> พิจารณาเครื่องชั่งด้านล่าง ({m_f['name']} {qty_m2} ผล + {l_f['name']} {qty_l2} ผล = {w2} กรัม)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าน้ำหนัก {m_f['name']} ลงไป: {val_m} กรัม × {qty_m2} ผล = <span style="color:#2980b9;"><b>{val_m * qty_m2} กรัม</b></span><br>
+                    👉 <b>ขั้นที่ 3:</b> สร้างสมการเพื่อหาน้ำหนักของ {l_f['name']} (ให้ N แทนน้ำหนัก {l_f['name']} 1 ผล)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">{val_m * qty_m2} + ({qty_l2} × N) = {w2}</span><br>
+                    👉 <b>ขั้นที่ 4:</b> กำจัด <span style="color:#e74c3c;">+ {val_m * qty_m2}</span> โดยการลบออกทั้งสองข้าง<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ({qty_l2} × N) = {w2} - {val_m * qty_m2} = {w2 - (val_m * qty_m2)}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; N = <span style="color:#27ae60;"><b>{val_l} กรัม</b></span><br>
+                    <b>ตอบ: {l_f['name']} 1 ผล หนัก {val_l} กรัม</b></span>'''
+                    
+                else: 
+                    # --- โหมด 3 ตาชั่งสุดท้าทาย (เล็ก กลาง ใหญ่) ---
                     qty_s1 = random.randint(3, 5)
-                    qty_s2 = random.randint(2, 3)
+                    qty_s2 = random.randint(1, 3)
                     qty_m2 = random.randint(1, 2)
                     qty_m3 = random.randint(1, 2)
                     qty_l3 = 1
@@ -4742,79 +4788,30 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     w2 = (val_s * qty_s2) + (val_m * qty_m2)
                     w3 = (val_m * qty_m3) + (val_l * qty_l3)
                     
-                    target_fruit = l_f['name']
-                    target_val = val_l
-
-                def draw_dynamic_balance():
-                    svg_h = 350 if is_challenge else 250
+                    svg_h = 340
                     svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="{svg_h}">'
+                    svg += draw_row(60, [(draw_s, qty_s1, s_sp, s_y)], w1)
+                    svg += draw_row(160, [(draw_s, qty_s2, s_sp, s_y), (draw_m, qty_m2, m_sp, m_y)], w2)
+                    svg += draw_row(260, [(draw_m, qty_m3, m_sp, m_y), (draw_l, qty_l3, l_sp, l_y)], w3)
+                    svg += '</svg></div>'
                     
-                    def draw_s(cx, cy): return f'<circle cx="{cx}" cy="{cy}" r="12" fill="{s_f["color"]}"/><path d="M {cx} {cy-12} Q {cx+4} {cy-18} {cx+8} {cy-14} Q {cx+4} {cy-10} {cx} {cy-12}" fill="{s_f["leaf"]}" stroke="#2c3e50" stroke-width="0.5"/>'
-                    def draw_m(cx, cy): return f'<circle cx="{cx}" cy="{cy}" r="16" fill="{m_f["color"]}"/><path d="M {cx} {cy-16} Q {cx+6} {cy-24} {cx+12} {cy-18} Q {cx+6} {cy-12} {cx} {cy-16}" fill="{m_f["leaf"]}" stroke="#2c3e50" stroke-width="0.5"/>'
-                    def draw_l(cx, cy): return f'<circle cx="{cx}" cy="{cy}" r="24" fill="{l_f["color"]}"/><circle cx="{cx}" cy="{cy}" r="20" fill="none" stroke="{l_f["stroke"]}" stroke-width="2" stroke-dasharray="4,2"/>'
-
-                    # ฟังก์ชันจัดกึ่งกลางแถวอัตโนมัติ (อัจฉริยะมาก)
-                    def draw_row(cy, items, total_w):
-                        row_svg = f'<rect x="80" y="{cy}" width="180" height="5" fill="#34495e" rx="2"/><rect x="165" y="{cy+5}" width="10" height="15" fill="#7f8c8d"/><rect x="140" y="{cy+20}" width="60" height="8" fill="#2c3e50" rx="2"/>'
-                        t_width = sum([qty * sp for _, qty, sp, _ in items])
-                        curr_x = 170 - (t_width / 2)
-                        
-                        for draw_fn, qty, sp, y_off in items:
-                            for i in range(qty):
-                                cx = curr_x + (sp / 2) + (i * sp)
-                                row_svg += draw_fn(cx, cy - y_off)
-                            curr_x += (qty * sp)
-                            
-                        row_svg += f'<text x="310" y="{cy+5}" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
-                        row_svg += f'<rect x="360" y="{cy-18}" width="100" height="40" rx="6" fill="#f39c12"/><text x="410" y="{cy+8}" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{total_w} กรัม</text>'
-                        return row_svg
-
-                    s_sp, s_y = 24, 13
-                    m_sp, m_y = 32, 17
-                    l_sp, l_y = 48, 25
+                    q = f"คุณแม่นำผลไม้ไปชั่งน้ำหนักบนเครื่องชั่ง 3 เครื่อง ดังภาพด้านล่าง <br>จงวิเคราะห์ความสัมพันธ์แล้วหาว่า <b>{l_f['name']} 1 ผล มีน้ำหนักกี่กรัม?</b><br>{svg}"
                     
-                    if not is_challenge:
-                        svg += draw_row(80, [(draw_m, qty_m1, m_sp, m_y)], w1)
-                        svg += draw_row(190, [(draw_m, qty_m2, m_sp, m_y), (draw_l, qty_l2, l_sp, l_y)], w2)
-                    else:
-                        svg += draw_row(60, [(draw_s, qty_s1, s_sp, s_y)], w1)
-                        svg += draw_row(160, [(draw_s, qty_s2, s_sp, s_y), (draw_m, qty_m2, m_sp, m_y)], w2)
-                        svg += draw_row(260, [(draw_m, qty_m3, m_sp, m_y), (draw_l, qty_l3, l_sp, l_y)], w3)
-                        
-                    return svg + '</svg></div>'
-
-                mode_text = "3 เครื่อง" if is_challenge else "2 เครื่อง"
-                q = f"คุณแม่นำผลไม้ไปชั่งน้ำหนักบนเครื่องชั่ง {mode_text} ดังภาพด้านล่าง <br>จงวิเคราะห์ความสัมพันธ์แล้วหาว่า <b>{target_fruit} 1 ผล มีน้ำหนักกี่กรัม?</b><br>{draw_dynamic_balance()}"
-                
-                if not is_challenge:
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (วิเคราะห์ระบบสมการ):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> สังเกตเครื่องชั่งด้านบน ({m_f['name']} {qty_m1} ผล = {w1} กรัม)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลสำคัญ:</b> เราต้องเริ่มแก้ปัญหาจากตาชั่งที่มีของชนิดเดียวก่อน เพื่อหาค่าน้ำหนัก 1 ผลได้โดยการหาร</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; น้ำหนัก {m_f['name']} 1 ผล = {w1} ÷ {qty_m1} = <span style="color:#e74c3c;"><b>{val_m} กรัม</b></span><br>
-                    👉 <b>ขั้นที่ 2:</b> พิจารณาเครื่องชั่งด้านล่าง ({m_f['name']} {qty_m2} ผล + {l_f['name']} {qty_l2} ผล = {w2} กรัม)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าน้ำหนัก {m_f['name']} ลงไป: {val_m} กรัม × {qty_m2} ผล = <span style="color:#e74c3c;"><b>{val_m * qty_m2} กรัม</b></span><br>
-                    👉 <b>ขั้นที่ 3:</b> สร้างสมการเพื่อหาน้ำหนักของ {l_f['name']} (ให้ N แทนน้ำหนัก {l_f['name']} 1 ผล)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">{val_m * qty_m2} + ({qty_l2} × N) = {w2}</span><br>
-                    👉 <b>ขั้นที่ 4:</b> กำจัด <span style="color:#e74c3c;">+ {val_m * qty_m2}</span> โดยการลบออกทั้งสองข้าง<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {val_m * qty_m2} + ({qty_l2} × N) <span style="color:#e74c3c;">- {val_m * qty_m2}</span> = {w2} <span style="color:#e74c3c;">- {val_m * qty_m2}</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; N = <span style="color:#27ae60;"><b>{val_l} กรัม</b></span><br>
-                    <b>ตอบ: {target_fruit} 1 ผล หนัก {target_val} กรัม</b></span>'''
-                else:
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ระดับท้าทาย: แก้สมการ 3 ขั้นตอน):</b><br>
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ระดับท้าทาย: แก้สมการ 3 ชั้น):</b><br>
                     👉 <b>ขั้นที่ 1:</b> สังเกตเครื่องชั่งแถวบนสุด ({s_f['name']} {qty_s1} ผล = {w1} กรัม)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลสำคัญ:</b> เริ่มจากชั้นบนสุดที่มีผลไม้ชนิดเดียว เพื่อหาฐานของน้ำหนักให้ได้ก่อน</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลสำคัญ:</b> เริ่มจากตาชั่งชั้นบนสุดที่มีผลไม้ชนิดเดียว เพื่อหาฐานของน้ำหนักไปแทนค่าในชั้นต่อไป</span><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; น้ำหนัก {s_f['name']} 1 ผล = {w1} ÷ {qty_s1} = <span style="color:#e74c3c;"><b>{val_s} กรัม</b></span><br>
                     👉 <b>ขั้นที่ 2:</b> พิจารณาเครื่องชั่งแถวกลาง ({s_f['name']} {qty_s2} ผล + {m_f['name']} {qty_m2} ผล = {w2} กรัม)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าน้ำหนัก {s_f['name']} ที่รู้แล้วลงไป: {val_s} × {qty_s2} = {val_s * qty_s2} กรัม<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้สมการ: <span style="color:#2980b9;">{val_s * qty_s2} + (น้ำหนัก {m_f['name']} {qty_m2} ผล) = {w2}</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; กำจัด <span style="color:#e74c3c;">+ {val_s * qty_s2}</span> ด้วยการลบออก: น้ำหนัก {m_f['name']} {qty_m2} ผล = {w2} - {val_s * qty_s2} = {w2 - (val_s * qty_s2)} กรัม<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าน้ำหนัก {s_f['name']} ที่รู้แล้วลงไป: {val_s} × {qty_s2} = <span style="color:#2980b9;">{val_s * qty_s2} กรัม</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้สมการ: <span style="color:#2980b9;">{val_s * qty_s2} + ({qty_m2} × น้ำหนัก{m_f['name']}) = {w2}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; กำจัด <span style="color:#e74c3c;">+ {val_s * qty_s2}</span> ด้วยการลบออก: ({qty_m2} × น้ำหนัก{m_f['name']}) = {w2} - {val_s * qty_s2} = {w2 - (val_s * qty_s2)}<br>
                     &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {m_f['name']} 1 ผล = {w2 - (val_s * qty_s2)} ÷ {qty_m2} = <span style="color:#e74c3c;"><b>{val_m} กรัม</b></span><br>
                     👉 <b>ขั้นที่ 3:</b> พิจารณาเครื่องชั่งแถวล่างสุด ({m_f['name']} {qty_m3} ผล + {l_f['name']} {qty_l3} ผล = {w3} กรัม)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าน้ำหนัก {m_f['name']} ลงไป: {val_m} × {qty_m3} = {val_m * qty_m3} กรัม<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าน้ำหนัก {m_f['name']} ลงไป: {val_m} × {qty_m3} = <span style="color:#2980b9;">{val_m * qty_m3} กรัม</span><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; จะได้สมการ (ให้ N แทน {l_f['name']}): <span style="color:#2980b9;">{val_m * qty_m3} + ({qty_l3} × N) = {w3}</span><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; กำจัด <span style="color:#e74c3c;">+ {val_m * qty_m3}</span> ด้วยการลบออก: {qty_l3} × N = {w3} - {val_m * qty_m3} = {w3 - (val_m * qty_m3)}<br>
                     &nbsp;&nbsp;&nbsp;&nbsp; N = <span style="color:#27ae60;"><b>{val_l} กรัม</b></span><br>
-                    <b>ตอบ: {target_fruit} 1 ผล หนัก {target_val} กรัม</b></span>'''
+                    <b>ตอบ: {l_f['name']} 1 ผล หนัก {val_l} กรัม</b></span>'''
 
             elif actual_sub_t == "โจทย์ปัญหาสมการ: นับหัวและขาสัตว์":
                 is_challenge = st.session_state.get("challenge_mode", False)
