@@ -4694,6 +4694,97 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e74c3c;">{val_a}</span> + <span style="color:#f1c40f;">{val_b}</span> = <span style="color:#27ae60;"><b>{val_a + val_b}</b></span><br>
                 <b>ตอบ: {val_a + val_b}</b></span>'''
 
+            elif actual_sub_t == "โจทย์ปัญหาสมการ: ตาชั่งผลไม้":
+                # ปูพื้นฐานระบบสมการ (System of Equations) ผ่านภาพผลไม้ที่เด็กจับต้องได้
+                val_apple = random.randint(15, 30)
+                val_melon = random.randint(45, 90)
+                
+                w1 = val_apple * 3
+                w2 = (val_apple * 2) + val_melon
+                
+                def draw_fruit_balance():
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="220">'
+                    # วาดแอปเปิล
+                    def draw_apple(cx, cy):
+                        return f'<circle cx="{cx}" cy="{cy}" r="18" fill="#e74c3c"/><path d="M {cx} {cy-18} Q {cx+10} {cy-30} {cx+20} {cy-20} Q {cx+10} {cy-15} {cx} {cy-18}" fill="#2ecc71"/>'
+                    # วาดเมลอน
+                    def draw_melon(cx, cy):
+                        return f'<circle cx="{cx}" cy="{cy}" r="28" fill="#27ae60"/><circle cx="{cx}" cy="{cy}" r="24" fill="#2ecc71" stroke="#27ae60" stroke-width="2" stroke-dasharray="4,2"/>'
+
+                    # เครื่องชั่ง 1 (ซ้ายล่าง: แอปเปิล 3 ผล)
+                    svg += '<rect x="40" y="160" width="160" height="6" fill="#34495e"/>'
+                    svg += '<rect x="115" y="166" width="10" height="30" fill="#7f8c8d"/>'
+                    svg += '<rect x="80" y="196" width="80" height="10" fill="#2c3e50"/>'
+                    svg += draw_apple(70, 142) + draw_apple(110, 142) + draw_apple(150, 142)
+                    svg += f'<rect x="220" y="125" width="85" height="40" rx="5" fill="#f39c12"/><text x="262" y="152" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{w1} กรัม</text>'
+                    svg += '<text x="210" y="152" font-family="sans-serif" font-size="24" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
+                    
+                    # เครื่องชั่ง 2 (ขวาบน: แอปเปิล 2 + เมลอน 1)
+                    svg += '<rect x="330" y="80" width="180" height="6" fill="#34495e"/>'
+                    svg += '<rect x="415" y="86" width="10" height="30" fill="#7f8c8d"/>'
+                    svg += '<rect x="380" y="116" width="80" height="10" fill="#2c3e50"/>'
+                    svg += draw_apple(360, 62) + draw_apple(400, 62) + draw_melon(465, 52)
+                    svg += f'<rect x="220" y="45" width="85" height="40" rx="5" fill="#f39c12"/><text x="262" y="72" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{w2} กรัม</text>'
+                    svg += '<text x="320" y="72" font-family="sans-serif" font-size="24" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
+                    
+                    return svg + '</svg></div>'
+
+                q = f"คุณแม่นำผลไม้ไปชั่งน้ำหนักบนเครื่องชั่ง 2 เครื่อง ดังภาพด้านล่าง <br>จงวิเคราะห์ความสัมพันธ์แล้วหาว่า <b>เมลอน 1 ผล มีน้ำหนักกี่กรัม?</b><br>{draw_fruit_balance()}"
+                
+                sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ระดับแข่งขัน):</b><br>
+                👉 <b>ขั้นที่ 1:</b> สังเกตเครื่องชั่งด้านล่าง (แอปเปิล 3 ผล = {w1} กรัม)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลสำคัญ:</b> เราต้องเริ่มจากเครื่องชั่งที่มีผลไม้ชนิดเดียวก่อน เพื่อหาค่าน้ำหนักของ 1 ผลได้ทันที</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; จะได้สมการ: 3 × A = {w1}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; น้ำหนักแอปเปิล 1 ผล = {w1} ÷ 3 = <span style="color:#e74c3c;"><b>{val_apple} กรัม</b></span><br>
+                👉 <b>ขั้นที่ 2:</b> พิจารณาเครื่องชั่งด้านบน (แอปเปิล 2 ผล + เมลอน 1 ผล = {w2} กรัม)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; นำน้ำหนักแอปเปิลที่รู้แล้วมาแทนค่า: แอปเปิล 2 ผล หนัก {val_apple} × 2 = <span style="color:#e74c3c;"><b>{val_apple * 2} กรัม</b></span><br>
+                👉 <b>ขั้นที่ 3:</b> สร้างสมการเพื่อหาน้ำหนักเมลอน (M)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; (น้ำหนักแอปเปิล 2 ผล) + (น้ำหนักเมลอน) = {w2}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">{val_apple * 2} + M = {w2}</span><br>
+                👉 <b>ขั้นที่ 4:</b> กำจัด <span style="color:#e74c3c;">+ {val_apple * 2}</span> โดยการลบออกทั้งสองข้าง<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; {val_apple * 2} + M <span style="color:#e74c3c;">- {val_apple * 2}</span> = {w2} <span style="color:#e74c3c;">- {val_apple * 2}</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; M = {w2} - {val_apple * 2} = <span style="color:#27ae60;"><b>{val_melon} กรัม</b></span><br>
+                <b>ตอบ: เมลอน 1 ผล หนัก {val_melon} กรัม</b></span>'''
+
+            elif actual_sub_t == "โจทย์ปัญหาสมการ: นับหัวและขาสัตว์":
+                # สุดยอดโจทย์คลาสสิกของข้อสอบแข่งขัน ปูพื้นฐานการสมมติตัวแปร
+                chickens = random.randint(5, 12)
+                pigs = random.randint(3, 9)
+                total_heads = chickens + pigs
+                total_legs = (chickens * 2) + (pigs * 4)
+                
+                def draw_animal_legs():
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="120">'
+                    # วาดไก่ (2 ขา)
+                    svg += '<rect x="130" y="30" width="80" height="40" rx="10" fill="#f1c40f"/>'
+                    svg += '<text x="170" y="55" font-family="sans-serif" font-size="16" font-weight="bold" fill="#2c3e50" text-anchor="middle">ไก่</text>'
+                    svg += '<line x1="155" y1="70" x2="155" y2="90" stroke="#2c3e50" stroke-width="3"/><line x1="185" y1="70" x2="185" y2="90" stroke="#2c3e50" stroke-width="3"/>'
+                    svg += '<text x="170" y="110" font-family="sans-serif" font-size="14" font-weight="bold" fill="#e74c3c" text-anchor="middle">มี 2 ขา</text>'
+                    
+                    # วาดหมู (4 ขา)
+                    svg += '<rect x="350" y="30" width="80" height="40" rx="10" fill="#ffb8c6"/>'
+                    svg += '<text x="390" y="55" font-family="sans-serif" font-size="16" font-weight="bold" fill="#2c3e50" text-anchor="middle">หมู</text>'
+                    svg += '<line x1="360" y1="70" x2="360" y2="90" stroke="#2c3e50" stroke-width="3"/><line x1="375" y1="70" x2="375" y2="90" stroke="#2c3e50" stroke-width="3"/>'
+                    svg += '<line x1="405" y1="70" x2="405" y2="90" stroke="#2c3e50" stroke-width="3"/><line x1="420" y1="70" x2="420" y2="90" stroke="#2c3e50" stroke-width="3"/>'
+                    svg += '<text x="390" y="110" font-family="sans-serif" font-size="14" font-weight="bold" fill="#e74c3c" text-anchor="middle">มี 4 ขา</text>'
+                    return svg + '</svg></div>'
+
+                target = random.choice(["ไก่", "หมู"])
+                q = f"ลุงชัยเลี้ยง <b>ไก่</b> และ <b>หมู</b> ไว้ในฟาร์ม ถ้านับหัวรวมกันได้ <b>{total_heads} หัว</b> และนับขารวมกันได้ <b>{total_legs} ขา</b><br>อยากทราบว่าในฟาร์มนี้มี <b>{target} ทั้งหมดกี่ตัว?</b><br>{draw_animal_legs()}"
+                
+                sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการสมมติ):</b><br>
+                👉 <b>ขั้นที่ 1:</b> สมมติให้สัตว์ทั้งหมด {total_heads} ตัว เป็น <b>"ไก่"</b> (เพราะมีขาน้อยกว่า)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; ถ้ามีไก่ {total_heads} ตัว จะมีขารวม: {total_heads} × 2 = <span style="color:#2980b9;"><b>{total_heads * 2} ขา</b></span><br>
+                👉 <b>ขั้นที่ 2:</b> หาจำนวนขาที่ "ขาดหายไป" จากความเป็นจริง<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; โจทย์บอกว่าความจริงมีขารวม {total_legs} ขา<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; ขาที่หายไปคือ: {total_legs} - {total_heads * 2} = <span style="color:#e74c3c;"><b>{total_legs - (total_heads * 2)} ขา</b></span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;">(<b>ทำไมขาถึงหายไป?</b> เพราะความจริงมี "หมู" อยู่ด้วย แต่เราเผลอนับหมูทุกตัวเป็นไก่ ซึ่งหมู 1 ตัว มีขามากกว่าไก่ 4 - 2 = <b>2 ขา</b>)</span><br>
+                👉 <b>ขั้นที่ 3:</b> หาจำนวนหมู (เอาขาที่หายไป มาเติมให้หมูตัวละ 2 ขา)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; จำนวนหมู = {total_legs - (total_heads * 2)} ÷ 2 = <span style="color:#27ae60;"><b>{pigs} ตัว</b></span><br>
+                👉 <b>ขั้นที่ 4:</b> หาจำนวนไก่ (จากจำนวนหัวทั้งหมด)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; จำนวนไก่ = หัวทั้งหมด {total_heads} - หมู {pigs} = <span style="color:#27ae60;"><b>{chickens} ตัว</b></span><br>
+                <b>ตอบ: ลุงชัยเลี้ยง{target}ทั้งหมด {pigs if target=="หมู" else chickens} ตัว</b></span>'''
+
             elif actual_sub_t == "ค่าประมาณเป็นจำนวนเต็มสิบ เต็มร้อย เต็มพัน":
                 target = random.choice(["สิบ", "ร้อย", "พัน"])
                 num = random.randint(1234, 99999) if not is_challenge else random.randint(100000, 999999)
