@@ -4576,55 +4576,72 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 เปรียบเทียบจำนวนหลัก และค่าของเลขโดดทีละหลักจากซ้ายไปขวา<br>👉 เรียงลำดับจาก{order} จะได้:<br><b>ตอบ: {sorted_str}</b></span>"
 
             elif actual_sub_t == "สมการและตัวไม่ทราบค่าจากชีวิตประจำวัน":
-                # ตรวจสอบว่าผู้ใช้เปิดโหมด Challenge หรือไม่ (สมมติใช้ตัวแปร is_challenge)
-                # หากในโค้ดคุณใช้ชื่ออื่น ให้เปลี่ยนชื่อตัวแปรให้ตรงกันครับ
                 is_challenge = st.session_state.get("challenge_mode", False)
+                # สุ่มชื่อตัวแปรที่ใช้
+                var_name = random.choice(["A", "B", "x", "y"])
 
                 if not is_challenge:
-                    # --- โหมดธรรมดา: สมการ 2 ขั้นตอนพื้นฐาน ---
-                    item = random.choice(["ขนม", "สมุด", "ดินสอ"])
-                    price = random.randint(15, 35)
-                    qty = random.randint(3, 7)
-                    extra_money = random.randint(20, 100)
-                    total_paid = (price * qty) + extra_money
+                    # --- โหมดธรรมดา: สมการ 2 ขั้นตอน (พื้นฐานสมบัติการเท่ากัน) ---
+                    scenario = random.choice([
+                        {"item": "ดินสอ", "unit": "แท่ง", "action": "ซื้อขนมเพิ่ม", "op": "+"},
+                        {"item": "สติกเกอร์", "unit": "แผ่น", "action": "ทำหายไป", "op": "-"}
+                    ])
                     
-                    q = f"คุณแม่ซื้อ <b>{item}</b> จำนวน <b>{qty}</b> ชิ้น และซื้อผลไม้เพิ่มอีก <b>{extra_money}</b> บาท <br>คุณแม่ต้องจ่ายเงินทั้งหมด <b>{total_paid}</b> บาท อยากทราบว่า {item} <b>ราคาชิ้นละกี่บาท?</b><br>(จงเขียนสมการโดยให้ จ แทนราคาของ{item} และหาคำตอบ)"
+                    price = random.randint(12, 25)
+                    qty = random.randint(4, 8)
+                    extra = random.randint(15, 50)
                     
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
-                    👉 <b>ขั้นที่ 1:</b> เขียนสมการจากสถานการณ์<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; (จำนวน {item} × ราคาต่อชิ้น) + ค่าผลไม้ = เงินทั้งหมด<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">({qty} × จ) + {extra_money} = {total_paid}</span><br>
-                    👉 <b>ขั้นที่ 2:</b> กำจัดตัวเลขที่บวกอยู่ (ย้ายไปลบ)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {qty} × จ = {total_paid} <span style="color:#e74c3c;">- {extra_money}</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {qty} × จ = {total_paid - extra_money}<br>
-                    👉 <b>ขั้นที่ 3:</b> หาค่า จ (ย้ายไปหาร)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จ = {total_paid - extra_money} <span style="color:#e74c3c;">÷ {qty}</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จ = <span style="color:#27ae60;"><b>{price}</b></span><br>
-                    <b>ตอบ: {item} ราคาชิ้นละ {price} บาท</b></span>'''
+                    if scenario["op"] == "+":
+                        total = (price * qty) + extra
+                        q = f"ข้าวปั้นซื้อ <b>{scenario['item']}</b> จำนวน <b>{qty}</b> {scenario['unit']} และ{scenario['action']}อีก <b>{extra}</b> บาท ทำให้ต้องจ่ายเงินรวม <b>{total}</b> บาท<br>อยากทราบว่า {scenario['item']} <b>ราคา{scenario['unit']}ละกี่บาท?</b> (ให้ {var_name} แทนราคาต่อหนึ่งหน่วย)"
+                        
+                        sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
+                        👉 <b>ขั้นที่ 1:</b> เขียนสมการ <span style="color:#2980b9;">({qty} × {var_name}) + {extra} = {total}</span><br>
+                        👉 <b>ขั้นที่ 2:</b> กำจัด <span style="color:#e74c3c;">+ {extra}</span> ออก โดยการ <b>ลบด้วย {extra} ทั้งสองข้าง</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ({qty} × {var_name}) + {extra} <span style="color:#e74c3c;">- {extra}</span> = {total} <span style="color:#e74c3c;">- {extra}</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จะเหลือ {qty} × {var_name} = {total - extra}<br>
+                        👉 <b>ขั้นที่ 3:</b> กำจัด <span style="color:#e74c3c;">× {qty}</span> ออก โดยการ <b>หารด้วย {qty} ทั้งสองข้าง</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ({qty} × {var_name}) <span style="color:#e74c3c;">÷ {qty}</span> = {total - extra} <span style="color:#e74c3c;">÷ {qty}</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จะเหลือ {var_name} = <span style="color:#27ae60;"><b>{price}</b></span><br>
+                        <b>ตอบ: {scenario['item']} ราคา{scenario['unit']}ละ {price} บาท</b></span>'''
+                    else:
+                        total_init = (price * qty)
+                        left = total_init - extra
+                        q = f"น้ามี <b>{scenario['item']}</b> อยู่หลาย{scenario['unit']}แบ่งให้หลาน <b>{qty}</b> คน คนละเท่าๆ กัน แต่ปรากฏว่า{scenario['action']} <b>{extra}</b> {scenario['unit']} <br>เหลือนำไปแจกหลานได้จริงเพียง <b>{left}</b> {scenario['unit']} อยากทราบว่าเดิมทีตั้งใจจะแจกหลาน<b>คนละกี่{scenario['unit']}?</b> (ให้ {var_name} แทนจำนวนที่ตั้งใจแจก)"
+                        
+                        sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
+                        👉 <b>ขั้นที่ 1:</b> เขียนสมการ <span style="color:#2980b9;">({qty} × {var_name}) - {extra} = {left}</span><br>
+                        👉 <b>ขั้นที่ 2:</b> กำจัด <span style="color:#e74c3c;">- {extra}</span> ออก โดยการ <b>บวกด้วย {extra} ทั้งสองข้าง</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ({qty} × {var_name}) - {extra} <span style="color:#e74c3c;">+ {extra}</span> = {left} <span style="color:#e74c3c;">+ {extra}</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จะเหลือ {qty} × {var_name} = {total_init}<br>
+                        👉 <b>ขั้นที่ 3:</b> กำจัด <span style="color:#e74c3c;">× {qty}</span> ออก โดยการ <b>หารด้วย {qty} ทั้งสองข้าง</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ({qty} × {var_name}) <span style="color:#e74c3c;">÷ {qty}</span> = {total_init} <span style="color:#e74c3c;">÷ {qty}</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จะเหลือ {var_name} = <span style="color:#27ae60;"><b>{price}</b></span><br>
+                        <b>ตอบ: เดิมทีตั้งใจแจกคนละ {price} {scenario['unit']}</b></span>'''
                 
                 else:
-                    # --- โหมด Challenge: สมการที่มีตัวแปรทั้งสองฝั่ง หรือความสัมพันธ์เชิงเปรียบเทียบ ---
-                    name1, name2 = random.sample(["ต้นกล้า", "ใยไหม", "ปั้น", "ข้าว"], 2)
-                    base_val = random.randint(25, 60)
-                    diff = random.randint(10, 30)
-                    # สถานการณ์: name1 มีเงินเป็น 2 เท่าของ name2 และทั้งสองคนมีเงินรวมกัน...
-                    total_sum = (base_val * 2) + base_val
+                    # --- โหมด Challenge: ความสัมพันธ์ซับซ้อน (ปูทางสอบเข้า) ---
+                    # โจทย์แนว: มีเงินจำนวนหนึ่ง แบ่งให้ A และ B โดย B ได้มากกว่า A...
+                    diff = random.randint(20, 50)
+                    base = random.randint(40, 100)
+                    total = (base * 2) + diff
+                    names = random.sample(["เปียโน", "เบส", "กลอง", "ขลุ่ย"], 2)
                     
-                    q = f"<b>{name1}</b> มีเงินเป็น <b>2 เท่า</b> ของ <b>{name2}</b> <br>ถ้าทั้งสองคนมีเงินรวมกันทั้งหมด <b>{total_sum}</b> บาท <br>อยากทราบว่า <b>{name1} มีเงินกี่บาท?</b> (จงตั้งสมการและหาคำตอบ)"
+                    q = f"<b>{names[0]}</b> และ <b>{names[1]}</b> มีเงินรวมกัน <b>{total}</b> บาท <br>ถ้า <b>{names[0]}</b> มีเงินมากกว่า <b>{names[1]}</b> อยู่ <b>{diff}</b> บาท <br>อยากทราบว่า <b>{names[1]} มีเงินกี่บาท?</b> (ให้ {var_name} แทนเงินของ {names[1]})"
                     
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (โหมดท้าทาย):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> กำหนดตัวไม่ทราบค่า<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ให้ <span style="color:#2980b9;">x</span> แทนจำนวนเงินของ {name2}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {name1} จะมีเงิน <span style="color:#2980b9;">2 × x</span> (หรือ 2x)<br>
-                    👉 <b>ขั้นที่ 2:</b> เขียนสมการจากผลรวมของทั้งสองคน<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; เงินของ {name1} + เงินของ {name2} = {total_sum}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">(2 × x) + x = {total_sum}</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">3 × x = {total_sum}</span> (เพราะ 2 ส่วน รวมกับ 1 ส่วน เป็น 3 ส่วน)<br>
-                    👉 <b>ขั้นที่ 3:</b> หาค่า x (เงินของ {name2})<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; x = {total_sum} <span style="color:#e74c3c;">÷ 3</span> = <b>{base_val}</b> บาท<br>
-                    👉 <b>ขั้นที่ 4:</b> หาเงินของ {name1} ตามที่โจทย์ถาม<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {name1} มีเงิน 2 × {base_val} = <span style="color:#27ae60;"><b>{base_val * 2}</b></span> บาท<br>
-                    <b>ตอบ: {name1} มีเงิน {base_val * 2} บาท</b></span>'''
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ระดับท้าทาย):</b><br>
+                    👉 <b>ขั้นที่ 1:</b> กำหนดตัวไม่ทราบค่าและสร้างสมการ<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ให้ {names[1]} มีเงิน = <span style="color:#2980b9;">{var_name}</span> บาท<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {names[0]} มีเงินมากกว่าอยู่ {diff} คือ = <span style="color:#2980b9;">{var_name} + {diff}</span> บาท<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>สมการผลรวม:</b> <span style="color:#2980b9;">{var_name} + ({var_name} + {diff}) = {total}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ยุบตัวแปรเข้าด้วยกัน: <span style="color:#2980b9;">(2 × {var_name}) + {diff} = {total}</span><br>
+                    👉 <b>ขั้นที่ 2:</b> กำจัด <span style="color:#e74c3c;">+ {diff}</span> โดยการ <b>ลบด้วย {diff} ทั้งสองข้าง</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; (2 × {var_name}) + {diff} <span style="color:#e74c3c;">- {diff}</span> = {total} <span style="color:#e74c3c;">- {diff}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะเหลือ 2 × {var_name} = {total - diff}<br>
+                    👉 <b>ขั้นที่ 3:</b> กำจัด <span style="color:#e74c3c;">× 2</span> โดยการ <b>หารด้วย 2 ทั้งสองข้าง</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; (2 × {var_name}) <span style="color:#e74c3c;">÷ 2</span> = {total - diff} <span style="color:#e74c3c;">÷ 2</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {var_name} = <span style="color:#27ae60;"><b>{base}</b></span><br>
+                    <b>ตอบ: {names[1]} มีเงิน {base} บาท</b></span>'''
 
             elif actual_sub_t == "สมการเชิงตรรกะและตาชั่งปริศนา":
                 val_a = random.randint(6, 12)
