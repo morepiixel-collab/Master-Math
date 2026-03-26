@@ -4655,14 +4655,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         <b>ตอบ: {p_names[1]} มี{c_item}ทั้งหมด {base} อัน</b></span>'''
 
             elif actual_sub_t == "สมการเชิงตรรกะและตาชั่งปริศนา":
-                # บังคับเปิดเป็น True เพื่อทดสอบว่าโจทย์ 4 แถวทำงานได้ปกติหรือไม่
-                is_challenge = True 
+                is_challenge = st.session_state.get("challenge_mode", False)
                 
-                if not is_challenge:
-                    scenario = random.choice(["diff_compare", "weight_sub"])
-                else:
-                    # สุ่มโหมด 4 แถวรัวๆ เพื่อดูผลลัพธ์
-                    scenario = random.choice(["sum_diff", "4_rows", "4_rows", "4_rows"])
+                # 💡 สุ่มว่าข้อนี้จะเป็น "สมการแถว" หรือ "ตาชั่งปริศนา"
+                puzzle_style = random.choice(["math_eq", "balance_scale"])
                 
                 shapes = [
                     {"type": "circle", "color": "#e74c3c", "name": "วงกลมสีแดง"},
@@ -4671,205 +4667,285 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     {"type": "star", "color": "#f1c40f", "name": "ดาวสีเหลือง"}
                 ]
                 
-                num_shapes = 4 if scenario == "4_rows" else 3
-                selected = random.sample(shapes, num_shapes)
-                s1, s2, s3 = selected[0], selected[1], selected[2]
-                if scenario == "4_rows":
-                    s4 = selected[3]
-                
-                def draw_shape(cx, cy, shape_type, color):
-                    if shape_type == "circle":
-                        return f'<circle cx="{cx}" cy="{cy}" r="18" fill="{color}" stroke="#2c3e50" stroke-width="2"/>'
-                    elif shape_type == "square":
-                        return f'<rect x="{cx-16}" y="{cy-16}" width="32" height="32" rx="4" fill="{color}" stroke="#2c3e50" stroke-width="2"/>'
-                    elif shape_type == "triangle":
-                        return f'<polygon points="{cx},{cy-18} {cx-18},{cy+14} {cx+18},{cy+14}" fill="{color}" stroke="#2c3e50" stroke-width="2" stroke-linejoin="round"/>'
-                    else: # star
-                        return f'<polygon points="{cx},{cy-18} {cx+4},{cy-5} {cx+18},{cy-5} {cx+7},{cy+4} {cx+11},{cy+17} {cx},{cy+9} {cx-11},{cy+17} {cx-7},{cy+4} {cx-18},{cy-5} {cx-4},{cy-5}" fill="{color}" stroke="#2c3e50" stroke-width="1.5" stroke-linejoin="round"/>'
+                if puzzle_style == "math_eq":
+                    # ==========================================
+                    # 🧩 รูปแบบที่ 1: สมการเชิงตรรกะ (บรรทัด)
+                    # ==========================================
+                    if not is_challenge:
+                        scenario = random.choice(["diff_compare", "weight_sub"])
+                    else:
+                        scenario = random.choice(["sum_diff", "4_rows"]) 
+                    
+                    num_shapes = 4 if scenario == "4_rows" else 3
+                    selected = random.sample(shapes, num_shapes)
+                    s1, s2, s3 = selected[0], selected[1], selected[2]
+                    if scenario == "4_rows":
+                        s4 = selected[3]
+                    
+                    def draw_shape(cx, cy, shape_type, color):
+                        if shape_type == "circle":
+                            return f'<circle cx="{cx}" cy="{cy}" r="18" fill="{color}" stroke="#2c3e50" stroke-width="2"/>'
+                        elif shape_type == "square":
+                            return f'<rect x="{cx-16}" y="{cy-16}" width="32" height="32" rx="4" fill="{color}" stroke="#2c3e50" stroke-width="2"/>'
+                        elif shape_type == "triangle":
+                            return f'<polygon points="{cx},{cy-18} {cx-18},{cy+14} {cx+18},{cy+14}" fill="{color}" stroke="#2c3e50" stroke-width="2" stroke-linejoin="round"/>'
+                        else: # star
+                            return f'<polygon points="{cx},{cy-18} {cx+4},{cy-5} {cx+18},{cy-5} {cx+7},{cy+4} {cx+11},{cy+17} {cx},{cy+9} {cx-11},{cy+17} {cx-7},{cy+4} {cx-18},{cy-5} {cx-4},{cy-5}" fill="{color}" stroke="#2c3e50" stroke-width="1.5" stroke-linejoin="round"/>'
 
-                def get_item_width(item):
-                    if isinstance(item, str): return 35
-                    if isinstance(item, dict) and item.get("type") == "box": return 75
-                    return 45
+                    def get_item_width(item):
+                        if isinstance(item, str): return 35
+                        if isinstance(item, dict) and item.get("type") == "box": return 75
+                        return 45
 
-                def draw_eq_row(y, items):
-                    row_svg = ""
-                    eq_idx = items.index("=")
-                    lhs_items = items[:eq_idx]
-                    rhs_items = items[eq_idx+1:]
-                    
-                    EQUALS_X = 330 
-                    
-                    lhs_w = sum(get_item_width(i) for i in lhs_items)
-                    curr_x = EQUALS_X - lhs_w - 15 
-                    
-                    for item in lhs_items:
-                        w = get_item_width(item)
-                        cx = curr_x + (w / 2)
-                        if isinstance(item, str):
-                            display_op = "×" if item == "x" else "÷" if item == "/" else item
-                            row_svg += f'<text x="{cx}" y="{y+8}" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2c3e50" text-anchor="middle">{display_op}</text>'
-                        elif isinstance(item, dict) and item.get("type") == "box":
-                            val = item["val"]
-                            row_svg += f'<rect x="{cx-35}" y="{y-20}" width="70" height="40" rx="6" fill="#f39c12"/><text x="{cx}" y="{y+8}" font-family="sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">{val}</text>'
-                        else:
-                            row_svg += draw_shape(cx, y, item["type"], item["color"])
-                        curr_x += w
+                    def draw_eq_row(y, items):
+                        row_svg = ""
+                        eq_idx = items.index("=")
+                        lhs_items = items[:eq_idx]
+                        rhs_items = items[eq_idx+1:]
                         
-                    row_svg += f'<text x="{EQUALS_X}" y="{y+8}" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
-                    
-                    curr_x = EQUALS_X + 15 
-                    for item in rhs_items:
-                        w = get_item_width(item)
-                        cx = curr_x + (w / 2)
-                        if isinstance(item, str):
-                            display_op = "×" if item == "x" else "÷" if item == "/" else item
-                            row_svg += f'<text x="{cx}" y="{y+8}" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2c3e50" text-anchor="middle">{display_op}</text>'
-                        elif isinstance(item, dict) and item.get("type") == "box":
-                            val = item["val"]
-                            row_svg += f'<rect x="{cx-35}" y="{y-20}" width="70" height="40" rx="6" fill="#f39c12"/><text x="{cx}" y="{y+8}" font-family="sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">{val}</text>'
-                        else:
-                            row_svg += draw_shape(cx, y, item["type"], item["color"])
-                        curr_x += w
+                        EQUALS_X = 330 
+                        lhs_w = sum(get_item_width(i) for i in lhs_items)
+                        curr_x = EQUALS_X - lhs_w - 15 
                         
-                    return row_svg
+                        for item in lhs_items:
+                            w = get_item_width(item)
+                            cx = curr_x + (w / 2)
+                            if isinstance(item, str):
+                                display_op = "×" if item == "x" else "÷" if item == "/" else item
+                                row_svg += f'<text x="{cx}" y="{y+8}" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2c3e50" text-anchor="middle">{display_op}</text>'
+                            elif isinstance(item, dict) and item.get("type") == "box":
+                                val = item["val"]
+                                row_svg += f'<rect x="{cx-35}" y="{y-20}" width="70" height="40" rx="6" fill="#f39c12"/><text x="{cx}" y="{y+8}" font-family="sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">{val}</text>'
+                            else:
+                                row_svg += draw_shape(cx, y, item["type"], item["color"])
+                            curr_x += w
+                            
+                        row_svg += f'<text x="{EQUALS_X}" y="{y+8}" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
+                        
+                        curr_x = EQUALS_X + 15 
+                        for item in rhs_items:
+                            w = get_item_width(item)
+                            cx = curr_x + (w / 2)
+                            if isinstance(item, str):
+                                display_op = "×" if item == "x" else "÷" if item == "/" else item
+                                row_svg += f'<text x="{cx}" y="{y+8}" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2c3e50" text-anchor="middle">{display_op}</text>'
+                            elif isinstance(item, dict) and item.get("type") == "box":
+                                val = item["val"]
+                                row_svg += f'<rect x="{cx-35}" y="{y-20}" width="70" height="40" rx="6" fill="#f39c12"/><text x="{cx}" y="{y+8}" font-family="sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">{val}</text>'
+                            else:
+                                row_svg += draw_shape(cx, y, item["type"], item["color"])
+                            curr_x += w
+                        return row_svg
 
-                if scenario == "diff_compare":
-                    val_a = random.randint(15, 35)
-                    val_b = random.randint(25, 60)
-                    val_c = random.randint(10, 30)
-                    ans1 = (val_a * 2) + val_b
-                    ans2 = val_a + val_b
-                    ans3 = val_b + (val_c * 2)
+                    if scenario == "diff_compare":
+                        val_a = random.randint(15, 35)
+                        val_b = random.randint(25, 60)
+                        val_c = random.randint(10, 30)
+                        ans1 = (val_a * 2) + val_b
+                        ans2 = val_a + val_b
+                        ans3 = val_b + (val_c * 2)
+                        
+                        svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
+                        svg += f'<rect x="90" y="65" width="380" height="1" fill="#ecf0f1"/>'
+                        svg += f'<rect x="90" y="125" width="380" height="1" fill="#ecf0f1"/>'
+                        svg += draw_eq_row(40, [s1, "+", s1, "+", s2, "=", {"type":"box", "val":ans1}])
+                        svg += draw_eq_row(100, [s1, "+", s2, "=", {"type":"box", "val":ans2}])
+                        svg += draw_eq_row(160, [s2, "+", s3, "+", s3, "=", {"type":"box", "val":ans3}])
+                        svg += '</svg></div>'
+                        
+                        q = f"จงวิเคราะห์สมการรูปทรงด้านล่างนี้ แล้วหาว่า <b>{s3['name']} 1 รูป มีค่าเท่าใด?</b><br>{svg}"
+                        sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคเปรียบเทียบ):</b><br>
+                        👉 <b>ขั้นที่ 1:</b> เปรียบเทียบสมการแถวที่ 1 และ 2 จะเห็นว่าส่วนต่างคือค่าของ {s1['name']}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {s1['name']} = {ans1} - {ans2} = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
+                        👉 <b>ขั้นที่ 2:</b> หาค่า {s2['name']} จากแถวที่ 2<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e74c3c;">{val_a}</span> + {s2['name']} = {ans2} ➞ {s2['name']} = {ans2} - {val_a} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
+                        👉 <b>ขั้นที่ 3:</b> หาค่า {s3['name']} จากแถวที่ 3<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">{val_b}</span> + {s3['name']} + {s3['name']} = {ans3}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; {s3['name']} 1 รูป = ({ans3} - {val_b}) ÷ 2 = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
+                        <b>ตอบ: {s3['name']} มีค่าเท่ากับ {val_c}</b></span>'''
+                        
+                    elif scenario == "weight_sub":
+                        val_a = random.randint(12, 25)
+                        val_b = val_a * 2
+                        val_c = random.randint(15, 45)
+                        ans2 = (val_b * 2) + val_a 
+                        ans3 = val_b + val_c
+                        
+                        svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
+                        svg += f'<rect x="90" y="65" width="380" height="1" fill="#ecf0f1"/>'
+                        svg += f'<rect x="90" y="125" width="380" height="1" fill="#ecf0f1"/>'
+                        svg += draw_eq_row(40, [s1, "+", s1, "=", s2])
+                        svg += draw_eq_row(100, [s2, "+", s2, "+", s1, "=", {"type":"box", "val":ans2}])
+                        svg += draw_eq_row(160, [s2, "+", s3, "=", {"type":"box", "val":ans3}])
+                        svg += '</svg></div>'
+                        
+                        q = f"จงวิเคราะห์ความสัมพันธ์ของสมการด้านล่าง แล้วหาว่า <b>{s3['name']} 1 รูป มีค่าเท่าใด?</b><br>{svg}"
+                        sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคแทนค่าจัดกลุ่ม):</b><br>
+                        👉 <b>ขั้นที่ 1:</b> นำความสัมพันธ์จากแถวที่ 1 ({s2['name']} = {s1['name']} 2 รูป) ไปแทนในแถวที่ 2<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จะได้: ({s1['name']} 2 รูป) + ({s1['name']} 2 รูป) + ({s1['name']} 1 รูป) = {ans2}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; {s1['name']} 5 รูป = {ans2} ➞ {s1['name']} = {ans2} ÷ 5 = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ส่งผลให้ {s2['name']} = {val_a} + {val_a} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
+                        👉 <b>ขั้นที่ 2:</b> หาค่า {s3['name']} จากแถวที่ 3<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">{val_b}</span> + {s3['name']} = {ans3} ➞ {s3['name']} = {ans3} - {val_b} = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
+                        <b>ตอบ: {s3['name']} มีค่าเท่ากับ {val_c}</b></span>'''
+                        
+                    elif scenario == "sum_diff":
+                        val_a = random.randint(35, 80)
+                        val_b = random.randint(15, val_a - 10) 
+                        val_c = random.randint(4, 9)
+                        sum_val = val_a + val_b
+                        diff_val = val_a - val_b
+                        ans3 = (val_a * val_c) - val_b
+                        
+                        svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
+                        svg += f'<rect x="90" y="65" width="380" height="1" fill="#ecf0f1"/>'
+                        svg += f'<rect x="90" y="125" width="380" height="1" fill="#ecf0f1"/>'
+                        svg += draw_eq_row(40, [s1, "+", s2, "=", {"type":"box", "val":sum_val}])
+                        svg += draw_eq_row(100, [s1, "-", s2, "=", {"type":"box", "val":diff_val}])
+                        svg += draw_eq_row(160, [s1, "x", s3, "-", s2, "=", {"type":"box", "val":ans3}])
+                        svg += '</svg></div>'
+                        
+                        q = f"<b>[ข้อสอบแข่งขัน]</b> จงใช้ไหวพริบวิเคราะห์สมการต่อไปนี้ แล้วหาว่า <b>{s3['name']} 1 รูป มีค่าเท่าใด?</b><br>{svg}"
+                        sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ทฤษฎีผลบวก-ผลต่าง):</b><br>
+                        👉 <b>ขั้นที่ 1:</b> ใช้สูตรลัด ค่าที่มากกว่า = (ผลบวก + ผลต่าง) ÷ 2<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {s1['name']} = ({sum_val} + {diff_val}) ÷ 2 = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
+                        👉 <b>ขั้นที่ 2:</b> หาค่า {s2['name']} จากแถวที่ 1<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e74c3c;">{val_a}</span> + {s2['name']} = {sum_val} ➞ {s2['name']} = {sum_val} - {val_a} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
+                        👉 <b>ขั้นที่ 3:</b> หาค่า {s3['name']} จากแถวที่ 3<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; (<span style="color:#e74c3c;">{val_a}</span> × {s3['name']}) - <span style="color:#2980b9;">{val_b}</span> = {ans3}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; {s3['name']} = ({ans3} + {val_b}) ÷ {val_a} = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
+                        <b>ตอบ: {s3['name']} มีค่าเท่ากับ {val_c}</b></span>'''
+                        
+                    elif scenario == "4_rows":
+                        val_a = random.randint(5, 12)
+                        val_b = random.randint(3, 9)
+                        val_c = random.randint(12, 25)
+                        val_d = random.randint(20, 50)
+                        ans1 = val_a * 2
+                        ans2 = val_a * val_b
+                        ans3 = val_b + val_c + val_b
+                        ans4 = val_c + val_d - val_a
+                        
+                        svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="260">'
+                        svg += f'<rect x="90" y="65" width="380" height="1" fill="#ecf0f1"/>'
+                        svg += f'<rect x="90" y="125" width="380" height="1" fill="#ecf0f1"/>'
+                        svg += f'<rect x="90" y="185" width="380" height="1" fill="#ecf0f1"/>'
+                        svg += draw_eq_row(40, [s1, "+", s1, "=", {"type":"box", "val":ans1}])
+                        svg += draw_eq_row(100, [s1, "x", s2, "=", {"type":"box", "val":ans2}])
+                        svg += draw_eq_row(160, [s2, "+", s3, "+", s2, "=", {"type":"box", "val":ans3}])
+                        svg += draw_eq_row(220, [s3, "+", s4, "-", s1, "=", {"type":"box", "val":ans4}])
+                        svg += '</svg></div>'
+                        
+                        q = f"<b>[ระดับความยากสูงสุด]</b> จงวิเคราะห์สมการ 4 ขั้นตอนต่อไปนี้ แล้วหาว่า <b>{s4['name']} มีค่าเท่าใด?</b><br>{svg}"
+                        sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (แทนค่าต่อเนื่อง 4 ขั้นตอน):</b><br>
+                        👉 <b>ขั้นที่ 1:</b> แถวที่ 1 ➞ {s1['name']} = {ans1} ÷ 2 = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
+                        👉 <b>ขั้นที่ 2:</b> แถวที่ 2 ➞ แทนค่า: <span style="color:#e74c3c;">{val_a}</span> × {s2['name']} = {ans2} ➞ {s2['name']} = {ans2} ÷ {val_a} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
+                        👉 <b>ขั้นที่ 3:</b> แถวที่ 3 ➞ แทนค่า: <span style="color:#2980b9;">{val_b}</span> + {s3['name']} + <span style="color:#2980b9;">{val_b}</span> = {ans3}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; {s3['name']} = {ans3} - {val_b * 2} = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
+                        👉 <b>ขั้นที่ 4:</b> แถวที่ 4 ➞ แทนค่า: <span style="color:#27ae60;">{val_c}</span> + {s4['name']} - <span style="color:#e74c3c;">{val_a}</span> = {ans4}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; {s4['name']} = {ans4} - {val_c} + {val_a} = <span style="color:#8e44ad;"><b>{val_d}</b></span><br>
+                        <b>ตอบ: {s4['name']} มีค่าเท่ากับ {val_d}</b></span>'''
+
+                else:
+                    # ==========================================
+                    # ⚖️ รูปแบบที่ 2: ตาชั่งบล็อกปริศนา (Balance Scale)
+                    # ==========================================
+                    vars_pool = [("A", "B", "C"), ("X", "Y", "Z"), ("P", "Q", "R")]
+                    selected_vars = random.choice(vars_pool)
                     
-                    svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
-                    svg += f'<rect x="90" y="65" width="380" height="1" fill="#ecf0f1"/>'
-                    svg += f'<rect x="90" y="125" width="380" height="1" fill="#ecf0f1"/>'
-                    svg += draw_eq_row(40, [s1, "+", s1, "+", s2, "=", {"type":"box", "val":ans1}])
-                    svg += draw_eq_row(100, [s1, "+", s2, "=", {"type":"box", "val":ans2}])
-                    svg += draw_eq_row(160, [s2, "+", s3, "+", s3, "=", {"type":"box", "val":ans3}])
-                    svg += '</svg></div>'
+                    selected_shapes = random.sample(shapes, 3)
+                    obj1 = {"shape": selected_shapes[0]["type"], "color": selected_shapes[0]["color"], "let": selected_vars[0]}
+                    obj2 = {"shape": selected_shapes[1]["type"], "color": selected_shapes[1]["color"], "let": selected_vars[1]}
+                    obj3 = {"shape": selected_shapes[2]["type"], "color": selected_shapes[2]["color"], "let": selected_vars[2]}
                     
-                    q = f"จงวิเคราะห์สมการรูปทรงด้านล่างนี้ แล้วหาว่า <b>{s3['name']} 1 รูป มีค่าเท่าใด?</b><br>{svg}"
-                    
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการเปรียบเทียบ):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> เปรียบเทียบสมการแถวที่ 1 และ 2<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แถวที่ 1: {s1['name']} + {s1['name']} + {s2['name']} = {ans1}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แถวที่ 2: {s1['name']} + {s2['name']} = {ans2}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>วิเคราะห์:</b> แถวที่ 1 มี {s1['name']} มากกว่าแถวที่ 2 อยู่ 1 รูป ดังนั้นส่วนต่างก็คือค่าของ {s1['name']} นั่นเอง</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {s1['name']} = {ans1} - {ans2} = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
-                    👉 <b>ขั้นที่ 2:</b> หาค่า {s2['name']} จากแถวที่ 2<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า: <span style="color:#e74c3c;">{val_a}</span> + {s2['name']} = {ans2}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {s2['name']} = {ans2} - {val_a} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
-                    👉 <b>ขั้นที่ 3:</b> หาค่า {s3['name']} จากแถวที่ 3<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แถวที่ 3 คือ: <span style="color:#2980b9;">{val_b}</span> + {s3['name']} + {s3['name']} = {ans3}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; นำ {val_b} ไปลบออก: {s3['name']} 2 รูป = {ans3} - {val_b} = {ans3 - val_b}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s3['name']} 1 รูป = {ans3 - val_b} ÷ 2 = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
-                    <b>ตอบ: {s3['name']} มีค่าเท่ากับ {val_c}</b></span>'''
-                    
-                elif scenario == "weight_sub":
                     val_a = random.randint(12, 25)
-                    val_b = val_a * 2
-                    val_c = random.randint(15, 45)
-                    ans2 = (val_b * 2) + val_a 
-                    ans3 = val_b + val_c
+                    val_b = random.randint(30, 60)
+                    val_c = random.randint(70, 150)
                     
-                    svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
-                    svg += f'<rect x="90" y="65" width="380" height="1" fill="#ecf0f1"/>'
-                    svg += f'<rect x="90" y="125" width="380" height="1" fill="#ecf0f1"/>'
-                    svg += draw_eq_row(40, [s1, "+", s1, "=", s2])
-                    svg += draw_eq_row(100, [s2, "+", s2, "+", s1, "=", {"type":"box", "val":ans2}])
-                    svg += draw_eq_row(160, [s2, "+", s3, "=", {"type":"box", "val":ans3}])
-                    svg += '</svg></div>'
-                    
-                    q = f"จงวิเคราะห์ความสัมพันธ์ของสมการด้านล่าง แล้วหาว่า <b>{s3['name']} 1 รูป มีค่าเท่าใด?</b><br>{svg}"
-                    
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการแทนค่าจัดกลุ่ม):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> สังเกตแถวที่ 1 ({s1['name']} + {s1['name']} = {s2['name']})<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>วิเคราะห์:</b> สมการนี้บอกว่า {s2['name']} 1 รูป มีค่าเท่ากับ {s1['name']} 2 รูป</span><br>
-                    👉 <b>ขั้นที่ 2:</b> นำไปแปลงร่างในแถวที่ 2<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; เปลี่ยน {s2['name']} ให้เป็น {s1['name']} จะได้: ({s1['name']} 2 รูป) + ({s1['name']} 2 รูป) + ({s1['name']} 1 รูป) = {ans2}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; รวมแล้วคือ {s1['name']} 5 รูป = {ans2}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {s1['name']} = {ans2} ÷ 5 = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; และส่งผลให้ {s2['name']} = {val_a} + {val_a} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
-                    👉 <b>ขั้นที่ 3:</b> หาค่า {s3['name']} จากแถวที่ 3<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {s2['name']}: <span style="color:#2980b9;">{val_b}</span> + {s3['name']} = {ans3}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s3['name']} = {ans3} - {val_b} = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
-                    <b>ตอบ: {s3['name']} มีค่าเท่ากับ {val_c}</b></span>'''
-                    
-                elif scenario == "sum_diff":
-                    val_a = random.randint(35, 80)
-                    val_b = random.randint(15, val_a - 10) 
-                    val_c = random.randint(4, 9)
-                    sum_val = val_a + val_b
-                    diff_val = val_a - val_b
-                    ans3 = (val_a * val_c) - val_b
-                    
-                    svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
-                    svg += f'<rect x="90" y="65" width="380" height="1" fill="#ecf0f1"/>'
-                    svg += f'<rect x="90" y="125" width="380" height="1" fill="#ecf0f1"/>'
-                    svg += draw_eq_row(40, [s1, "+", s2, "=", {"type":"box", "val":sum_val}])
-                    svg += draw_eq_row(100, [s1, "-", s2, "=", {"type":"box", "val":diff_val}])
-                    svg += draw_eq_row(160, [s1, "x", s3, "-", s2, "=", {"type":"box", "val":ans3}])
-                    svg += '</svg></div>'
-                    
-                    q = f"<b>[ข้อสอบแข่งขัน]</b> จงใช้ไหวพริบวิเคราะห์สมการต่อไปนี้ แล้วหาว่า <b>{s3['name']} 1 รูป มีค่าเท่าใด?</b><br>{svg}"
-                    
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ทฤษฎีผลบวก-ผลต่าง):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> พิจารณาแถวที่ 1 และ 2<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ผลบวก ({s1['name']} + {s2['name']}) = {sum_val}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ผลต่าง ({s1['name']} - {s2['name']}) = {diff_val}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>สูตรลัดระดับแข่งขัน:</b> ค่าที่มากกว่า = (ผลบวก + ผลต่าง) ÷ 2</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {s1['name']} = ({sum_val} + {diff_val}) ÷ 2 = {sum_val + diff_val} ÷ 2 = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
-                    👉 <b>ขั้นที่ 2:</b> หาค่า {s2['name']}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จากแถวที่ 1: <span style="color:#e74c3c;">{val_a}</span> + {s2['name']} = {sum_val}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s2['name']} = {sum_val} - {val_a} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
-                    👉 <b>ขั้นที่ 3:</b> หาค่า {s3['name']} จากแถวที่ 3<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; สมการคือ: ({s1['name']} × {s3['name']}) - {s2['name']} = {ans3}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าตัวเลข: (<span style="color:#e74c3c;">{val_a}</span> × {s3['name']}) - <span style="color:#2980b9;">{val_b}</span> = {ans3}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; นำ {val_b} ไปบวกเข้า: (<span style="color:#e74c3c;">{val_a}</span> × {s3['name']}) = {ans3} + {val_b} = {ans3 + val_b}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s3['name']} = {ans3 + val_b} ÷ {val_a} = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
-                    <b>ตอบ: {s3['name']} มีค่าเท่ากับ {val_c}</b></span>'''
-                    
-                elif scenario == "4_rows":
-                    # --- โหมด 4 แถว สุดโหด (Chain Substitution ระดับแข่งขัน) ---
-                    val_a = random.randint(5, 12)
-                    val_b = random.randint(3, 9)
-                    val_c = random.randint(12, 25)
-                    val_d = random.randint(20, 50)
-                    ans1 = val_a * 2
-                    ans2 = val_a * val_b
-                    ans3 = val_b + val_c + val_b
-                    ans4 = val_c + val_d - val_a
-                    
-                    svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="260">'
-                    svg += f'<rect x="90" y="65" width="380" height="1" fill="#ecf0f1"/>'
-                    svg += f'<rect x="90" y="125" width="380" height="1" fill="#ecf0f1"/>'
-                    svg += f'<rect x="90" y="185" width="380" height="1" fill="#ecf0f1"/>'
-                    svg += draw_eq_row(40, [s1, "+", s1, "=", {"type":"box", "val":ans1}])
-                    svg += draw_eq_row(100, [s1, "x", s2, "=", {"type":"box", "val":ans2}])
-                    svg += draw_eq_row(160, [s2, "+", s3, "+", s2, "=", {"type":"box", "val":ans3}])
-                    svg += draw_eq_row(220, [s3, "+", s4, "-", s1, "=", {"type":"box", "val":ans4}])
-                    svg += '</svg></div>'
-                    
-                    q = f"<b>[ระดับความยากสูงสุด]</b> จงวิเคราะห์สมการ 4 ขั้นตอนต่อไปนี้ แล้วหาว่า <b>{s4['name']} มีค่าเท่าใด?</b><br>{svg}"
-                    
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (แทนค่าต่อเนื่อง 4 ขั้นตอน):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> หาค่า {s1['name']} จากแถวที่ 1<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {s1['name']} + {s1['name']} = {ans1} ดังนั้น {s1['name']} = {ans1} ÷ 2 = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
-                    👉 <b>ขั้นที่ 2:</b> หาค่า {s2['name']} จากแถวที่ 2<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {s1['name']}: <span style="color:#e74c3c;">{val_a}</span> × {s2['name']} = {ans2}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s2['name']} = {ans2} ÷ {val_a} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
-                    👉 <b>ขั้นที่ 3:</b> หาค่า {s3['name']} จากแถวที่ 3<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แถวที่ 3 คือ: {s2['name']} + {s3['name']} + {s2['name']} = {ans3}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {s2['name']}: <span style="color:#2980b9;">{val_b}</span> + {s3['name']} + <span style="color:#2980b9;">{val_b}</span> = {ans3}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จัดกลุ่มตัวเลข: {s3['name']} + {val_b * 2} = {ans3}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s3['name']} = {ans3} - {val_b * 2} = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
-                    👉 <b>ขั้นที่ 4:</b> หาค่า {s4['name']} จากแถวสุดท้าย!<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แถวที่ 4 คือ: {s3['name']} + {s4['name']} - {s1['name']} = {ans4}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าที่รู้ทั้งหมด: <span style="color:#27ae60;">{val_c}</span> + {s4['name']} - <span style="color:#e74c3c;">{val_a}</span> = {ans4}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ย้ายข้างตัวเลข: {s4['name']} = {ans4} - {val_c} + {val_a} = <span style="color:#8e44ad;"><b>{val_d}</b></span><br>
-                    <b>ตอบ: {s4['name']} มีค่าเท่ากับ {val_d}</b></span>'''
+                    if not is_challenge:
+                        qty_a1 = random.randint(3, 4)
+                        qty_a2 = random.randint(1, 2)
+                        qty_b2 = 1
+                        
+                        w1 = val_a * qty_a1
+                        w2 = (val_a * qty_a2) + (val_b * qty_b2)
+                        target_obj = obj2
+                        target_val = val_b
+                    else:
+                        qty_a1 = random.randint(3, 4)
+                        qty_a2 = random.randint(1, 2)
+                        qty_b2 = random.randint(1, 2)
+                        qty_b3 = random.randint(1, 2)
+                        qty_c3 = 1
+                        
+                        w1 = val_a * qty_a1
+                        w2 = (val_a * qty_a2) + (val_b * qty_b2)
+                        w3 = (val_b * qty_b3) + (val_c * qty_c3)
+                        target_obj = obj3
+                        target_val = val_c
+
+                    def draw_block(cx, cy, obj):
+                        if obj["shape"] == "circle":
+                            s = f'<circle cx="{cx}" cy="{cy}" r="16" fill="{obj["color"]}" stroke="#2c3e50" stroke-width="1.5"/>'
+                            s += f'<text x="{cx}" y="{cy+6}" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{obj["let"]}</text>'
+                        elif obj["shape"] == "square":
+                            s = f'<rect x="{cx-15}" y="{cy-15}" width="30" height="30" rx="4" fill="{obj["color"]}" stroke="#2c3e50" stroke-width="1.5"/>'
+                            s += f'<text x="{cx}" y="{cy+6}" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{obj["let"]}</text>'
+                        elif obj["shape"] == "triangle":
+                            s = f'<polygon points="{cx},{cy-16} {cx-16},{cy+14} {cx+16},{cy+14}" fill="{obj["color"]}" stroke="#2c3e50" stroke-width="1.5" stroke-linejoin="round"/>'
+                            s += f'<text x="{cx}" y="{cy+8}" font-family="sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">{obj["let"]}</text>'
+                        else: # star
+                            s = f'<polygon points="{cx},{cy-16} {cx+4},{cy-4} {cx+16},{cy-4} {cx+6},{cy+4} {cx+10},{cy+15} {cx},{cy+8} {cx-10},{cy+15} {cx-6},{cy+4} {cx-16},{cy-4} {cx-4},{cy-4}" fill="{obj["color"]}" stroke="#2c3e50" stroke-width="1.5" stroke-linejoin="round"/>'
+                            s += f'<text x="{cx}" y="{cy+6}" font-family="sans-serif" font-size="14" font-weight="bold" fill="#2c3e50" text-anchor="middle">{obj["let"]}</text>'
+                        return s
+
+                    def draw_scale_row(cy, items, total_w):
+                        row_svg = f'<rect x="90" y="{cy}" width="180" height="5" fill="#34495e" rx="2"/><rect x="175" y="{cy+5}" width="10" height="15" fill="#7f8c8d"/><rect x="150" y="{cy+20}" width="60" height="8" fill="#2c3e50" rx="2"/>'
+                        t_width = sum([(qty * 35) for obj, qty in items])
+                        curr_x = 180 - (t_width / 2)
+                        for obj_data, qty in items:
+                            for i in range(qty):
+                                cx = curr_x + (35 / 2) + (i * 35)
+                                row_svg += draw_block(cx, cy - 18, obj_data)
+                            curr_x += (qty * 35)
+                        row_svg += f'<text x="320" y="{cy+5}" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
+                        row_svg += f'<rect x="370" y="{cy-18}" width="100" height="40" rx="6" fill="#f39c12"/><text x="420" y="{cy+8}" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{total_w}</text>'
+                        return row_svg
+
+                    if not is_challenge:
+                        svg_h = 240
+                        svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="{svg_h}">'
+                        svg += draw_scale_row(80, [(obj1, qty_a1)], w1)
+                        svg += draw_scale_row(180, [(obj1, qty_a2), (obj2, qty_b2)], w2)
+                        svg += '</svg></div>'
+                        
+                        q = f"พิจารณาภาพตาชั่งสมดุลด้านล่างนี้ จงหาว่า <b>บล็อก {target_obj['let']} 1 ชิ้น มีค่าเท่าใด?</b><br>{svg}"
+                        sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ตาชั่งปริศนา):</b><br>
+                        👉 <b>ขั้นที่ 1:</b> พิจารณาตาชั่งด้านบน ({obj1['let']} {qty_a1} ชิ้น = {w1})<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {obj1['let']} = {w1} ÷ {qty_a1} = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
+                        👉 <b>ขั้นที่ 2:</b> พิจารณาตาชั่งด้านล่าง ({obj1['let']} {qty_a2} ชิ้น + {obj2['let']} {qty_b2} ชิ้น = {w2})<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {obj1['let']}: <span style="color:#e74c3c;">{val_a}</span> × {qty_a2} ชิ้น = {val_a * qty_a2}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; {obj2['let']} {qty_b2} ชิ้น = {w2} - {val_a * qty_a2} = {w2 - (val_a * qty_a2)}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; {obj2['let']} 1 ชิ้น = {w2 - (val_a * qty_a2)} ÷ {qty_b2} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
+                        <b>ตอบ: บล็อก {target_obj['let']} มีค่าเท่ากับ {target_val}</b></span>'''
+                    else:
+                        svg_h = 340
+                        svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="{svg_h}">'
+                        svg += draw_scale_row(60, [(obj1, qty_a1)], w1)
+                        svg += draw_scale_row(160, [(obj1, qty_a2), (obj2, qty_b2)], w2)
+                        svg += draw_scale_row(260, [(obj2, qty_b3), (obj3, qty_c3)], w3)
+                        svg += '</svg></div>'
+                        
+                        q = f"<b>[ตาชั่งระดับแข่งขัน 3 ชั้น]</b> พิจารณาความสัมพันธ์ด้านล่าง จงหาว่า <b>บล็อก {target_obj['let']} 1 ชิ้น มีค่าเท่าใด?</b><br>{svg}"
+                        sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (แทนค่าตาชั่ง 3 ชั้น):</b><br>
+                        👉 <b>ขั้นที่ 1:</b> ตาชั่งบนสุด ➞ {obj1['let']} = {w1} ÷ {qty_a1} = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
+                        👉 <b>ขั้นที่ 2:</b> ตาชั่งกลาง ➞ แทนค่า {obj1['let']}: <span style="color:#e74c3c;">{val_a}</span> × {qty_a2} = {val_a * qty_a2}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; {obj2['let']} {qty_b2} ชิ้น = {w2} - {val_a * qty_a2} = {w2 - (val_a * qty_a2)}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {obj2['let']} = {w2 - (val_a * qty_a2)} ÷ {qty_b2} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
+                        👉 <b>ขั้นที่ 3:</b> ตาชั่งล่างสุด ➞ แทนค่า {obj2['let']}: <span style="color:#2980b9;">{val_b}</span> × {qty_b3} = {val_b * qty_b3}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; {obj3['let']} {qty_c3} ชิ้น = {w3} - {val_b * qty_b3} = {w3 - (val_b * qty_b3)}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {obj3['let']} = {w3 - (val_b * qty_b3)} ÷ {qty_c3} = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
+                        <b>ตอบ: บล็อก {target_obj['let']} มีค่าเท่ากับ {target_val}</b></span>'''
 
             elif actual_sub_t == "โจทย์ปัญหาสมการ: ตาชั่งผลไม้":
                 # สุ่มรูปแบบโจทย์ 4 สไตล์เพื่อความไม่จำเจ
