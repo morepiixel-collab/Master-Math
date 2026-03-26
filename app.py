@@ -4848,18 +4848,21 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 assumed_legs = t_heads * a1['legs']
                 missing_legs = total_legs - assumed_legs
                 
-                sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการสมมติยอดฮิต):</b><br>
-                👉 <b>ขั้นที่ 1:</b> สมมติให้สัตว์ทั้งหมด {t_heads} ตัว เป็น <b>"{a1['name']}"</b> (เลือกตัวที่มีขาน้อยกว่าเสมอเพื่อตั้งเป็นฐาน)<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลที่ต้องสมมติ:</b> เพื่อให้เราคำนวณจำนวนขาขั้นต่ำที่จะเป็นไปได้ หากสัตว์ทุกตัวมีขาเท่ากัน</span><br>
-                &nbsp;&nbsp;&nbsp;&nbsp; ถ้ามี{a1['name']}ทั้งหมด {t_heads} ตัว จะมีขารวม: {t_heads} × {a1['legs']} = <span style="color:#2980b9;"><b>{assumed_legs} ขา</b></span><br>
-                👉 <b>ขั้นที่ 2:</b> หาจำนวนขาที่ "ขาดหายไป" จากความเป็นจริง<br>
+                sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการสมมติให้เห็นภาพ):</b><br>
+                👉 <b>ขั้นที่ 1:</b> สมมติให้สัตว์ทั้งหมด {t_heads} ตัว เป็น <b>"{a1['name']}"</b> (เลือกตัวที่มีขาน้อยกว่าตั้งเป็นฐาน)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>ลองจินตนาการ:</b> สั่งให้สัตว์ทุกตัวยืนแค่ {a1['legs']} ขาให้หมด!</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; ถ้ามี{a1['name']} {t_heads} ตัว จะมีขารวม: {t_heads} × {a1['legs']} = <span style="color:#2980b9;"><b>{assumed_legs} ขา</b></span><br>
+                👉 <b>ขั้นที่ 2:</b> หาจำนวนขาที่ "เหลืออยู่"<br>
                 &nbsp;&nbsp;&nbsp;&nbsp; โจทย์บอกว่าความจริงมีขารวม {total_legs} ขา<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; ขาที่หายไปจากที่เราสมมติไว้คือ: {total_legs} - {assumed_legs} = <span style="color:#e74c3c;"><b>{missing_legs} ขา</b></span><br>
-                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;">(<b>ทำไมขาถึงหายไป?</b> เพราะความจริงมี "{a2['name']}" ปนอยู่ด้วย แต่เราเผลอนับ{a2['name']}ทุกตัวเป็น{a1['name']} ซึ่ง{a2['name']} 1 ตัว มีขามากกว่า{a1['name']}อยู่ {a2['legs']} - {a1['legs']} = <b>{leg_diff} ขา</b>)</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; แสดงว่ามีขาที่เรายังไม่ได้นับ เหลืออยู่: {total_legs} - {assumed_legs} = <span style="color:#e74c3c;"><b>{missing_legs} ขา</b></span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;">(<b>ทำไมถึงมีขาเหลือ?</b> เพราะมี "{a2['name']}" ปนอยู่ด้วย ตอนที่เราสั่งให้ยืนแค่ {a1['legs']} ขา ทำให้ {a2['name']} 1 ตัว ต้องแอบซ่อนขาเอาไว้ {a2['legs']} - {a1['legs']} = <b>{leg_diff} ขา</b>)</span><br>
                 👉 <b>ขั้นที่ 3:</b> หาจำนวน {a2['name']} (ตัวที่ขาเยอะกว่า)<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; นำขาที่หายไป มาแจกคืนให้{a2['name']}ตัวละ {leg_diff} ขา: {missing_legs} ÷ {leg_diff} = <span style="color:#27ae60;"><b>{count_a2} ตัว</b></span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>วิธีคิด:</b> นำขาที่เหลืออยู่ {missing_legs} ขา ไป "แปะเพิ่ม" ให้สัตว์ที่ยืนรออยู่ เพื่อแปลงร่างให้เป็น {a2['name']}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; โดยการแปลงร่างเป็น {a2['name']} 1 ตัว ต้องใช้ขาแปะเพิ่มตัวละ <b>{leg_diff} ขา</b><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น ขา {missing_legs} ขา จะแปลงร่างสัตว์ได้ทั้งหมด: {missing_legs} <span style="color:#e74c3c;">÷ {leg_diff}</span> = <b>{count_a2} ตัวพอดี!</b></span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; จะได้จำนวน {a2['name']} = <span style="color:#27ae60;"><b>{count_a2} ตัว</b></span><br>
                 👉 <b>ขั้นที่ 4:</b> หาจำนวน {a1['name']} (ตัวที่ขาน้อยกว่า)<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; นำหัวทั้งหมดไปลบออก: {t_heads} - {count_a2} = <span style="color:#27ae60;"><b>{count_a1} ตัว</b></span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; นำจำนวนหัวทั้งหมดไปลบออก: {t_heads} (ตัวทั้งหมด) - {count_a2} ({a2['name']}) = <span style="color:#27ae60;"><b>{count_a1} ตัว</b></span><br>
                 <b>ตอบ: ฟาร์มนี้มี{target_animal['name']}ทั้งหมด {count_a1 if target_animal['name'] == a1['name'] else count_a2} ตัว</b></span>'''
 
             elif actual_sub_t == "ค่าประมาณเป็นจำนวนเต็มสิบ เต็มร้อย เต็มพัน":
