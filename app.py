@@ -5119,7 +5119,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             elif actual_sub_t == "โจทย์ปัญหาสมการ: นับหัวและขาสัตว์":
                 is_challenge = st.session_state.get("challenge_mode", False)
                 
-                # 🎲 ฐานข้อมูลสัตว์ (เพิ่มความหลากหลาย)
+                # 🎲 ฐานข้อมูลสัตว์
                 animals_2 = [
                     {"name": "ไก่", "legs": 2, "color": "#f1c40f"}, {"name": "เป็ด", "legs": 2, "color": "#e67e22"},
                     {"name": "ห่าน", "legs": 2, "color": "#ecf0f1"}, {"name": "นกกระจอกเทศ", "legs": 2, "color": "#bdc3c7"}
@@ -5132,35 +5132,26 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     {"name": "มด", "legs": 6, "color": "#c0392b"}, {"name": "แมงมุม", "legs": 8, "color": "#2c3e50"}
                 ]
                 
+                # 💡 สุ่มรูปแบบโจทย์ (แบบคลาสสิกรู้หัวรวม หรือ แบบรู้ผลต่าง)
+                scenario = random.choice(["classic", "difference"])
+                
                 if not is_challenge:
                     a1 = random.choice(animals_2)
                     a2 = random.choice(animals_4)
-                    t_heads = random.randint(15, 30) # จำนวนรวมเยอะขึ้น ท้าทายกว่าเดิม
                 else:
-                    # โหมดท้าทาย: สัตว์ 4 ขา กับ แมลง (6 ขา หรือ 8 ขา)
                     a1 = random.choice(animals_4)
                     a2 = random.choice(animals_6_8)
-                    t_heads = random.randint(20, 40)
                     
-                # สุ่มจำนวนสัตว์แต่ละชนิด
-                count_a1 = random.randint(5, t_heads - 5)
-                count_a2 = t_heads - count_a1
-                
-                total_legs = (count_a1 * a1['legs']) + (count_a2 * a2['legs'])
-                leg_diff = a2['legs'] - a1['legs']
-                
                 def draw_dynamic_legs():
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="120">'
-                    # สัตว์ตัวที่ 1 (ขาน้อยกว่า)
+                    # สัตว์ตัวที่ 1
                     svg += f'<rect x="130" y="30" width="100" height="40" rx="10" fill="{a1["color"]}" stroke="#2c3e50" stroke-width="1"/>'
                     svg += f'<text x="180" y="55" font-family="sans-serif" font-size="16" font-weight="bold" fill="#2c3e50" text-anchor="middle">{a1["name"]}</text>'
-                    # วาดขาตามจำนวนจริง
                     for i in range(a1["legs"]):
                         lx = 145 + (i * (70 / (a1["legs"] - 1 if a1["legs"]>1 else 1)))
                         svg += f'<line x1="{lx}" y1="70" x2="{lx}" y2="90" stroke="#2c3e50" stroke-width="3" stroke-linecap="round"/>'
                     svg += f'<text x="180" y="110" font-family="sans-serif" font-size="14" font-weight="bold" fill="#e74c3c" text-anchor="middle">สัตว์ {a1["legs"]} ขา</text>'
-                    
-                    # สัตว์ตัวที่ 2 (ขามากกว่า)
+                    # สัตว์ตัวที่ 2
                     svg += f'<rect x="330" y="30" width="100" height="40" rx="10" fill="{a2["color"]}" stroke="#2c3e50" stroke-width="1"/>'
                     svg += f'<text x="380" y="55" font-family="sans-serif" font-size="16" font-weight="bold" fill="#2c3e50" text-anchor="middle">{a2["name"]}</text>'
                     for i in range(a2["legs"]):
@@ -5169,28 +5160,108 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     svg += f'<text x="380" y="110" font-family="sans-serif" font-size="14" font-weight="bold" fill="#e74c3c" text-anchor="middle">สัตว์ {a2["legs"]} ขา</text>'
                     return svg + '</svg></div>'
 
-                target_animal = random.choice([a1, a2])
-                q = f"คุณตาเลี้ยง <b>{a1['name']}</b> และ <b>{a2['name']}</b> ไว้ในฟาร์ม ถ้านับหัวสัตว์ทั้งสองชนิดรวมกันได้ <b>{t_heads} หัว</b> และนับขารวมกันได้ <b>{total_legs} ขา</b><br>อยากทราบว่าในฟาร์มนี้มี <b>{target_animal['name']} ทั้งหมดกี่ตัว?</b><br>{draw_dynamic_legs()}"
-                
-                assumed_legs = t_heads * a1['legs']
-                missing_legs = total_legs - assumed_legs
-                
-                sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการสมมติให้เห็นภาพ):</b><br>
-                👉 <b>ขั้นที่ 1:</b> สมมติให้สัตว์ทั้งหมด {t_heads} ตัว เป็น <b>"{a1['name']}"</b> (เลือกสัตว์ที่มีขาน้อยกว่าตั้งเป็นฐาน)<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>ลองจินตนาการ:</b> สั่งให้สัตว์ทุกตัวยืนแค่ {a1['legs']} ขาให้หมด!</span><br>
-                &nbsp;&nbsp;&nbsp;&nbsp; ถ้ามี{a1['name']} {t_heads} ตัว จะมีขารวม: {t_heads} × {a1['legs']} = <span style="color:#2980b9;"><b>{assumed_legs} ขา</b></span><br>
-                👉 <b>ขั้นที่ 2:</b> หาจำนวนขาที่ "เหลืออยู่"<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; โจทย์บอกว่าความจริงมีขารวม {total_legs} ขา<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; แสดงว่ามีขาที่เรายังไม่ได้นับ เหลืออยู่: {total_legs} - {assumed_legs} = <span style="color:#e74c3c;"><b>{missing_legs} ขา</b></span><br>
-                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;">(<b>ทำไมถึงมีขาเหลือ?</b> เพราะมี "{a2['name']}" ปนอยู่ด้วย ตอนที่เราสั่งให้สัตว์ยืนแค่ {a1['legs']} ขา ทำให้ {a2['name']} 1 ตัว ต้องแอบซ่อนขาเอาไว้ {a2['legs']} - {a1['legs']} = <b>{leg_diff} ขา</b>)</span><br>
-                👉 <b>ขั้นที่ 3:</b> หาจำนวน {a2['name']} (ตัวที่ขาเยอะกว่า)<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>วิธีคิด:</b> นำขาที่เหลืออยู่ {missing_legs} ขา ไป "แปะเพิ่ม" ให้สัตว์ที่ยืนรออยู่ เพื่อแปลงร่างให้เป็น {a2['name']}<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; โดยการแปลงร่างเป็น {a2['name']} 1 ตัว ต้องใช้ขาแปะเพิ่มตัวละ <b>{leg_diff} ขา</b><br>
-                &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น ขา {missing_legs} ขา จะแปลงร่างสัตว์ได้ทั้งหมด: {missing_legs} <span style="color:#e74c3c;">÷ {leg_diff}</span> = <b>{count_a2} ตัวพอดี!</b></span><br>
-                &nbsp;&nbsp;&nbsp;&nbsp; จะได้จำนวน {a2['name']} = <span style="color:#27ae60;"><b>{count_a2} ตัว</b></span><br>
-                👉 <b>ขั้นที่ 4:</b> หาจำนวน {a1['name']} (ตัวที่ขาน้อยกว่า)<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; นำจำนวนหัวทั้งหมดไปลบออก: {t_heads} (ตัวทั้งหมด) - {count_a2} ({a2['name']}) = <span style="color:#27ae60;"><b>{count_a1} ตัว</b></span><br>
-                <b>ตอบ: ฟาร์มนี้มี{target_animal['name']}ทั้งหมด {count_a1 if target_animal['name'] == a1['name'] else count_a2} ตัว</b></span>'''
+                if scenario == "classic":
+                    # ==========================================
+                    # 🐔 โหมดคลาสสิก: บอกจำนวนตัวรวมทั้งหมด
+                    # ==========================================
+                    t_heads = random.randint(15, 30) if not is_challenge else random.randint(20, 40)
+                    count_a1 = random.randint(5, t_heads - 5)
+                    count_a2 = t_heads - count_a1
+                    
+                    total_legs = (count_a1 * a1['legs']) + (count_a2 * a2['legs'])
+                    leg_diff = a2['legs'] - a1['legs']
+                    
+                    target_animal = random.choice([a1, a2])
+                    q = f"คุณตาเลี้ยง <b>{a1['name']}</b> และ <b>{a2['name']}</b> ไว้ในฟาร์ม ถ้านับสัตว์ทั้งสองชนิดรวมกันได้ <b>{t_heads} ตัว</b> และนับขารวมกันได้ <b>{total_legs} ขา</b><br>อยากทราบว่าในฟาร์มนี้มี <b>{target_animal['name']} ทั้งหมดกี่ตัว?</b><br>{draw_dynamic_legs()}"
+                    
+                    assumed_legs = t_heads * a1['legs']
+                    missing_legs = total_legs - assumed_legs
+                    
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการสมมติให้เห็นภาพ):</b><br>
+                    👉 <b>ขั้นที่ 1:</b> สมมติให้สัตว์ทั้งหมด {t_heads} ตัว เป็น <b>"{a1['name']}"</b> (เลือกสัตว์ที่มีขาน้อยกว่าตั้งเป็นฐาน)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>ลองจินตนาการ:</b> สั่งให้สัตว์ทุกตัวยืนแค่ {a1['legs']} ขาให้หมด!</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ถ้ามี{a1['name']} {t_heads} ตัว จะมีขารวม: {t_heads} × {a1['legs']} = <span style="color:#2980b9;"><b>{assumed_legs} ขา</b></span><br>
+                    👉 <b>ขั้นที่ 2:</b> หาจำนวนขาที่ "เหลืออยู่"<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; โจทย์บอกว่าความจริงมีขารวม {total_legs} ขา<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แสดงว่ามีขาที่เรายังไม่ได้นับ เหลืออยู่: {total_legs} - {assumed_legs} = <span style="color:#e74c3c;"><b>{missing_legs} ขา</b></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;">(<b>ทำไมถึงมีขาเหลือ?</b> เพราะมี "{a2['name']}" ปนอยู่ด้วย ตอนที่เราสั่งให้สัตว์ยืนแค่ {a1['legs']} ขา ทำให้ {a2['name']} 1 ตัว ต้องแอบซ่อนขาเอาไว้ {a2['legs']} - {a1['legs']} = <b>{leg_diff} ขา</b>)</span><br>
+                    👉 <b>ขั้นที่ 3:</b> หาจำนวน {a2['name']} (ตัวที่ขาเยอะกว่า)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>วิธีคิด:</b> นำขาที่เหลืออยู่ {missing_legs} ขา ไป "แปะเพิ่ม" ให้สัตว์ที่ยืนรออยู่ เพื่อแปลงร่างให้เป็น {a2['name']}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; โดยการแปลงร่างเป็น {a2['name']} 1 ตัว ต้องใช้ขาแปะเพิ่มตัวละ <b>{leg_diff} ขา</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น ขา {missing_legs} ขา จะแปลงร่างสัตว์ได้ทั้งหมด: {missing_legs} <span style="color:#e74c3c;">÷ {leg_diff}</span> = <b>{count_a2} ตัวพอดี!</b></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้จำนวน {a2['name']} = <span style="color:#27ae60;"><b>{count_a2} ตัว</b></span><br>
+                    👉 <b>ขั้นที่ 4:</b> หาจำนวน {a1['name']} (ตัวที่ขาน้อยกว่า)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; นำจำนวนสัตว์ทั้งหมดไปลบออก: {t_heads} (ตัวทั้งหมด) - {count_a2} ({a2['name']}) = <span style="color:#27ae60;"><b>{count_a1} ตัว</b></span><br>
+                    <b>ตอบ: ฟาร์มนี้มี{target_animal['name']}ทั้งหมด {count_a1 if target_animal['name'] == a1['name'] else count_a2} ตัว</b></span>'''
+
+                else:
+                    # ==========================================
+                    # 🐷 โหมดผลต่าง: บอกว่าใครมากกว่า/น้อยกว่าใคร
+                    # ==========================================
+                    count_a1 = random.randint(10, 25)
+                    count_a2 = random.randint(10, 25)
+                    while count_a1 == count_a2: # บังคับไม่ให้เท่ากัน
+                        count_a2 = random.randint(10, 25)
+                        
+                    total_legs = (count_a1 * a1['legs']) + (count_a2 * a2['legs'])
+                    diff_count = abs(count_a1 - count_a2)
+                    
+                    if count_a1 > count_a2:
+                        more_animal, less_animal = a1, a2
+                        count_more, count_less = count_a1, count_a2
+                    else:
+                        more_animal, less_animal = a2, a1
+                        count_more, count_less = count_a2, count_a1
+                        
+                    target_animal = random.choice([a1, a2])
+                    ans_count = count_a1 if target_animal == a1 else count_a2
+                    
+                    # สุ่มใช้คำว่า มากกว่า หรือ น้อยกว่า
+                    is_more_word = random.choice([True, False])
+                    if is_more_word:
+                        relation_str = f"<b>{more_animal['name']}</b> มากกว่า <b>{less_animal['name']}</b> อยู่ <b>{diff_count} ตัว</b>"
+                    else:
+                        relation_str = f"<b>{less_animal['name']}</b> น้อยกว่า <b>{more_animal['name']}</b> อยู่ <b>{diff_count} ตัว</b>"
+                        
+                    q = f"คุณตาเลี้ยง <b>{a1['name']}</b> และ <b>{a2['name']}</b> ไว้ในฟาร์ม โดยมี {relation_str}<br>ถ้านับขาสัตว์ทั้งสองชนิดรวมกันได้ <b>{total_legs} ขา</b><br>อยากทราบว่าในฟาร์มนี้มี <b>{target_animal['name']} ทั้งหมดกี่ตัว?</b><br>{draw_dynamic_legs()}"
+
+                    # สร้างตัวแปรเฉลย
+                    let_x = less_animal['name']
+                    x_legs = less_animal['legs']
+                    other_name = more_animal['name']
+                    other_legs = more_animal['legs']
+                    
+                    legs_diff_term = diff_count * other_legs
+                    
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (แก้ด้วยสมการแทนค่าตัวแปร):</b><br>
+                    👉 <b>ขั้นที่ 1: กำหนดตัวแปร (แทนจำนวนสัตว์)</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 เคล็ดลับ:</b> ให้สมมติ <b>x</b> เป็นสัตว์ตัวที่มีจำนวน "น้อยกว่า" เสมอครับ</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ให้ <b>x</b> แทนจำนวนของ <b>{let_x}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; โจทย์บอกว่า {other_name} มีมากกว่าอยู่ {diff_count} ตัว ดังนั้น <b>{other_name} จะมีจำนวน = (x + {diff_count})</b> ตัว<br>
+                    👉 <b>ขั้นที่ 2: สร้างสมการจาก "จำนวนขา"</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จำนวนขาของ {let_x} = <b>{x_legs}x</b> ขา <span style="color:#95a5a6;">(เพราะ 1 ตัวมี {x_legs} ขา)</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จำนวนขาของ {other_name} = <b>{other_legs} × (x + {diff_count})</b> ขา <span style="color:#95a5a6;">(เพราะ 1 ตัวมี {other_legs} ขา)</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; นำขาทั้งหมดมารวมกัน จะได้เท่ากับ {total_legs}:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{x_legs}x + {other_legs}(x + {diff_count}) = {total_legs}</b><br>
+                    👉 <b>ขั้นที่ 3: กระจายตัวเลขและแก้สมการ</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; นำ {other_legs} คูณกระจายเข้าไปในวงเล็บ (ทั้ง x และ {diff_count})<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {other_legs} × x = <b>{other_legs}x</b> และ {other_legs} × {diff_count} = <b>{legs_diff_term}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; สมการจะกลายเป็น: <b>{x_legs}x + {other_legs}x + {legs_diff_term} = {total_legs}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; รวมกลุ่ม x เข้าด้วยกัน ({x_legs}x + {other_legs}x): <b>{x_legs + other_legs}x + {legs_diff_term} = {total_legs}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 ย้ายข้างกำจัดตัวเลข:</b> ย้าย +{legs_diff_term} ไปฝั่งขวา (เปลี่ยนเป็นลบ)</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{x_legs + other_legs}x = {total_legs} - {legs_diff_term}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{x_legs + other_legs}x = {total_legs - legs_diff_term}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 ย้ายตัวคูณไปหาร:</b> ย้าย {x_legs + other_legs} ไปหาร</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>x = {total_legs - legs_diff_term} ÷ {x_legs + other_legs}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>x = <span style="color:#e74c3c;">{count_less}</span></b> ตัว (นี่คือจำนวนของ <b>{let_x}</b>)<br>'''
+                    
+                    if target_animal['name'] == other_name:
+                        sol += f'''👉 <b>ขั้นที่ 4: หาจำนวน {other_name} ตามที่โจทย์ถาม</b><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>วิธีทำ:</b> นำ x กลับไปแทนค่าในจำนวนที่เราตั้งไว้ตอนแรก</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; {other_name} = x + {diff_count}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; <b>{other_name} = {count_less} + {diff_count} = <span style="color:#27ae60;">{count_more}</span> ตัว</b><br>'''
+                        
+                    sol += f'''<b>ตอบ: ฟาร์มนี้มี{target_animal['name']}ทั้งหมด {ans_count} ตัว</b></span>'''
 
             elif actual_sub_t == "โจทย์ปัญหาสมการ: ความสัมพันธ์ของ 2 สิ่ง":
                 is_challenge = st.session_state.get("challenge_mode", False)
