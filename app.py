@@ -5208,73 +5208,123 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 uA, uB = pair["uA"], pair["uB"]
                 
                 if not is_challenge:
-                    val_A = random.randint(30, 80)
-                    val_B = random.randint(10, val_A - 10)
+                    val_1 = random.randint(30, 80)
+                    val_2 = random.randint(10, val_1 - 10)
+                    
+                    # สุ่มว่า A จะแพงกว่า หรือ ถูกกว่า B
+                    is_A_expensive = random.choice([True, False])
+                    
+                    if is_A_expensive:
+                        val_A, val_B = val_1, val_2
+                        diff_word = "แพงกว่า"
+                        diff_val = val_A - val_B
+                        eq2_str = f"x - {diff_val} = y"
+                        reason_str = f"เพราะ <b>x</b> คือของที่แพงกว่า ถ้าเราอยากรู้ราคาของที่ถูกกว่า (<b>y</b>) เราก็ต้องเอาของแพง (<b>x</b>) ไป <b>\"หักออก\"</b> ด้วยส่วนต่างนั่นเองครับ!"
+                        sub_str = f"x + (x - {diff_val}) = {val_A + val_B}"
+                        combine_str = f"2x - {diff_val} = {val_A + val_B}"
+                        move_str = f"2x = {val_A + val_B} + {diff_val}"
+                        calc_str = f"2x = {(val_A + val_B) + diff_val}"
+                        final_x_str = f"x = {(val_A + val_B) + diff_val} ÷ 2"
+                    else:
+                        val_A, val_B = val_2, val_1 # A ถูกกว่า
+                        diff_word = "ถูกกว่า"
+                        diff_val = val_B - val_A
+                        eq2_str = f"x + {diff_val} = y"
+                        reason_str = f"เพราะ <b>x</b> คือของที่ถูกกว่า ถ้าเราอยากรู้ราคาของที่แพงกว่า (<b>y</b>) เราก็ต้องเอาของถูก (<b>x</b>) ไป <b>\"บวกเพิ่ม\"</b> ด้วยส่วนต่างนั่นเองครับ!"
+                        sub_str = f"x + (x + {diff_val}) = {val_A + val_B}"
+                        combine_str = f"2x + {diff_val} = {val_A + val_B}"
+                        move_str = f"2x = {val_A + val_B} - {diff_val}"
+                        calc_str = f"2x = {(val_A + val_B) - diff_val}"
+                        final_x_str = f"x = {(val_A + val_B) - diff_val} ÷ 2"
                     
                     sum_val = val_A + val_B
-                    diff_val = val_A - val_B
                     
-                    q = f"<b>{nameA}</b> 1 {uA} รวมกับ <b>{nameB}</b> 1 {uB} ราคารวมกัน <b>{sum_val}</b> บาท<br>ถ้า <b>{nameA}</b> 1 {uA} ราคาแพงกว่า <b>{nameB}</b> 1 {uB} อยู่ <b>{diff_val}</b> บาท<br>อยากทราบว่า <b>{nameA}</b> ราคา{uA}ละกี่บาท?"
+                    q = f"<b>{nameA}</b> 1 {uA} รวมกับ <b>{nameB}</b> 1 {uB} ราคารวมกัน <b>{sum_val}</b> บาท<br>ถ้า <b>{nameA}</b> 1 {uA} ราคา<b>{diff_word}</b> <b>{nameB}</b> 1 {uB} อยู่ <b>{diff_val}</b> บาท<br>อยากทราบว่า <b>{nameA}</b> ราคา{uA}ละกี่บาท?"
                     
                     sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (แก้สมการด้วยวิธีแทนค่าตัวแปร):</b><br>
                     👉 <b>ขั้นที่ 1: กำหนดตัวแปรและสร้างสมการ</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ให้ <b>x</b> แทนราคาของ <b>{nameA}</b> (ของที่แพงกว่า)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ให้ <b>y</b> แทนราคาของ <b>{nameB}</b> (ของที่ถูกกว่า)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ให้ <b>x</b> แทนราคาของ <b>{nameA}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ให้ <b>y</b> แทนราคาของ <b>{nameB}</b><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; จากโจทย์ เขียนประโยคสัญลักษณ์ได้ดังนี้:<br>
                     &nbsp;&nbsp;&nbsp;&nbsp; 1) ราคารวมกัน {sum_val} บาท ➞ <b>x + y = {sum_val}</b> &nbsp;&nbsp;&nbsp;&nbsp; --- (สมการที่ ①)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; 2) แพงกว่ากัน {diff_val} บาท ➞ <b>x - {diff_val} = y</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --- (สมการที่ ②)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; 2) {nameA} {diff_word} {nameB} {diff_val} บาท ➞ <b>{eq2_str}</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --- (สมการที่ ②)<br>
                     <br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>🤔 ทำไม "แพงกว่า"...ถึงใช้เครื่องหมายลบ (-)?</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>คำอธิบาย:</b> เพราะ <b>x</b> คือของที่แพงกว่า ถ้าเราอยากรู้ราคาของที่ถูกกว่า (<b>y</b>) เราก็ต้องเอาของแพง (<b>x</b>) ไป <b>"หักออก"</b> ด้วยส่วนต่างนั่นเองครับ!<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; 💡 <i>(ถ้าเด็กๆ ถามว่า "หนูอยากเขียนเป็นเครื่องหมายบวก ได้ไหมคะ?" <b>ตอบว่า ได้แน่นอนครับ!</b> เราสามารถเขียนเป็น <b>y + {diff_val} = x</b> (ของถูก + ส่วนต่าง = ของแพง) ก็มีความหมายเหมือนกันเป๊ะเลย! แต่ที่เราจัดรูปเป็น <b>x - {diff_val} = y</b> ก็เพื่อเตรียมเอาตัว <b>y</b> ทั้งก้อนไปแทนค่าในสมการแรกให้ง่ายขึ้นครับ)</i></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>🤔 ทำไมถึงเขียนสมการแบบนี้?</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>คำอธิบาย:</b> {reason_str}<br>
                     <br>
                     👉 <b>ขั้นที่ 2: แก้สมการ (นำสมการที่ ② ไปแทนค่าในสมการที่ ①)</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลการแทนค่า:</b> ในเมื่อเรารู้ว่า y มีค่าเท่ากับ (x - {diff_val}) เราก็แค่เอา (x - {diff_val}) ไปวางแทนที่ตัว y ในสมการแรก เพื่อให้เหลือแค่ตัวแปร x ตัวเดียวครับ</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลการแทนค่า:</b> เราจะนำก้อนของ y ไปวางแทนที่ตัว y ในสมการแรก เพื่อให้เหลือแค่ตัวแปร x ตัวเดียวครับ</span><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; จากสมการที่ ①: x + <b>y</b> = {sum_val}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; เปลี่ยน y เป็น (x - {diff_val}): <b>x + (x - {diff_val}) = {sum_val}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; รวมตัวแปร x เข้าด้วยกัน: <b>2x - {diff_val} = {sum_val}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า y ลงไป: <b>{sub_str}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; รวมตัวแปร x เข้าด้วยกัน: <b>{combine_str}</b><br>
                     👉 <b>ขั้นที่ 3: ย้ายข้างสมการเพื่อหาค่า x</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ย้าย -{diff_val} ไปฝั่งขวา (เปลี่ยนลบเป็นบวก):<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>2x = {sum_val} + {diff_val}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>2x = {sum_val + diff_val}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>x = {sum_val + diff_val} ÷ 2</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{move_str}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{calc_str}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{final_x_str}</b><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; <b>x = <span style="color:#e74c3c;">{val_A}</span></b> บาท<br>
                     <b>ตอบ: {nameA} ราคา{uA}ละ {val_A} บาท</b></span>'''
                     
                 else:
+                    # --- โหมดท้าทาย ---
                     val_B = random.randint(8, 25)
                     m = random.randint(2, 4) 
-                    val_A = random.randint(val_B + 5, (val_B * m) - 2) 
                     
+                    val_A = random.randint(15, 80)
+                    while val_A == (val_B * m): # ป้องกันไม่ให้ราคาเท่ากันเป๊ะ
+                        val_A = random.randint(15, 80)
+                        
                     sum_val = val_A + val_B
-                    diff_val = (val_B * m) - val_A
+                    
+                    # เช็คว่า B m ชิ้น แพงกว่า หรือ ถูกกว่า A 1 ชิ้น
+                    if (val_B * m) > val_A:
+                        diff_word = "แพงกว่า"
+                        diff_val = (val_B * m) - val_A
+                        eq2_str = f"{m}y - x = {diff_val}"
+                        isolate_x_str = f"{m}y - {diff_val} = x"
+                        reason_isolate = f"ราคาของ {nameB} {m} {uB} ({m}y) หักออกด้วยส่วนต่าง ({diff_val}) จะมีค่าเท่ากับราคาของ {nameA} (x) พอดีครับ"
+                        sub_str = f"({m}y - {diff_val}) + y = {sum_val}"
+                        combine_str = f"{m+1}y - {diff_val} = {sum_val}"
+                        move_str = f"{m+1}y = {sum_val} + {diff_val}"
+                        calc_str = f"{m+1}y = {sum_val + diff_val}"
+                        final_y_str = f"y = {sum_val + diff_val} ÷ {m+1}"
+                    else:
+                        diff_word = "ถูกกว่า"
+                        diff_val = val_A - (val_B * m)
+                        eq2_str = f"x - {m}y = {diff_val}"
+                        isolate_x_str = f"{m}y + {diff_val} = x"
+                        reason_isolate = f"ราคาของ {nameB} {m} {uB} ({m}y) บวกเพิ่มด้วยส่วนต่าง ({diff_val}) จะมีค่าเท่ากับราคาของ {nameA} (x) พอดีครับ"
+                        sub_str = f"({m}y + {diff_val}) + y = {sum_val}"
+                        combine_str = f"{m+1}y + {diff_val} = {sum_val}"
+                        move_str = f"{m+1}y = {sum_val} - {diff_val}"
+                        calc_str = f"{m+1}y = {sum_val - diff_val}"
+                        final_y_str = f"y = {sum_val - diff_val} ÷ {m+1}"
                     
                     ask_A = random.choice([True, False])
                     target_name = nameA if ask_A else nameB
                     target_u = uA if ask_A else uB
                     target_ans = val_A if ask_A else val_B
                     
-                    q = f"<b>{nameA}</b> 1 {uA} รวมกับ <b>{nameB}</b> 1 {uB} ราคารวมกัน <b>{sum_val}</b> บาท<br><b>{nameB}</b> <b>{m}</b> {uB} ราคาแพงกว่า <b>{nameA}</b> 1 {uA} อยู่ <b>{diff_val}</b> บาท<br>อยากทราบว่า <b>{target_name}</b> ราคา{target_u}ละกี่บาท?"
+                    q = f"<b>{nameA}</b> 1 {uA} รวมกับ <b>{nameB}</b> 1 {uB} ราคารวมกัน <b>{sum_val}</b> บาท<br><b>{nameB}</b> <b>{m}</b> {uB} ราคา<b>{diff_word}</b> <b>{nameA}</b> 1 {uA} อยู่ <b>{diff_val}</b> บาท<br>อยากทราบว่า <b>{target_name}</b> ราคา{target_u}ละกี่บาท?"
                     
                     sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการแก้สมการด้วยวิธีแทนค่า):</b><br>
                     👉 <b>ขั้นที่ 1: กำหนดตัวแปรและสร้างสมการ</b><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; ให้ <b>x</b> แทนราคาของ <b>{nameA} 1 {uA}</b><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; ให้ <b>y</b> แทนราคาของ <b>{nameB} 1 {uB}</b><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; 1) ราคารวมกัน {sum_val} บาท ➞ <b>x + y = {sum_val}</b> &nbsp;&nbsp;&nbsp;&nbsp; --- (สมการที่ ①)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; 2) {nameB} {m} {uB} แพงกว่า {nameA} 1 {uA} ➞ <b>{m}y - x = {diff_val}</b> &nbsp;&nbsp;&nbsp;&nbsp; --- (สมการที่ ②)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; 2) {nameB} {m} {uB} {diff_word} {nameA} 1 {uA} ➞ <b>{eq2_str}</b> &nbsp;&nbsp;&nbsp;&nbsp; --- (สมการที่ ②)<br>
                     👉 <b>ขั้นที่ 2: จัดรูปสมการและแทนค่า</b><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; จากสมการที่ ② เราสามารถย้ายข้างเพื่อหาค่า x ได้ดังนี้:<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ย้าย -x ไปฝั่งขวา และย้าย {diff_val} มาฝั่งซ้าย: <b>{m}y - {diff_val} = x</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>ความหมายก็คือ:</b> ราคาของ {nameB} {m} {uB} ({m}y) หักออกด้วยส่วนต่าง ({diff_val}) จะมีค่าเท่ากับราคาของ {nameA} (x) พอดีครับ</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลการแทนค่า:</b> ตอนนี้เรารู้แล้วว่าตัว x มีค่าก้อนเท่ากับ ({m}y - {diff_val}) ให้นำก้อนนี้ไปแทนที่ x ในสมการที่ ①</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{isolate_x_str}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>ความหมายก็คือ:</b> {reason_isolate}</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลการแทนค่า:</b> นำก้อนนี้ไปแทนที่ x ในสมการที่ ① เพื่อให้เหลือแค่ตัวแปร y ครับ</span><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; จากสมการที่ ①: <b>x</b> + y = {sum_val}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; เปลี่ยน x เป็น ({m}y - {diff_val}): <b>({m}y - {diff_val}) + y = {sum_val}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; เปลี่ยน x ตามที่จัดรูปไว้: <b>{sub_str}</b><br>
                     👉 <b>ขั้นที่ 3: ย้ายข้างสมการเพื่อหาค่า y (ราคา {nameB})</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; รวมตัวแปร y เข้าด้วยกัน ({m}y + y = {m+1}y):<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{m+1}y - {diff_val} = {sum_val}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{m+1}y = {sum_val} + {diff_val}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{m+1}y = {sum_val + diff_val}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>y = {sum_val + diff_val} ÷ {m+1}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; รวมตัวแปร y เข้าด้วยกัน:<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{combine_str}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{move_str}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{calc_str}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <b>{final_y_str}</b><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; <b>y = <span style="color:#27ae60;">{val_B}</span></b> บาท<br>'''
                     
                     if ask_A:
