@@ -4849,13 +4849,13 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 missing_legs = total_legs - assumed_legs
                 
                 sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการสมมติให้เห็นภาพ):</b><br>
-                👉 <b>ขั้นที่ 1:</b> สมมติให้สัตว์ทั้งหมด {t_heads} ตัว เป็น <b>"{a1['name']}"</b> (เลือกตัวที่มีขาน้อยกว่าตั้งเป็นฐาน)<br>
+                👉 <b>ขั้นที่ 1:</b> สมมติให้สัตว์ทั้งหมด {t_heads} ตัว เป็น <b>"{a1['name']}"</b> (เลือกสัตว์ที่มีขาน้อยกว่าตั้งเป็นฐาน)<br>
                 &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>ลองจินตนาการ:</b> สั่งให้สัตว์ทุกตัวยืนแค่ {a1['legs']} ขาให้หมด!</span><br>
                 &nbsp;&nbsp;&nbsp;&nbsp; ถ้ามี{a1['name']} {t_heads} ตัว จะมีขารวม: {t_heads} × {a1['legs']} = <span style="color:#2980b9;"><b>{assumed_legs} ขา</b></span><br>
                 👉 <b>ขั้นที่ 2:</b> หาจำนวนขาที่ "เหลืออยู่"<br>
                 &nbsp;&nbsp;&nbsp;&nbsp; โจทย์บอกว่าความจริงมีขารวม {total_legs} ขา<br>
                 &nbsp;&nbsp;&nbsp;&nbsp; แสดงว่ามีขาที่เรายังไม่ได้นับ เหลืออยู่: {total_legs} - {assumed_legs} = <span style="color:#e74c3c;"><b>{missing_legs} ขา</b></span><br>
-                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;">(<b>ทำไมถึงมีขาเหลือ?</b> เพราะมี "{a2['name']}" ปนอยู่ด้วย ตอนที่เราสั่งให้ยืนแค่ {a1['legs']} ขา ทำให้ {a2['name']} 1 ตัว ต้องแอบซ่อนขาเอาไว้ {a2['legs']} - {a1['legs']} = <b>{leg_diff} ขา</b>)</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;">(<b>ทำไมถึงมีขาเหลือ?</b> เพราะมี "{a2['name']}" ปนอยู่ด้วย ตอนที่เราสั่งให้สัตว์ยืนแค่ {a1['legs']} ขา ทำให้ {a2['name']} 1 ตัว ต้องแอบซ่อนขาเอาไว้ {a2['legs']} - {a1['legs']} = <b>{leg_diff} ขา</b>)</span><br>
                 👉 <b>ขั้นที่ 3:</b> หาจำนวน {a2['name']} (ตัวที่ขาเยอะกว่า)<br>
                 &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>วิธีคิด:</b> นำขาที่เหลืออยู่ {missing_legs} ขา ไป "แปะเพิ่ม" ให้สัตว์ที่ยืนรออยู่ เพื่อแปลงร่างให้เป็น {a2['name']}<br>
                 &nbsp;&nbsp;&nbsp;&nbsp; โดยการแปลงร่างเป็น {a2['name']} 1 ตัว ต้องใช้ขาแปะเพิ่มตัวละ <b>{leg_diff} ขา</b><br>
