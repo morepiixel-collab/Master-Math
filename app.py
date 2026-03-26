@@ -4163,6 +4163,9 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             elif actual_sub_t == "การแก้สมการ (บวก/ลบ)":
                 var = random.choice(["x", "y", "a", "m", "ก", "A"])
                 
+                # กล่องอธิบายหลักการสมการ (ตาชั่ง)
+                balance_rule = f"<div style='background-color:#f0f8ff; padding:10px; border-radius:5px; border-left: 4px solid #3498db; margin: 10px 0;'><span style='color:#2980b9; font-size:15px;'><i><b>⚖️ กฎของสมการ (ตาชั่งแห่งความสมดุล):</b><br>สมการเปรียบเสมือนตาชั่งที่สมดุลกันอยู่ ถ้าเราต้องการให้ <b>{var}</b> อยู่ตัวเดียว เราต้องกำจัดตัวเลขที่อยู่ฝั่งเดียวกับ <b>{var}</b> ทิ้งไป<br><b>ข้อควรระวัง:</b> ถ้าเราเอาตัวเลขบวกเข้า หรือลบออก ฝั่งใดฝั่งหนึ่ง... <b>เราต้องทำแบบเดียวกันกับอีกฝั่งด้วยเสมอ!</b> ตาชั่งถึงจะไม่เอียงครับ</i></span></div>"
+
                 if is_challenge:
                     scenario = random.choice(["combine_first", "both_sides_num", "word_problem"])
                     
@@ -4173,7 +4176,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         c = ans + a - b
                         
                         q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} + {a} - {b} = {c}</b></div>"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - ยุบรวมตัวเลข):</b><br>👉 ก่อนจะย้ายข้าง ให้เราจัดการตัวเลขที่อยู่ฝั่งเดียวกันให้เรียบร้อยก่อนครับ<br><br><b>ขั้นที่ 1: ยุบรวมตัวเลขฝั่งซ้าย</b><br>👉 จาก {var} + <b>{a} - {b}</b> = {c}<br>👉 คำนวณ {a} - {b} = <b>{a-b}</b><br>👉 จะได้สมการใหม่ที่ดูง่ายขึ้นคือ: <b>{var} + {a-b} = {c}</b><br><br><b>ขั้นที่ 2: แก้สมการตามปกติ</b><br>👉 ย้าย +{a-b} ไปลบอีกฝั่ง<br>👉 {var} = {c} - {a-b}<br>👉 {var} = <b>{ans}</b><br><br><b>ตอบ: {ans}</b></span>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - ยุบรวมตัวเลข):</b><br>👉 ก่อนจะเริ่มใช้กฎตาชั่ง ให้เราจัดการตัวเลขที่อยู่ฝั่งเดียวกันให้เรียบร้อยก่อนครับ<br><br><b>ขั้นที่ 1: ยุบรวมตัวเลขฝั่งซ้าย</b><br>👉 จาก {var} + <b>{a} - {b}</b> = {c}<br>👉 คำนวณ {a} - {b} = <b>{a-b}</b><br>👉 จะได้สมการใหม่ที่ดูง่ายขึ้นคือ: <b>{var} + {a-b} = {c}</b><br><br><b>ขั้นที่ 2: แก้สมการโดยใช้หลักการสมดุล</b>{balance_rule}👉 ตอนนี้เรามี <b>+{a-b}</b> อยู่ฝั่งเดียวกับ {var}<br>👉 เพื่อกำจัดมันทิ้ง เราต้อง <b>ลบออกด้วย {a-b} ทั้งสองข้าง</b><br><div style='margin:10px 0; font-size:16px;'>👉 {var} + {a-b} <span style='color:#e74c3c;'><b>- {a-b}</b></span> = {c} <span style='color:#e74c3c;'><b>- {a-b}</b></span></div>👉 ฝั่งซ้าย {a-b} ลบ {a-b} หายไปเหลือศูนย์ (เหลือแค่ {var})<br>👉 ฝั่งขวา {c} - {a-b} = {ans}<br>👉 <b>{var} = {ans}</b><br><br><b>ตอบ: {ans}</b></span>"
 
                     elif scenario == "both_sides_num":
                         a = random.randint(15, 60)
@@ -4182,7 +4185,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         ans = b + c + a
                         
                         q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} - {a} = {b} + {c}</b></div>"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - คำนวณฝั่งตรงข้าม):</b><br>👉 สังเกตว่าฝั่งขวามีตัวเลขบวกกันอยู่ เราต้องคิดเลขฝั่งขวาให้เสร็จก่อนครับ<br><br><b>ขั้นที่ 1: คำนวณฝั่งขวา</b><br>👉 จาก {var} - {a} = <b>{b} + {c}</b><br>👉 คำนวณ {b} + {c} = <b>{b+c}</b><br>👉 จะได้สมการใหม่คือ: <b>{var} - {a} = {b+c}</b><br><br><b>ขั้นที่ 2: แก้สมการตามปกติ</b><br>👉 ย้าย -{a} ไปบวกอีกฝั่ง<br>👉 {var} = {b+c} + {a}<br>👉 {var} = <b>{ans}</b><br><br><b>ตอบ: {ans}</b></span>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - คำนวณฝั่งตรงข้าม):</b><br>👉 สังเกตว่าฝั่งขวามีตัวเลขบวกกันอยู่ เราต้องคิดเลขฝั่งขวาให้เสร็จก่อนครับ<br><br><b>ขั้นที่ 1: คำนวณฝั่งขวา</b><br>👉 จาก {var} - {a} = <b>{b} + {c}</b><br>👉 คำนวณ {b} + {c} = <b>{b+c}</b><br>👉 จะได้สมการใหม่คือ: <b>{var} - {a} = {b+c}</b><br><br><b>ขั้นที่ 2: แก้สมการโดยใช้หลักการสมดุล</b>{balance_rule}👉 ตอนนี้เรามี <b>-{a}</b> อยู่ฝั่งเดียวกับ {var}<br>👉 เพื่อกำจัดมันทิ้ง เราต้อง <b>บวกเพิ่ม {a} ทั้งสองข้าง</b><br><div style='margin:10px 0; font-size:16px;'>👉 {var} - {a} <span style='color:#27ae60;'><b>+ {a}</b></span> = {b+c} <span style='color:#27ae60;'><b>+ {a}</b></span></div>👉 ฝั่งซ้าย -{a} เจอ +{a} หักล้างกันหายไป (เหลือแค่ {var})<br>👉 ฝั่งขวา {b+c} + {a} = {ans}<br>👉 <b>{var} = {ans}</b><br><br><b>ตอบ: {ans}</b></span>"
 
                     elif scenario == "word_problem":
                         ans = random.randint(45, 150)
@@ -4190,7 +4193,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         total = ans + add_val
                         
                         q = f"จำนวนจำนวนหนึ่ง เมื่อบวกเพิ่มไปอีก <b>{add_val}</b> จะมีค่าเท่ากับ <b>{total}</b><br>จงหาจำนวนจำนวนนั้น?"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - เปลี่ยนโจทย์เป็นสมการ):</b><br>👉 การแก้โจทย์ปัญหา เราต้องเปลี่ยนประโยคภาษาไทย ให้เป็นสัญลักษณ์ทางคณิตศาสตร์ครับ<br><br><b>ขั้นที่ 1: กำหนดตัวแปรและสร้างสมการ</b><br>👉 ให้ 'จำนวนจำนวนหนึ่ง' แทนด้วยตัวแปร <b>{var}</b><br>👉 'บวกเพิ่มไปอีก {add_val}' เขียนได้เป็น <b>+ {add_val}</b><br>👉 'จะมีค่าเท่ากับ {total}' เขียนได้เป็น <b>= {total}</b><br>👉 นำมาประกอบกันจะได้สมการ: <b>{var} + {add_val} = {total}</b><br><br><b>ขั้นที่ 2: แก้สมการ</b><br>👉 ย้าย +{add_val} ไปเป็น -{add_val} อีกฝั่ง<br>👉 {var} = {total} - {add_val}<br>👉 {var} = <b>{ans}</b><br><br><b>ตอบ: {ans}</b></span>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 ชาเลนจ์ - เปลี่ยนโจทย์เป็นสมการ):</b><br>👉 การแก้โจทย์ปัญหา เราต้องเปลี่ยนประโยคภาษาไทย ให้เป็นสัญลักษณ์ทางคณิตศาสตร์ครับ<br><br><b>ขั้นที่ 1: กำหนดตัวแปรและสร้างสมการ</b><br>👉 ให้ 'จำนวนจำนวนหนึ่ง' แทนด้วยตัวแปร <b>{var}</b><br>👉 'บวกเพิ่มไปอีก {add_val}' เขียนได้เป็น <b>+ {add_val}</b><br>👉 'จะมีค่าเท่ากับ {total}' เขียนได้เป็น <b>= {total}</b><br>👉 นำมาประกอบกันจะได้สมการ: <b>{var} + {add_val} = {total}</b><br><br><b>ขั้นที่ 2: แก้สมการโดยใช้หลักการสมดุล</b>{balance_rule}👉 เพื่อกำจัด <b>+{add_val}</b> ทิ้ง เราต้อง <b>ลบออกด้วย {add_val} ทั้งสองข้าง</b><br><div style='margin:10px 0; font-size:16px;'>👉 {var} + {add_val} <span style='color:#e74c3c;'><b>- {add_val}</b></span> = {total} <span style='color:#e74c3c;'><b>- {add_val}</b></span></div>👉 <b>{var} = {ans}</b><br><br><b>ตอบ: {ans}</b></span>"
 
                 else:
                     scenario = random.choice(["add", "sub_normal", "sub_negative_var"])
@@ -4201,7 +4204,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         b = a + ans
                         
                         q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} + {a} = {b}</b></div>"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 หลักการแก้สมการคือ เราต้องทำให้ตัวแปร <b>{var}</b> อยู่ฝั่งซ้ายตัวเดียวให้ได้<br>👉 ตอนนี้ {var} บวกอยู่กับ {a} เราต้องย้าย <b>+{a}</b> ไปอยู่อีกฝั่ง<br>👉 เมื่อย้ายข้ามเครื่องหมายเท่ากับ (=) ต้องเปลี่ยนจากบวก เป็น ลบ<br><br><b>แสดงขั้นตอน:</b><br>👉 {var} = {b} <b>- {a}</b><br>👉 {var} = <b>{ans}</b><br><br><b>ตอบ: {ans}</b></span>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b>{balance_rule}<br><b>แสดงขั้นตอน:</b><br>👉 ตอนนี้ตัวแปร {var} มี <b>+{a}</b> อยู่ด้วยกัน<br>👉 เพื่อกำจัด +{a} ให้หายไปกลายเป็นศูนย์ เราต้อง <b>ลบ {a} ออกทั้งสองข้าง</b> ของสมการ<br><div style='margin:10px 0; font-size:18px;'>👉 {var} + {a} <span style='color:#e74c3c;'><b>- {a}</b></span> = {b} <span style='color:#e74c3c;'><b>- {a}</b></span></div>👉 ฝั่งซ้าย: {a} ลบ {a} หายไป เหลือแค่ <b>{var}</b> ตัวเดียวแล้ว<br>👉 ฝั่งขวา: {b} ลบ {a} ได้ <b>{ans}</b><br>👉 จะได้ <b>{var} = {ans}</b><br><br><b>ตอบ: {ans}</b></span>"
                         
                     elif scenario == "sub_normal":
                         a = random.randint(15, 80)
@@ -4209,7 +4212,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         b = ans - a
                         
                         q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} - {a} = {b}</b></div>"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 หลักการแก้สมการคือ เราต้องทำให้ตัวแปร <b>{var}</b> อยู่ฝั่งซ้ายตัวเดียวให้ได้<br>👉 ตอนนี้ {var} ลบอยู่กับ {a} เราต้องย้าย <b>-{a}</b> ไปอยู่อีกฝั่ง<br>👉 เมื่อย้ายข้ามเครื่องหมายเท่ากับ (=) ต้องเปลี่ยนจากลบ เป็น บวก<br><br><b>แสดงขั้นตอน:</b><br>👉 {var} = {b} <b>+ {a}</b><br>👉 {var} = <b>{ans}</b><br><br><b>ตอบ: {ans}</b></span>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b>{balance_rule}<br><b>แสดงขั้นตอน:</b><br>👉 ตอนนี้ตัวแปร {var} ถูก <b>-{a}</b> อยู่<br>👉 เพื่อกำจัด -{a} ให้หายไป (หักล้างกันเป็นศูนย์) เราต้อง <b>บวก {a} เพิ่มเข้าไปทั้งสองข้าง</b> ของสมการ<br><div style='margin:10px 0; font-size:18px;'>👉 {var} - {a} <span style='color:#27ae60;'><b>+ {a}</b></span> = {b} <span style='color:#27ae60;'><b>+ {a}</b></span></div>👉 ฝั่งซ้าย: -{a} เจอ +{a} หักล้างกันหายไป เหลือแค่ <b>{var}</b> ตัวเดียว<br>👉 ฝั่งขวา: {b} บวก {a} ได้ <b>{ans}</b><br>👉 จะได้ <b>{var} = {ans}</b><br><br><b>ตอบ: {ans}</b></span>"
                         
                     elif scenario == "sub_negative_var":
                         b = random.randint(15, 50)
@@ -4217,7 +4220,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         a = b + ans
                         
                         q = f"จงหาค่าของ <b>{var}</b> จากสมการ: <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{a} - {var} = {b}</b></div>"
-                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br><div style='background-color:#fce4e4; padding:10px; border-radius:5px; border-left: 4px solid #c0392b; margin: 10px 0;'><span style='color:#c0392b; font-size:15px;'><i><b>🚨 จุดระวัง:</b> หน้าตัวแปร {var} มีเครื่องหมาย 'ลบ' ติดอยู่ ({a} <b>- {var}</b>) เราจะย้าย {a} ไปเฉยๆ ไม่ได้ เพราะ {var} จะติดลบ!</i></span></div><br><b>ขั้นที่ 1: ย้ายตัวแปร {var} ให้กลายเป็นบวกก่อน</b><br>👉 ย้าย <b>-{var}</b> จากฝั่งซ้าย ข้ามไปฝั่งขวา จะกลายเป็น <b>+{var}</b><br>👉 จะได้: <b>{a} = {b} + {var}</b><br><br><b>ขั้นที่ 2: ย้ายตัวเลขให้อยู่ด้วยกัน</b><br>👉 ตอนนี้ {var} เป็นบวกแล้ว แต่อยู่ฝั่งขวากับ {b}<br>👉 ให้ย้าย {b} จากฝั่งขวา กลับมาฝั่งซ้าย (เปลี่ยนจากบวกเป็นลบ)<br>👉 จะได้: <b>{a} - {b} = {var}</b><br><br><b>ขั้นที่ 3: คำนวณคำตอบ</b><br>👉 {a-b} = {var}<br>👉 หรือ <b>{var} = {ans}</b> นั่นเองครับ<br><br><b>ตอบ: {ans}</b></span>"
+                        sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br><div style='background-color:#fce4e4; padding:10px; border-radius:5px; border-left: 4px solid #c0392b; margin: 10px 0;'><span style='color:#c0392b; font-size:15px;'><i><b>🚨 จุดระวังสุดโหด:</b> หน้าตัวแปร {var} มีเครื่องหมาย 'ลบ' ติดอยู่ ({a} <b>- {var}</b>) เราจะกำจัด {a} ทิ้งก่อนไม่ได้ เพราะ {var} จะติดลบ! เราต้องทำให้ {var} เป็นบวกก่อนครับ</i></span></div><br><b>ขั้นที่ 1: กำจัด -{var} ฝั่งซ้าย เพื่อให้ไปโผล่ฝั่งขวาเป็นบวก</b><br>👉 นำ {var} ไป <b>บวกเพิ่มทั้งสองข้าง</b> ของสมการ<br><div style='margin:10px 0; font-size:16px;'>👉 {a} - {var} <span style='color:#27ae60;'><b>+ {var}</b></span> = {b} <span style='color:#27ae60;'><b>+ {var}</b></span></div>👉 ฝั่งซ้าย -{var} หักล้างกับ +{var} หายไป<br>👉 ตอนนี้สมการจะเป็น: <b>{a} = {b} + {var}</b> (เย้! {var} ไม่ติดลบแล้ว)<br><br><b>ขั้นที่ 2: ทำให้ {var} อยู่ตัวเดียว</b><br>👉 ตอนนี้ฝั่งขวามี {b} บวกอยู่ เราต้อง <b>ลบ {b} ออกทั้งสองข้าง</b><br><div style='margin:10px 0; font-size:16px;'>👉 {a} <span style='color:#e74c3c;'><b>- {b}</b></span> = {b} + {var} <span style='color:#e74c3c;'><b>- {b}</b></span></div>👉 ฝั่งขวา {b} ลบ {b} หายไป เหลือแค่ {var}<br>👉 ฝั่งซ้าย {a} - {b} = {ans}<br>👉 จะได้ <b>{ans} = {var}</b> (มีความหมายเหมือนกับ <b>{var} = {ans}</b> ครับ)<br><br><b>ตอบ: {ans}</b></span>"
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
