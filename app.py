@@ -624,6 +624,16 @@ def generate_thai_number_text(num_str):
     
     def read_int(s):
         if s == "0" or s == "": return "ศูนย์"
+        
+        # 💡 ส่วนที่เพิ่มเข้ามาแก้บั๊ก: จัดการเลขที่เกินหลักล้าน (8 ตำแหน่งขึ้นไป)
+        if len(s) > 6:
+            mil_part = s[:-6] # ตัดเอาเฉพาะส่วนที่เกินหลักล้านมาอ่านก่อน
+            rest_part = s[-6:] # ส่วนที่เหลือ 6 หลักหลัง
+            res = read_int(mil_part) + "ล้าน"
+            if int(rest_part) > 0:
+                res += read_int(rest_part)
+            return res
+            
         res = ""
         length = len(s)
         for i, digit in enumerate(s):
