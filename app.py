@@ -4655,9 +4655,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         <b>ตอบ: {p_names[1]} มี{c_item}ทั้งหมด {base} อัน</b></span>'''
 
             elif actual_sub_t == "สมการเชิงตรรกะและตาชั่งปริศนา":
+                # เช็คสถานะโหมดชาเลนจ์จากระบบของคุณ
                 is_challenge = st.session_state.get("challenge_mode", False)
                 
-                # 💡 สุ่มว่าข้อนี้จะเป็น "สมการแถว" หรือ "ตาชั่งปริศนา"
+                # สุ่มว่าข้อนี้จะเป็น "สมการเรขาคณิต" หรือ "ตาชั่งปริศนา"
                 puzzle_style = random.choice(["math_eq", "balance_scale"])
                 
                 shapes = [
@@ -4848,7 +4849,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
                 else:
                     # ==========================================
-                    # ⚖️ รูปแบบที่ 2: ตาชั่งบล็อกปริศนา (Balance Scale)
+                    # ⚖️ รูปแบบที่ 2: ตาชั่งบล็อกปริศนา (อัปเกรดความยาก)
                     # ==========================================
                     vars_pool = [("A", "B", "C"), ("X", "Y", "Z"), ("P", "Q", "R")]
                     selected_vars = random.choice(vars_pool)
@@ -4859,28 +4860,33 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     obj3 = {"shape": selected_shapes[2]["type"], "color": selected_shapes[2]["color"], "let": selected_vars[2]}
                     
                     val_a = random.randint(12, 25)
-                    val_b = random.randint(30, 60)
-                    val_c = random.randint(70, 150)
+                    val_b = random.randint(15, 40)
+                    val_c = random.randint(20, 50)
                     
                     if not is_challenge:
-                        qty_a1 = random.randint(3, 4)
-                        qty_a2 = random.randint(1, 2)
-                        qty_b2 = 1
+                        # โหมดธรรมดา: 2 ตาชั่ง (เพิ่มความยากด้วยการคูณตัวแปร B)
+                        qty_a1 = random.randint(2, 5)
+                        qty_a2 = random.randint(1, 3)
+                        qty_b2 = random.randint(2, 4) # หาค่า B ต้องนำไปหารด้วย
                         
                         w1 = val_a * qty_a1
                         w2 = (val_a * qty_a2) + (val_b * qty_b2)
+                        
                         target_obj = obj2
                         target_val = val_b
                     else:
-                        qty_a1 = random.randint(3, 4)
-                        qty_a2 = random.randint(1, 2)
-                        qty_b2 = random.randint(1, 2)
+                        # โหมดท้าทายสุดขั้ว: 3 ตาชั่ง (สมการ 3 ตัวแปรผสมกัน)
+                        qty_a1 = random.randint(3, 5)
+                        qty_a2 = random.randint(2, 4)
+                        qty_b2 = random.randint(2, 3)
+                        qty_a3 = random.randint(1, 2)
                         qty_b3 = random.randint(1, 2)
-                        qty_c3 = 1
+                        qty_c3 = random.randint(2, 3)
                         
                         w1 = val_a * qty_a1
                         w2 = (val_a * qty_a2) + (val_b * qty_b2)
-                        w3 = (val_b * qty_b3) + (val_c * qty_c3)
+                        w3 = (val_a * qty_a3) + (val_b * qty_b3) + (val_c * qty_c3) # มีครบทั้ง A, B, C ในตาชั่งเดียว!
+                        
                         target_obj = obj3
                         target_val = val_c
 
@@ -4926,25 +4932,29 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         👉 <b>ขั้นที่ 2:</b> พิจารณาตาชั่งด้านล่าง ({obj1['let']} {qty_a2} ชิ้น + {obj2['let']} {qty_b2} ชิ้น = {w2})<br>
                         &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {obj1['let']}: <span style="color:#e74c3c;">{val_a}</span> × {qty_a2} ชิ้น = {val_a * qty_a2}<br>
                         &nbsp;&nbsp;&nbsp;&nbsp; {obj2['let']} {qty_b2} ชิ้น = {w2} - {val_a * qty_a2} = {w2 - (val_a * qty_a2)}<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp; {obj2['let']} 1 ชิ้น = {w2 - (val_a * qty_a2)} ÷ {qty_b2} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {obj2['let']} 1 ชิ้น = {w2 - (val_a * qty_a2)} ÷ {qty_b2} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
                         <b>ตอบ: บล็อก {target_obj['let']} มีค่าเท่ากับ {target_val}</b></span>'''
                     else:
                         svg_h = 340
                         svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="{svg_h}">'
                         svg += draw_scale_row(60, [(obj1, qty_a1)], w1)
                         svg += draw_scale_row(160, [(obj1, qty_a2), (obj2, qty_b2)], w2)
-                        svg += draw_scale_row(260, [(obj2, qty_b3), (obj3, qty_c3)], w3)
+                        # ตาชั่งชั้นล่างสุดจะรวมทั้ง A, B และ C เข้าด้วยกัน
+                        svg += draw_scale_row(260, [(obj1, qty_a3), (obj2, qty_b3), (obj3, qty_c3)], w3)
                         svg += '</svg></div>'
                         
-                        q = f"<b>[ตาชั่งระดับแข่งขัน 3 ชั้น]</b> พิจารณาความสัมพันธ์ด้านล่าง จงหาว่า <b>บล็อก {target_obj['let']} 1 ชิ้น มีค่าเท่าใด?</b><br>{svg}"
+                        q = f"<b>[ตาชั่งระดับแข่งขัน: สมการซ้อน 3 ชั้น]</b> พิจารณาความสัมพันธ์ด้านล่าง จงหาว่า <b>บล็อก {target_obj['let']} 1 ชิ้น มีค่าเท่าใด?</b><br>{svg}"
                         sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (แทนค่าตาชั่ง 3 ชั้น):</b><br>
                         👉 <b>ขั้นที่ 1:</b> ตาชั่งบนสุด ➞ {obj1['let']} = {w1} ÷ {qty_a1} = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
                         👉 <b>ขั้นที่ 2:</b> ตาชั่งกลาง ➞ แทนค่า {obj1['let']}: <span style="color:#e74c3c;">{val_a}</span> × {qty_a2} = {val_a * qty_a2}<br>
                         &nbsp;&nbsp;&nbsp;&nbsp; {obj2['let']} {qty_b2} ชิ้น = {w2} - {val_a * qty_a2} = {w2 - (val_a * qty_a2)}<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {obj2['let']} = {w2 - (val_a * qty_a2)} ÷ {qty_b2} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
-                        👉 <b>ขั้นที่ 3:</b> ตาชั่งล่างสุด ➞ แทนค่า {obj2['let']}: <span style="color:#2980b9;">{val_b}</span> × {qty_b3} = {val_b * qty_b3}<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp; {obj3['let']} {qty_c3} ชิ้น = {w3} - {val_b * qty_b3} = {w3 - (val_b * qty_b3)}<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {obj3['let']} = {w3 - (val_b * qty_b3)} ÷ {qty_c3} = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {obj2['let']} 1 ชิ้น = {w2 - (val_a * qty_a2)} ÷ {qty_b2} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
+                        👉 <b>ขั้นที่ 3:</b> ตาชั่งล่างสุด ➞ <span style="color:#e67e22;"><b>มีตัวแปรผสมกันถึง 3 ตัว!</b></span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {obj1['let']} และ {obj2['let']} ที่หามาได้ลงไปพร้อมกัน:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ({val_a} × {qty_a3}) + ({val_b} × {qty_b3}) + ({obj3['let']} {qty_c3} ชิ้น) = {w3}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; {val_a * qty_a3} + {val_b * qty_b3} + ({obj3['let']} {qty_c3} ชิ้น) = {w3}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; หักผลรวมออก: {obj3['let']} {qty_c3} ชิ้น = {w3} - {(val_a * qty_a3) + (val_b * qty_b3)} = {w3 - ((val_a * qty_a3) + (val_b * qty_b3))}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {obj3['let']} 1 ชิ้น = {w3 - ((val_a * qty_a3) + (val_b * qty_b3))} ÷ {qty_c3} = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
                         <b>ตอบ: บล็อก {target_obj['let']} มีค่าเท่ากับ {target_val}</b></span>'''
 
             elif actual_sub_t == "โจทย์ปัญหาสมการ: ตาชั่งผลไม้":
