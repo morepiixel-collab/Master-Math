@@ -4695,7 +4695,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             elif actual_sub_t == "โจทย์ปัญหาสมการ: ตาชั่งผลไม้":
                 is_challenge = st.session_state.get("challenge_mode", False)
                 
-                # 🎲 ฐานข้อมูลผลไม้หลากชนิด พร้อมสีสันสำหรับวาดรูป
                 small_fruits = [
                     {"name": "แอปเปิล", "color": "#e74c3c", "leaf": "#2ecc71"},
                     {"name": "ส้ม", "color": "#f39c12", "leaf": "#27ae60"},
@@ -4711,71 +4710,88 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 s_fruit = random.choice(small_fruits)
                 l_fruit = random.choice(large_fruits)
                 
-                # สุ่มค่าน้ำหนักพื้นฐาน
                 val_s = random.randint(20, 50)
                 val_l = random.randint(150, 300)
                 
-                # 🎲 สุ่มจำนวนผลไม้ในแต่ละตาชั่งให้หลากหลาย
                 if not is_challenge:
-                    qty_s1 = random.randint(3, 5) # ตาชั่งล่าง: ผลไม้เล็กล้วน 3-5 ผล
-                    qty_s2 = random.randint(1, 2) # ตาชั่งบน: ผลไม้เล็ก 1-2 ผล
-                    qty_l2 = 1                    # ตาชั่งบน: ผลไม้ใหญ่ 1 ผล
+                    qty_s1 = random.randint(3, 5) 
+                    qty_s2 = random.randint(1, 2) 
+                    qty_l2 = 1                    
                 else:
-                    qty_s1 = random.randint(4, 6) # ตาชั่งล่าง: ผลไม้เล็กล้วน 4-6 ผล
-                    qty_s2 = random.randint(2, 3) # ตาชั่งบน: ผลไม้เล็ก 2-3 ผล
-                    qty_l2 = random.randint(1, 2) # ตาชั่งบน: ผลไม้ใหญ่ 1-2 ผล (ท้าทายขึ้น!)
+                    qty_s1 = random.randint(4, 6) 
+                    qty_s2 = random.randint(2, 3) 
+                    qty_l2 = random.randint(1, 2) 
                 
                 w1 = val_s * qty_s1
                 w2 = (val_s * qty_s2) + (val_l * qty_l2)
                 
                 def draw_dynamic_balance():
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="220">'
-                    # ฟังก์ชันวาดผลไม้เล็ก
+                    # ปรับ Canvas ให้สูงขึ้นเล็กน้อยเพื่อเรียง 2 บรรทัดให้สวยงาม
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="250">'
+                    
+                    # 💡 ย่อขนาดผลไม้ลงเล็กน้อย
                     def draw_s(cx, cy):
-                        return f'<circle cx="{cx}" cy="{cy}" r="16" fill="{s_fruit["color"]}"/><path d="M {cx} {cy-16} Q {cx+8} {cy-25} {cx+15} {cy-18} Q {cx+8} {cy-12} {cx} {cy-16}" fill="{s_fruit["leaf"]}" stroke="#2c3e50" stroke-width="0.5"/>'
-                    # ฟังก์ชันวาดผลไม้ใหญ่
+                        return f'<circle cx="{cx}" cy="{cy}" r="14" fill="{s_fruit["color"]}"/><path d="M {cx} {cy-14} Q {cx+6} {cy-22} {cx+12} {cy-16} Q {cx+6} {cy-10} {cx} {cy-14}" fill="{s_fruit["leaf"]}" stroke="#2c3e50" stroke-width="0.5"/>'
+                    
                     def draw_l(cx, cy):
-                        return f'<circle cx="{cx}" cy="{cy}" r="25" fill="{l_fruit["color"]}"/><circle cx="{cx}" cy="{cy}" r="21" fill="none" stroke="{l_fruit["stroke"]}" stroke-width="2" stroke-dasharray="4,2"/>'
+                        return f'<circle cx="{cx}" cy="{cy}" r="22" fill="{l_fruit["color"]}"/><circle cx="{cx}" cy="{cy}" r="18" fill="none" stroke="{l_fruit["stroke"]}" stroke-width="2" stroke-dasharray="4,2"/>'
 
-                    # เครื่องชั่ง 1 (ซ้ายล่าง: ผลไม้เล็กล้วน)
-                    svg += '<rect x="10" y="170" width="220" height="6" fill="#34495e" rx="3"/>'
-                    svg += '<rect x="115" y="176" width="10" height="20" fill="#7f8c8d"/>'
-                    svg += '<rect x="80" y="196" width="80" height="10" fill="#2c3e50" rx="2"/>'
-                    start_x1 = 120 - (qty_s1 * 18)
+                    # ฟังก์ชันวาดฐานตาชั่ง
+                    def draw_scale_base(cx, cy):
+                        s = f'<rect x="{cx-90}" y="{cy}" width="180" height="5" fill="#34495e" rx="2"/>'
+                        s += f'<rect x="{cx-5}" y="{cy+5}" width="10" height="15" fill="#7f8c8d"/>'
+                        s += f'<rect x="{cx-30}" y="{cy+20}" width="60" height="8" fill="#2c3e50" rx="2"/>'
+                        return s
+
+                    # ---------------- บรรทัดที่ 1 (ตาชั่งบน: ผลไม้เล็กล้วน) ----------------
+                    cy1 = 80 # ระดับความสูงของถาดตาชั่งแถวบน
+                    svg += draw_scale_base(170, cy1)
+                    
+                    # คำนวณจุดศูนย์กลางเพื่อให้ผลไม้วางสมดุล
+                    s_space = 28
+                    start_x1 = 170 - (((qty_s1 - 1) * s_space) / 2)
                     for i in range(qty_s1):
-                        svg += draw_s(start_x1 + (i * 35), 153)
-                    svg += f'<rect x="250" y="145" width="85" height="35" rx="5" fill="#f39c12"/><text x="292" y="168" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{w1} กรัม</text>'
-                    svg += '<text x="238" y="168" font-family="sans-serif" font-size="24" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
+                        svg += draw_s(start_x1 + (i * s_space), cy1 - 15)
                     
-                    # เครื่องชั่ง 2 (ขวาบน: ผลไม้เล็ก + ผลไม้ใหญ่)
-                    svg += '<rect x="310" y="80" width="240" height="6" fill="#34495e" rx="3"/>'
-                    svg += '<rect x="425" y="86" width="10" height="20" fill="#7f8c8d"/>'
-                    svg += '<rect x="390" y="106" width="80" height="10" fill="#2c3e50" rx="2"/>'
+                    # เครื่องหมาย = และ ป้ายน้ำหนัก (จัดให้ตรงกันทั้ง 2 แถว)
+                    svg += f'<text x="310" y="{cy1+5}" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
+                    svg += f'<rect x="360" y="{cy1-18}" width="100" height="40" rx="6" fill="#f39c12"/><text x="410" y="{cy1+8}" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{w1} กรัม</text>'
                     
-                    # วาดผลไม้บนเครื่องชั่งที่ 2
-                    start_x2 = 335
+                    # ---------------- บรรทัดที่ 2 (ตาชั่งล่าง: ผสม) ----------------
+                    cy2 = 190 # ระดับความสูงของถาดตาชั่งแถวล่าง
+                    svg += draw_scale_base(170, cy2)
+                    
+                    # คำนวณความกว้างรวมของผลไม้ทั้งหมด เพื่อจัดให้อยู่กึ่งกลางตาชั่ง
+                    l_space = 46
+                    total_w = (qty_s2 * s_space) + (qty_l2 * l_space)
+                    start_base_x2 = 170 - (total_w / 2)
+                    
+                    # วาดผลไม้เล็ก
                     for i in range(qty_s2):
-                        svg += draw_s(start_x2 + (i * 35), 63)
-                    start_l_x = start_x2 + (qty_s2 * 35) + 15
-                    for i in range(qty_l2):
-                        svg += draw_l(start_l_x + (i * 55), 54)
+                        cx = start_base_x2 + (s_space / 2) + (i * s_space)
+                        svg += draw_s(cx, cy2 - 15)
                         
-                    svg += f'<rect x="190" y="55" width="85" height="35" rx="5" fill="#f39c12"/><text x="232" y="78" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{w2} กรัม</text>'
-                    svg += '<text x="285" y="78" font-family="sans-serif" font-size="24" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
+                    # วาดผลไม้ใหญ่
+                    start_base_l = start_base_x2 + (qty_s2 * s_space)
+                    for i in range(qty_l2):
+                        cx = start_base_l + (l_space / 2) + (i * l_space)
+                        svg += draw_l(cx, cy2 - 23)
+                        
+                    # เครื่องหมาย = และ ป้ายน้ำหนัก (พิกัด X เท่ากับบรรทัดบนเป๊ะ)
+                    svg += f'<text x="310" y="{cy2+5}" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2c3e50" text-anchor="middle">=</text>'
+                    svg += f'<rect x="360" y="{cy2-18}" width="100" height="40" rx="6" fill="#f39c12"/><text x="410" y="{cy2+8}" font-family="sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">{w2} กรัม</text>'
                     
                     return svg + '</svg></div>'
 
                 q = f"คุณแม่นำผลไม้ไปชั่งน้ำหนักบนเครื่องชั่ง 2 เครื่อง ดังภาพด้านล่าง <br>จงวิเคราะห์ความสัมพันธ์แล้วหาว่า <b>{l_fruit['name']} 1 ผล มีน้ำหนักกี่กรัม?</b><br>{draw_dynamic_balance()}"
                 
-                target_find = f"{l_fruit['name']} 1 ผล" if qty_l2 == 1 else f"{l_fruit['name']} {qty_l2} ผล แล้วนำไปหาร {qty_l2}"
-                
                 sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (วิเคราะห์ระบบสมการ):</b><br>
-                👉 <b>ขั้นที่ 1:</b> สังเกตเครื่องชั่งด้านล่าง ({s_fruit['name']} {qty_s1} ผล = {w1} กรัม)<br>
+                👉 <b>ขั้นที่ 1:</b> สังเกตเครื่องชั่งด้านบน ({s_fruit['name']} {qty_s1} ผล = {w1} กรัม)<br>
                 &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เหตุผลสำคัญ:</b> เราต้องเริ่มแก้ปัญหาจากเครื่องชั่งที่มีของชนิดเดียวก่อน เพื่อหาค่าน้ำหนักของ 1 ผลได้โดยการหาร</span><br>
                 &nbsp;&nbsp;&nbsp;&nbsp; เขียนเป็นสมการ: {qty_s1} × น้ำหนัก{s_fruit['name']} = {w1}<br>
                 &nbsp;&nbsp;&nbsp;&nbsp; น้ำหนัก{s_fruit['name']} 1 ผล = {w1} ÷ {qty_s1} = <span style="color:#e74c3c;"><b>{val_s} กรัม</b></span><br>
-                👉 <b>ขั้นที่ 2:</b> พิจารณาเครื่องชั่งด้านบน ({s_fruit['name']} {qty_s2} ผล + {l_fruit['name']} {qty_l2} ผล = {w2} กรัม)<br>
-                &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าน้ำหนัก{s_fruit['name']}ที่เราเพิ่งหาได้ลงไป: {s_fruit['name']} {qty_s2} ผล จะหนักรวม {val_s} × {qty_s2} = <span style="color:#e74c3c;"><b>{val_s * qty_s2} กรัม</b></span><br>
+                👉 <b>ขั้นที่ 2:</b> พิจารณาเครื่องชั่งด้านล่าง ({s_fruit['name']} {qty_s2} ผล + {l_fruit['name']} {qty_l2} ผล = {w2} กรัม)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าน้ำหนัก{s_fruit['name']}ที่เพิ่งหาได้ลงไป: {s_fruit['name']} {qty_s2} ผล หนักรวม {val_s} × {qty_s2} = <span style="color:#e74c3c;"><b>{val_s * qty_s2} กรัม</b></span><br>
                 👉 <b>ขั้นที่ 3:</b> สร้างสมการเพื่อหาน้ำหนักของ {l_fruit['name']} (ให้ N แทนน้ำหนัก {l_fruit['name']} 1 ผล)<br>
                 &nbsp;&nbsp;&nbsp;&nbsp; (น้ำหนัก{s_fruit['name']}) + (น้ำหนัก{l_fruit['name']}) = น้ำหนักรวม<br>
                 &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">{val_s * qty_s2} + ({qty_l2} × N) = {w2}</span><br>
