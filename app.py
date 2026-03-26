@@ -4393,8 +4393,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             elif actual_sub_t == "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)":
                 def draw_protractor_svg(deg1, deg2, p1_name, v_name, p2_name):
                     import math
-                    # 💡 แก้ไขตามคำแนะนำ: ไม่ลดขนาดพื้นหลัง (SVG Canvas) ให้กว้าง 560px เท่าเดิม 
-                    # แต่ขนาดไม้โปรฯ กับความยาวแขนจะเล็กอยู่ตรงกลาง เพื่อให้ตัวอักษรไม่ตกขอบ
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="240">'
                     cx, cy = 280, 190
                     r_outer = 120
@@ -4459,7 +4457,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     x1_ray = cx + arm_len * math.cos(rad1)
                     y1_ray = cy - arm_len * math.sin(rad1)
-                    # 💡 แก้ไข: ปรับเส้นสีแดงให้เล็กลง (stroke-width="1.5")
                     svg += f'<line x1="{cx}" y1="{cy}" x2="{x1_ray}" y2="{y1_ray}" stroke="#e74c3c" stroke-width="1.5" stroke-linecap="round"/>'
                     
                     x2_ray = cx + arm_len * math.cos(rad2)
@@ -4487,6 +4484,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     return svg + '</svg></div>'
 
+                # 💡 ฟังก์ชันวาดวงส่วนโค้งสีแดง (ปรับสีให้แดงแปร๊ด และลดความหนาเส้นเหลือ 1.5)
                 def draw_angle_feature_pt(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
                     import math
                     len_a, len_b = math.hypot(ax - vx, ay - vy), math.hypot(bx - vx, by - vy)
@@ -4494,29 +4492,46 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sx, sy = vx + (ax - vx) * r_arc / len_a, vy + (ay - vy) * r_arc / len_a
                     ex, ey = vx + (bx - vx) * r_arc / len_b, vy + (by - vy) * r_arc / len_b
                     sweep = 1 if (sx - vx) * (ey - vy) - (sy - vy) * (ex - vx) > 0 else 0
-                    arc_svg = f'<path d="M {sx} {sy} A {r_arc} {r_arc} 0 0 {sweep} {ex} {ey}" fill="none" stroke="{color_arc}" stroke-width="2"/>'
+                    arc_svg = f'<path d="M {sx} {sy} A {r_arc} {r_arc} 0 0 {sweep} {ex} {ey}" fill="none" stroke="{color_arc}" stroke-width="1.5"/>'
                     mid_x, mid_y = (sx - vx)/r_arc + (ex - vx)/r_arc, (sy - vy)/r_arc + (ey - vy)/r_arc
                     len_mid = math.hypot(mid_x, mid_y)
                     tx, ty = (vx, vy - r_text) if len_mid == 0 else (vx + (mid_x / len_mid) * r_text, vy + (mid_y / len_mid) * r_text)
-                    return arc_svg + f'<text x="{tx}" y="{ty+4}" font-size="{"13px" if is_x else "11px"}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
+                    return arc_svg + f'<text x="{tx}" y="{ty+4}" font-size="{"15px" if is_x else "13px"}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
 
+                # 💡 ฟังก์ชันวาดมุมประกอบสมการเส้นตรง
                 def draw_angle_svg_pt(val1, val2, val3="?"):
                     import math
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="150">'
-                    lbl_st = 'font-family:Sarabun; font-size:14px; font-weight:bold; fill:#2c3e50;'
-                    vx, vy, phi = 280, 120, val2 
-                    ax, ay, cx, cy = 120, 120, 440, 120 
-                    bx, by = vx + 105 * math.cos(math.radians(phi)), vy - 105 * math.sin(math.radians(phi))
-                    svg += f'<line x1="{ax}" y1="{ay}" x2="{cx}" y2="{cy}" stroke="#34495e" stroke-width="3"/>'
-                    # 💡 แก้ไข: ปรับเส้นสีแดงให้เล็กลง (stroke-width="1.5")
-                    svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#c0392b" stroke-width="1.5"/>'
+                    # ขยายกรอบให้กว้าง 560px ป้องกันตัวอักษรตกขอบซ้ายขวา
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="160">'
+                    lbl_st = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
+                    
+                    vx, vy, phi = 280, 130, val2 
+                    ax, ay, cx, cy = 80, 130, 480, 130 
+                    bx, by = vx + 120 * math.cos(math.radians(phi)), vy - 120 * math.sin(math.radians(phi))
+                    
+                    # เส้นตรงสีดำด้านล่าง
+                    svg += f'<line x1="{ax}" y1="{ay}" x2="{cx}" y2="{cy}" stroke="#34495e" stroke-width="2.5"/>'
+                    
+                    # 💡 เส้นแขนมุมสีแดง ลดขนาดลงเหลือ 1.5
+                    svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#c0392b" stroke-width="1.5" stroke-linecap="round"/>'
+                    
                     svg += f'<circle cx="{bx}" cy="{by}" r="3" fill="#c0392b"/>'
+                    svg += f'<circle cx="{vx}" cy="{vy}" r="4" fill="#2c3e50"/>'
+                    
                     svg += f'<text x="{ax-15}" y="{ay+5}" {lbl_st}>A</text>'
                     svg += f'<text x="{cx+10}" y="{cy+5}" {lbl_st}>B</text>'
-                    svg += f'<text x="{bx-8}" y="{by-12}" {lbl_st}>C</text>'
-                    svg += f'<text x="{vx-5}" y="{vy+20}" {lbl_st}>O</text>'
-                    svg += draw_angle_feature_pt(vx, vy, ax, ay, bx, by, 20, 32, f"{val1}°", "#2ecc71", "#c0392b")
-                    svg += draw_angle_feature_pt(vx, vy, bx, by, cx, cy, 20, 32, val3, "#2ecc71", "#2980b9", is_x=True)
+                    
+                    # ปรับการวางตัวอักษร C ให้หลบเส้นแดงอย่างฉลาด
+                    cx_off = 10 if math.cos(math.radians(phi)) > 0 else -18
+                    cy_off = -10 if math.sin(math.radians(phi)) > 0 else 18
+                    svg += f'<text x="{bx+cx_off}" y="{by+cy_off}" {lbl_st}>C</text>'
+                    
+                    svg += f'<text x="{vx-5}" y="{vy+22}" {lbl_st}>O</text>'
+                    
+                    # 💡 เรียกใช้วงส่วนโค้ง เปลี่ยนเป็นสีแดง (#e74c3c) ให้เข้ากับเส้น
+                    svg += draw_angle_feature_pt(vx, vy, ax, ay, bx, by, 30, 48, f"{val1}°", "#e74c3c", "#c0392b")
+                    svg += draw_angle_feature_pt(vx, vy, bx, by, cx, cy, 30, 48, val3, "#e74c3c", "#2980b9", is_x=True)
+                    
                     return svg + '</svg></div>'
 
                 l_pool = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
