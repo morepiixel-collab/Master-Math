@@ -4575,6 +4575,73 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 q = f"จงเรียงลำดับจำนวนต่อไปนี้จาก<b>{order}</b>:<br><div style='text-align:center; font-size:22px; margin: 10px 0; color:#2980b9;'>{nums_str}</div>"
                 sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 เปรียบเทียบจำนวนหลัก และค่าของเลขโดดทีละหลักจากซ้ายไปขวา<br>👉 เรียงลำดับจาก{order} จะได้:<br><b>ตอบ: {sorted_str}</b></span>"
 
+            elif actual_sub_t == "สมการและตัวไม่ทราบค่าจากชีวิตประจำวัน":
+                item = random.choice(["ขนม", "สมุด", "ดินสอ", "ไอศกรีม"])
+                price_per_unit = random.randint(15, 45)
+                quantity = random.randint(3, 9)
+                total_cost = price_per_unit * quantity
+                
+                mode = random.choice(["find_unit", "find_qty"])
+                
+                if mode == "find_unit":
+                    q = f"คุณแม่ซื้อ <b>{item}</b> จำนวน <b>{quantity}</b> ชิ้น จ่ายเงินไปทั้งหมด <b>{total_cost:,}</b> บาท <br>อยากทราบว่า {item} <b>ราคาชิ้นละกี่บาท?</b> (เขียนเป็นประโยคสัญลักษณ์ที่มีตัวไม่ทราบค่า จ และหาคำตอบ)"
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
+                    👉 <b>ขั้นที่ 1:</b> เขียนประโยคสัญลักษณ์จากโจทย์<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; (จำนวนชิ้น) × (ราคาต่อชิ้น) = (ราคารวม)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">{quantity} × จ = {total_cost}</span><br>
+                    👉 <b>ขั้นที่ 2:</b> ใช้ความสัมพันธ์ของการคูณและการหารเพื่อหาค่า จ<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จ = {total_cost} <span style="color:#e74c3c;">÷</span> {quantity}<br>
+                    👉 <b>ขั้นที่ 3:</b> คำนวณหาคำตอบ<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; {total_cost} ÷ {quantity} = <span style="color:#27ae60;"><b>{price_per_unit}</b></span><br>
+                    <b>ตอบ: {item} ราคาชิ้นละ {price_per_unit} บาท</b></span>'''
+                else:
+                    q = f"พี่มีเงิน <b>{total_cost:,}</b> บาท นำไปซื้อ <b>{item}</b> ราคาชิ้นละ <b>{price_per_unit}</b> บาท <br>จะได้ {item} ทั้งหมด<b>กี่ชิ้น?</b> (เขียนเป็นประโยคสัญลักษณ์ที่มีตัวไม่ทราบค่า x และหาคำตอบ)"
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
+                    👉 <b>ขั้นที่ 1:</b> เขียนประโยคสัญลักษณ์จากโจทย์<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; (เงินทั้งหมด) ÷ (ราคาต่อชิ้น) = (จำนวนชิ้น)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#2980b9;">{total_cost} ÷ {price_per_unit} = x</span><br>
+                    👉 <b>ขั้นที่ 2:</b> คำนวณหาค่า x<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; {total_cost} ÷ {price_per_unit} = <span style="color:#27ae60;"><b>{quantity}</b></span><br>
+                    <b>ตอบ: จะได้ {item} ทั้งหมด {quantity} ชิ้น</b></span>'''
+
+            elif actual_sub_t == "สมการเชิงตรรกะและตาชั่งปริศนา":
+                val_a = random.randint(6, 12)
+                val_b = random.randint(15, 25)
+                sum_val = val_a + val_b
+                sum_double_a = val_a * 2
+                
+                def draw_balance_svg():
+                    # Canvas 560x180 เพื่อความประหยัดเนื้อที่และสวยงาม
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="180">'
+                    # ตาชั่ง 1 (ล่าง): A + A = sum_double_a
+                    svg += '<rect x="140" y="140" width="280" height="4" fill="#34495e"/>' 
+                    svg += f'<circle cx="190" cy="115" r="22" fill="#e74c3c"/><text x="190" y="122" font-family="sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">A</text>'
+                    svg += f'<circle cx="250" cy="115" r="22" fill="#e74c3c"/><text x="250" y="122" font-family="sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">A</text>'
+                    svg += f'<text x="310" y="125" font-family="sans-serif" font-size="26" font-weight="bold" fill="#2c3e50">=</text>'
+                    svg += f'<rect x="345" y="95" width="70" height="40" rx="8" fill="#2980b9"/><text x="380" y="122" font-family="sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">{sum_double_a}</text>'
+                    
+                    # ตาชั่ง 2 (บน): A + B = sum_val
+                    svg += '<rect x="140" y="60" width="280" height="4" fill="#34495e"/>'
+                    svg += f'<circle cx="190" cy="35" r="22" fill="#e74c3c"/><text x="190" y="42" font-family="sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">A</text>'
+                    svg += f'<rect x="230" y="13" width="44" height="44" rx="5" fill="#f1c40f"/><text x="252" y="42" font-family="sans-serif" font-size="18" font-weight="bold" fill="#2c3e50" text-anchor="middle">B</text>'
+                    svg += f'<text x="310" y="45" font-family="sans-serif" font-size="26" font-weight="bold" fill="#2c3e50">=</text>'
+                    svg += f'<rect x="345" y="15" width="70" height="40" rx="8" fill="#2980b9"/><text x="380" y="42" font-family="sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">{sum_val}</text>'
+                    return svg + '</svg></div>'
+
+                q = f"พิจารณาภาพตาชั่งสมดุลด้านล่างนี้ แล้วหาว่า <b>A + B มีค่าเท่ากับเท่าใด?</b><br>{draw_balance_svg()}"
+                
+                sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
+                👉 <b>ขั้นที่ 1:</b> หาค่า <span style="color:#e74c3c;"><b>A</b></span> จากตาชั่งแถวล่าง<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; วงกลม A สองอัน (A + A) หนักรวมกันได้ {sum_double_a}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น A หนึ่งอัน มีค่าเท่ากับ {sum_double_a} ÷ 2 = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
+                👉 <b>ขั้นที่ 2:</b> หาค่า <span style="color:#f1c40f;"><b>B</b></span> จากตาชั่งแถวบน<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; จากภาพจะได้สมการ: <span style="color:#e74c3c;">A</span> + <span style="color:#f1c40f;">B</span> = {sum_val}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า A ที่หาได้ลงไป: <span style="color:#e74c3c;">{val_a}</span> + <span style="color:#f1c40f;">B</span> = {sum_val}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; จะได้ B = {sum_val} - {val_a} = <span style="color:#f1c40f;"><b>{val_b}</b></span><br>
+                👉 <b>ขั้นที่ 3:</b> คำนวณหาผลรวม A + B<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e74c3c;">{val_a}</span> + <span style="color:#f1c40f;">{val_b}</span> = <span style="color:#27ae60;"><b>{val_a + val_b}</b></span><br>
+                <b>ตอบ: {val_a + val_b}</b></span>'''
+
             elif actual_sub_t == "ค่าประมาณเป็นจำนวนเต็มสิบ เต็มร้อย เต็มพัน":
                 target = random.choice(["สิบ", "ร้อย", "พัน"])
                 num = random.randint(1234, 99999) if not is_challenge else random.randint(100000, 999999)
