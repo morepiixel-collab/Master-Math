@@ -3796,9 +3796,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             elif actual_sub_t == "แบบรูปและอนุกรม (Number Patterns)":
                 scenario = random.choice(["increasing_diff", "fibonacci", "telescoping", "alternating", "perfect_square"])
                 
-                # เปลี่ยนชื่อจาก f_html เป็น pat_html เพื่อไม่ให้ชนกับฟังก์ชันหลักของระบบ
-                def pat_html(n, d): return f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 2px;'><div style='border-bottom:1px solid #2c3e50; padding:0 2px; font-size:15px;'><b>{n}</b></div><div style='padding-top:1px; font-size:15px;'><b>{d}</b></div></div>"
-                def pat_canc(n, d): return f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 2px;'><div style='border-bottom:1px solid #e74c3c; padding:0 2px; font-size:15px;'><s style='color:#e74c3c; opacity:0.6;'><span style='color:#2c3e50;'><b>{n}</b></span></s></div><div style='padding-top:1px; font-size:15px;'><s style='color:#e74c3c; opacity:0.6;'><span style='color:#2c3e50;'><b>{d}</b></span></s></div></div>"
+                def f_html(n, d): return f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 2px;'><div style='border-bottom:1px solid #2c3e50; padding:0 2px; font-size:15px;'><b>{n}</b></div><div style='padding-top:1px; font-size:15px;'><b>{d}</b></div></div>"
+                def f_canc(n, d): return f"<div style='display:inline-block; vertical-align:middle; text-align:center; margin: 0 2px;'><div style='border-bottom:1px solid #e74c3c; padding:0 2px; font-size:15px;'><s style='color:#e74c3c; opacity:0.6;'><span style='color:#2c3e50;'><b>{n}</b></span></s></div><div style='padding-top:1px; font-size:15px;'><s style='color:#e74c3c; opacity:0.6;'><span style='color:#2c3e50;'><b>{d}</b></span></s></div></div>"
 
                 if scenario == "increasing_diff":
                     start = random.randint(1, 10)
@@ -3844,27 +3843,28 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 elif scenario == "telescoping":
                     end_n = random.choice([20, 30, 40, 50, 99])
                     
-                    term1 = pat_html(1, "1×2")
-                    term2 = pat_html(1, "2×3")
-                    term3 = pat_html(1, "3×4")
-                    term_n = pat_html(1, f"{end_n}×{end_n+1}")
+                    term1 = f_html(1, "1×2")
+                    term2 = f_html(1, "2×3")
+                    term3 = f_html(1, "3×4")
+                    term_n = f_html(1, f"{end_n}×{end_n+1}")
                     
                     q = f"จงหาผลบวกของอนุกรมเศษส่วนต่อไปนี้:<br><br><div style='font-size:20px; text-align:center;'>{term1} + {term2} + {term3} + ... + {term_n} = ?</div>"
                     
-                    t1_split = f"({pat_html(1,1)} - {pat_html(1,2)})"
-                    t2_split = f"({pat_html(1,2)} - {pat_html(1,3)})"
-                    t3_split = f"({pat_html(1,3)} - {pat_html(1,4)})"
-                    tn_split = f"({pat_html(1,end_n)} - {pat_html(1,end_n+1)})"
+                    t1_split = f"({f_html(1,1)} - {f_html(1,2)})"
+                    t2_split = f"({f_html(1,2)} - {f_html(1,3)})"
+                    t3_split = f"({f_html(1,3)} - {f_html(1,4)})"
+                    tn_split = f"({f_html(1,end_n)} - {f_html(1,end_n+1)})"
                     
-                    cancel_view = f"<div style='margin:15px 0; font-size:18px;'>= {pat_html(1,1)} <span style='color:#e74c3c;'><b>- {pat_canc(1,2)} + {pat_canc(1,2)}</b></span> <span style='color:#e74c3c;'><b>- {pat_canc(1,3)} + {pat_canc(1,3)}</b></span> - ... + <span style='color:#e74c3c;'><b>{pat_canc(1,end_n)}</b></span> - {pat_html(1,end_n+1)}</div>"
+                    cancel_view = f"<div style='margin:15px 0; font-size:18px;'>= {f_html(1,1)} <span style='color:#e74c3c;'><b>- {f_canc(1,2)} + {f_canc(1,2)}</b></span> <span style='color:#e74c3c;'><b>- {f_canc(1,3)} + {f_canc(1,3)}</b></span> - ... + <span style='color:#e74c3c;'><b>{f_canc(1,end_n)}</b></span> - {f_html(1,end_n+1)}</div>"
                     
                     ans_n = end_n
                     ans_d = end_n + 1
-                    ans_html = pat_html(ans_n, ans_d)
+                    ans_html = f_html(ans_n, ans_d)
 
-                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 เทคนิคเศษส่วนต่อเนื่อง / Telescoping):</b><br>👉 ถ้าน้องๆ มัวแต่หา ค.ร.น. ข้อนี้ทำทั้งวันก็ไม่เสร็จครับ! เราต้องใช้เทคนิค <b>'การแยกเศษส่วน'</b><br><br><b>ขั้นที่ 1: แปลงร่างเศษส่วน</b><br>สังเกตว่าตัวส่วนเป็นตัวเลขเรียงติดกันคูณกัน เราสามารถจับแยกเป็น 2 ก้อนลบกันได้เสมอ ดังนี้:<br>👉 {term1} แยกได้เป็น {t1_split}<br>👉 {term2} แยกได้เป็น {t2_split}<br>👉 ...ไปเรื่อยๆ จนถึงตัวสุดท้าย...<br>👉 {term_n} แยกได้เป็น {tn_split}<br><br><b>ขั้นที่ 2: นำมาเขียนเรียงต่อกันแล้วสังเกตความวิเศษ!</b><br>เมื่อเราเอาวงเล็บออก จะเกิดการ <b>'ตัดกันเอง'</b> ของตัวเลขตรงกลาง (ตัวติดลบเจอตัวบวก หักล้างกันกลายเป็นศูนย์)<br>{cancel_view}👉 จะเห็นว่าตัวเลขตรงกลางโดน <span style='color:#e74c3c;'><b>ขีดฆ่าตายเรียบ!</b></span> เหลือรอดแค่ <b>'หัวตัวแรก'</b> กับ <b>'หางตัวสุดท้าย'</b> เท่านั้น!<br><br><b>ขั้นที่ 3: คำนวณคำตอบสุดท้าย</b><br>👉 เหลือแค่: {pat_html(1,1)} - {pat_html(1,end_n+1)}<br>👉 แปลงร่าง 1 ให้ส่วนเท่ากัน: {pat_html(end_n+1, end_n+1)} - {pat_html(1, end_n+1)}<br>👉 นำเศษมาลบกัน: {ans_html}<br><br><b>ตอบ: {ans_n}/{ans_d}</b></span>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 เทคนิคเศษส่วนต่อเนื่อง / Telescoping):</b><br>👉 ถ้าน้องๆ มัวแต่หา ค.ร.น. ข้อนี้ทำทั้งวันก็ไม่เสร็จครับ! เราต้องใช้เทคนิค <b>'การแยกเศษส่วน'</b><br><br><b>ขั้นที่ 1: แปลงร่างเศษส่วน</b><br>สังเกตว่าตัวส่วนเป็นตัวเลขเรียงติดกันคูณกัน เราสามารถจับแยกเป็น 2 ก้อนลบกันได้เสมอ ดังนี้:<br>👉 {term1} แยกได้เป็น {t1_split}<br>👉 {term2} แยกได้เป็น {t2_split}<br>👉 ...ไปเรื่อยๆ จนถึงตัวสุดท้าย...<br>👉 {term_n} แยกได้เป็น {tn_split}<br><br><b>ขั้นที่ 2: นำมาเขียนเรียงต่อกันแล้วสังเกตความวิเศษ!</b><br>เมื่อเราเอาวงเล็บออก จะเกิดการ <b>'ตัดกันเอง'</b> ของตัวเลขตรงกลาง (ตัวติดลบเจอตัวบวก หักล้างกันกลายเป็นศูนย์)<br>{cancel_view}👉 จะเห็นว่าตัวเลขตรงกลางโดน <span style='color:#e74c3c;'><b>ขีดฆ่าตายเรียบ!</b></span> เหลือรอดแค่ <b>'หัวตัวแรก'</b> กับ <b>'หางตัวสุดท้าย'</b> เท่านั้น!<br><br><b>ขั้นที่ 3: คำนวณคำตอบสุดท้าย</b><br>👉 เหลือแค่: {f_html(1,1)} - {f_html(1,end_n+1)}<br>👉 แปลงร่าง 1 ให้ส่วนเท่ากัน: {f_html(end_n+1, end_n+1)} - {f_html(1, end_n+1)}<br>👉 นำเศษมาลบกัน: {ans_html}<br><br><b>ตอบ: {ans_n}/{ans_d}</b></span>"
 
                 elif scenario == "alternating":
+                    # อนุกรมสลับ (2 ชุดซ้อนกัน)
                     start1 = random.randint(2, 5)
                     step1 = random.randint(2, 4)
                     start2 = random.randint(20, 30)
@@ -3873,18 +3873,20 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     seq1 = [start1 + (i*step1) for i in range(4)]
                     seq2 = [start2 - (i*step2) for i in range(4)]
                     
+                    # สลับตัวเลข
                     mixed_seq = []
                     for i in range(4):
                         mixed_seq.append(seq1[i])
                         mixed_seq.append(seq2[i])
                         
-                    ans = mixed_seq[6] 
+                    ans = mixed_seq[6] # ถามตัวที่ 7 (อยู่ในชุดที่ 1)
                     given_seq = mixed_seq[:6]
                     
                     q = f"จากแบบรูปของจำนวนที่กำหนดให้:<br><div style='font-size:22px; margin:15px 0; color:#c0392b;'><b>{', '.join(map(str, given_seq))}, ...</b></div>จงหาจำนวนถัดไป?"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (🔥 อนุกรมสลับซ้อนกัน):</b><br>👉 ข้อนี้ดูเผินๆ เหมือนตัวเลขเดี๋ยวเพิ่มเดี๋ยวลด ไม่มีกฎเกณฑ์ที่แน่นอน<br>👉 <b>ความลับคือ:</b> มีอนุกรม 2 ชุดซ่อนสลับกันอยู่! ให้เราลองมอง <b>'ข้ามกระโดดทีละ 1 ตัว'</b> ดูครับ<br><br><b>แยกอนุกรมออกเป็น 2 ชุด:</b><br>🔹 <b>ชุดที่ 1 (ตัวคี่):</b> {seq1[0]}, {seq1[1]}, {seq1[2]}, <b>...ตัวที่กำลังหา...</b><br><i>(สังเกตว่า: บวกเพิ่มทีละ {step1})</i><br>🔸 <b>ชุดที่ 2 (ตัวคู่):</b> {seq2[0]}, {seq2[1]}, {seq2[2]}<br><i>(สังเกตว่า: ลบออกทีละ {step2})</i><br><br><b>ขั้นสุดท้าย: หาคำตอบ</b><br>👉 ตำแหน่งที่เราต้องการหา คือตัวถัดไปของ <b>ชุดที่ 1</b><br>👉 นำตัวสุดท้ายของชุดที่ 1 มาบวกเพิ่ม: {seq1[2]} + {step1} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
 
                 elif scenario == "perfect_square":
+                    # อนุกรมยกกำลังสอง (Perfect Squares)
                     start_base = random.randint(1, 4)
                     bases = [start_base + i for i in range(6)]
                     seq = [b**2 for b in bases]
@@ -3893,7 +3895,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     q = f"จากแบบรูปของจำนวนที่กำหนดให้:<br><div style='font-size:22px; margin:15px 0; color:#c0392b;'><b>{', '.join(map(str, given_seq))}, ...</b></div>จงหาจำนวนถัดไป?"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (อนุกรมกำลังสอง):</b><br>👉 ข้อนี้ถ้าลองหาระยะห่าง จะพบว่ามันเพิ่มขึ้นทีละเลขคี่ (ตัวอย่าง: ลองลบกันดูจะได้ระยะห่างไม่เท่ากัน)<br>👉 แต่ถ้าเราแม่นสูตรคูณ เราจะสังเกตเห็นความน่าสนใจของตัวเลขกลุ่มนี้ครับ!<br><br><b>ลองแยกตัวประกอบดู:</b><br>👉 {seq[0]} เกิดจาก <b>{bases[0]} × {bases[0]}</b><br>👉 {seq[1]} เกิดจาก <b>{bases[1]} × {bases[1]}</b><br>👉 {seq[2]} เกิดจาก <b>{bases[2]} × {bases[2]}</b><br>👉 {seq[3]} เกิดจาก <b>{bases[3]} × {bases[3]}</b><br>👉 {seq[4]} เกิดจาก <b>{bases[4]} × {bases[4]}</b><br><br><b>ขั้นสุดท้าย: หาคำตอบ</b><br>👉 จะเห็นว่ามันคือตัวเลขเรียงติดกันคูณด้วยตัวมันเอง (ยกกำลังสอง)<br>👉 ดังนั้น ตัวถัดไปต้องเป็น <b>{bases[5]} × {bases[5]} = {ans}</b><br><b>ตอบ: {ans}</b></span>"
-           
+
             elif actual_sub_t == "มาตราส่วนและทิศทาง":
                 scenario = random.choice(["map_to_real", "real_to_map", "map_area", "find_scale"])
                 
