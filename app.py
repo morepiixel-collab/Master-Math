@@ -4391,15 +4391,17 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 q = f"จากรูป มุม <b>{angle_name}</b> ที่มีขนาด <b>{angle}°</b> คือมุมชนิดใด?<br>{svg_html}<span style='font-size:18px; color:#7f8c8d;'>(มุมแหลม, มุมฉาก, มุมป้าน, มุมตรง, มุมกลับ)</span>"
                 sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สังเกตจากรูปภาพมุมกาง <b>{angle}°</b><br>👉 ซึ่งมุม {angle}° {reason}<br>👉 ดังนั้นมุม {angle_name} จึงจัดเป็น <b>{angle_type}</b><br><b>ตอบ: {angle_type}</b></span>"
             elif actual_sub_t == "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)":
-                # 1. ฟังก์ชันไม้โปรแทรกเตอร์ (ขนาดมาตรฐาน 560x240)
+                # 1. ฟังก์ชันไม้โปรแทรกเตอร์ (Canvas 560x260)
                 def draw_protractor_svg(deg1, deg2, p1_name, v_name, p2_name):
                     import math
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="240">'
-                    cx, cy = 280, 190
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="260">'
+                    cx, cy = 280, 200 # ขยับจุดศูนย์กลางลงมาเล็กน้อย
                     r_outer, r_inner = 120, 80
+                    
                     svg += f'<path d="M {cx-r_outer-15} {cy} A {r_outer+15} {r_outer+15} 0 0 1 {cx+r_outer+15} {cy} Z" fill="#eef2f5" stroke="#bdc3c7" stroke-width="1.5"/>'
                     svg += f'<path d="M {cx-r_outer} {cy} A {r_outer} {r_outer} 0 0 1 {cx+r_outer} {cy} Z" fill="none" stroke="#7f8c8d" stroke-width="1"/>'
                     svg += f'<line x1="{cx-r_outer-15}" y1="{cy}" x2="{cx+r_outer+15}" y2="{cy}" stroke="#95a5a6" stroke-width="1.5"/>'
+                    
                     for i in range(181):
                         angle_rad = math.radians(i)
                         cos_a, sin_a = math.cos(angle_rad), math.sin(angle_rad)
@@ -4417,26 +4419,28 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                                 svg += f'<text x="{cx-r_inner-10}" y="{cy-3}" font-family="sans-serif" font-size="9" font-weight="bold" fill="#2980b9" text-anchor="middle">180</text>'
                         tick = 10 if i % 10 == 0 else (7 if i % 5 == 0 else 4)
                         svg += f'<line x1="{cx+r_outer*cos_a}" y1="{cy-r_outer*sin_a}" x2="{cx+(r_outer-tick)*cos_a}" y2="{cy-(r_outer-tick)*sin_a}" stroke="#34495e" stroke-width="0.5"/>'
+                    
                     arm_len = 140
                     rad1, rad2 = math.radians(deg1), math.radians(deg2)
                     svg += f'<line x1="{cx}" y1="{cy}" x2="{cx+arm_len*math.cos(rad1)}" y2="{cy-arm_len*math.sin(rad1)}" stroke="#e74c3c" stroke-width="1.5" stroke-linecap="round"/>'
                     svg += f'<line x1="{cx}" y1="{cy}" x2="{cx+arm_len*math.cos(rad2)}" y2="{cy-arm_len*math.sin(rad2)}" stroke="#e74c3c" stroke-width="1.5" stroke-linecap="round"/>'
                     attr = 'font-family="sans-serif" font-size="18" font-weight="bold" fill="#c0392b" text-anchor="middle"'
-                    svg += f'<text x="{cx}" y="{cy+20}" {attr}>{v_name}</text>'
+                    svg += f'<text x="{cx}" y="{cy+25}" {attr}>{v_name}</text>'
                     for r, n in [(rad1, p1_name), (rad2, p2_name)]:
                         tx, ty = cx+(arm_len+15)*math.cos(r), cy-(arm_len+15)*math.sin(r)
                         ty = ty-4 if math.sin(r)>0.5 else ty+6
                         svg += f'<text x="{tx}" y="{ty}" {attr}>{n}</text>'
                     return svg + '</svg></div>'
 
-                # 2. ฟังก์ชันมุมเส้นตรง (ปรับ Canvas เป็น 560x240 เท่าไม้โปรฯ)
+                # 2. ฟังก์ชันมุมเส้นตรง (Canvas 560x260, รูปเล็กลงเพื่อกันตกขอบ)
                 def draw_angle_svg_pt(val1, val2, val3="?"):
                     import math
-                    # 💡 ขยาย Canvas เป็น 560x240 ให้เท่ากับฟังก์ชันด้านบน
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="260">'
-                    cx, cy = 280, 140 
+                    cx, cy = 280, 150 # วางจุดยอดมุมไว้กลาง Canvas
+                    # ย่อเส้นตรงสีดำให้สั้นลงเหลือข้างละ 150 (รวม 300) เพื่อให้เหลือพื้นที่ขอบข้างละ 130px
                     ax, ay, bx, by = cx-150, cy, cx+150, cy 
                     rad = math.radians(val2)
+                    # ย่อแขนมุมสีแดงเหลือ 100
                     ex, ey = cx + 100*math.cos(rad), cy - 100*math.sin(rad)
                     
                     svg += f'<line x1="{ax}" y1="{ay}" x2="{bx}" y2="{by}" stroke="#34495e" stroke-width="2.5"/>'
