@@ -4202,19 +4202,30 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 เลขโดด <b>{target_digit}</b> อยู่ในหลัก<b>{place}</b><br>👉 จึงมีค่าเท่ากับ <b>{val:,}</b><br><b>ตอบ: หลัก{place} มีค่า {val:,}</b></span>"
 
             elif actual_sub_t == "การเปรียบเทียบและเรียงลำดับ":
-                count = random.randint(4, 5)
-                base = random.randint(100000, 999999) if not is_challenge else random.randint(1000000, 9999999)
-                nums = [base + random.randint(-50000, 50000) for _ in range(count)]
-                nums = list(set(nums))
-                while len(nums) < count:
-                    nums.append(base + random.randint(-50000, 50000))
-                    nums = list(set(nums))
-                order = random.choice(["น้อยไปมาก", "มากไปน้อย"])
-                nums_str = ", ".join([f"{n:,}" for n in nums])
-                sorted_nums = sorted(nums) if order == "น้อยไปมาก" else sorted(nums, reverse=True)
-                sorted_str = ", ".join([f"{n:,}" for n in sorted_nums])
-                q = f"จงเรียงลำดับจำนวนต่อไปนี้จาก<b>{order}</b>:<br><div style='text-align:center; font-size:22px; margin: 10px 0; color:#2980b9;'>{nums_str}</div>"
-                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 เปรียบเทียบจำนวนหลัก และค่าของเลขโดดทีละหลักจากซ้ายไปขวา<br>👉 เรียงลำดับจาก{order} จะได้:<br><b>ตอบ: {sorted_str}</b></span>"
+                # สุ่มจำนวนหลัก (5-7 หลัก)
+                digits = random.randint(5, 7)
+                base = 10**(digits-1)
+                limit = 10**digits - 1
+                
+                # สุ่มตัวเลข 4 จำนวนมาเรียงลำดับ
+                nums = []
+                for _ in range(4):
+                    nums.append(random.randint(base, limit))
+                
+                # 💡 แก้ไข: ใช้การเว้นวรรคแทนจุลภาคในการแสดงรายการโจทย์
+                # ใช้ .join ด้วยช่องว่าง 4 ช่อง เพื่อให้แยกจากกันชัดเจน
+                q_list = " &nbsp;&nbsp;&nbsp; ".join([f"{x:,}" for x in nums])
+                
+                mode = random.choice(["asc", "desc"])
+                mode_text = "น้อยไปมาก" if mode == "asc" else "มากไปน้อย"
+                
+                q = f"จงเรียงลำดับจำนวนต่อไปนี้จาก <b>{mode_text}</b>ให้ถูกต้อง<br><br><span style='font-size:22px; letter-spacing:1px;'>{q_list}</span>"
+                
+                # คำนวณคำตอบ
+                sorted_nums = sorted(nums) if mode == "asc" else sorted(nums, reverse=True)
+                ans_list = " &nbsp; | &nbsp; ".join([f"{x:,}" for x in sorted_nums])
+                
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำ:</b><br>1. เปรียบเทียบจำนวนหลัก (ถ้าเท่ากันให้ดูหลักซ้ายสุด)<br>2. เรียงลำดับจาก {mode_text}<br><b>ตอบ: {ans_list}</b></span>"
 
             elif actual_sub_t == "ค่าประมาณเป็นจำนวนเต็มสิบ เต็มร้อย เต็มพัน":
                 target = random.choice(["สิบ", "ร้อย", "พัน"])
