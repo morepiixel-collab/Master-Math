@@ -4741,63 +4741,100 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 sol = f"<span style='color:#2c3e50;'><b>เฉลย:</b> มุมกาง {target_deg}° จัดเป็น <b>{a_type}</b></span>"
 
             elif actual_sub_t == "โจทย์ปัญหาเรื่องมุมจากเข็มนาฬิกา":
-                # 💡 ฟังก์ชันวาดนาฬิกาประกอบโจทย์
-                def draw_clock_svg(hour):
+                def draw_clock_advanced_svg(hr_num, min_num, is_reflex=False):
                     import math
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="260">'
-                    cx, cy = 280, 130  # จุดศูนย์กลางนาฬิกา
+                    cx, cy = 280, 130
                     r_clock = 100
                     
-                    # วาดตัวเรือนนาฬิกา
-                    svg += f'<circle cx="{cx}" cy="{cy}" r="{r_clock}" fill="#ffffff" stroke="#34495e" stroke-width="4"/>'
-                    svg += f'<circle cx="{cx}" cy="{cy}" r="5" fill="#2c3e50"/>'
+                    # วาดตัวเรือน
+                    svg += f'<circle cx="{cx}" cy="{cy}" r="{r_clock}" fill="#ffffff" stroke="#34495e" stroke-width="3"/>'
                     
-                    # วาดขีดตัวเลขนาฬิกา (12 ขีด)
-                    for i in range(12):
-                        deg = i * 30
+                    # 💡 เพิ่มสเกลละเอียด (60 ขีด ขีดละ 6 องศา)
+                    for i in range(60):
+                        deg = i * 6
                         rad = math.radians(deg - 90)
-                        x1, y1 = cx + (r_clock - 10) * math.cos(rad), cy + (r_clock - 10) * math.sin(rad)
+                        is_major = (i % 5 == 0)
+                        t_len = 8 if is_major else 4
+                        x1, y1 = cx + (r_clock - t_len) * math.cos(rad), cy + (r_clock - t_len) * math.sin(rad)
                         x2, y2 = cx + r_clock * math.cos(rad), cy + r_clock * math.sin(rad)
-                        svg += f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#7f8c8d" stroke-width="2"/>'
+                        svg += f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#{"34495e" if is_major else "bdc3c7"}" stroke-width="{"2" if is_major else "1"}"/>'
                         
-                        # ใส่ตัวเลขหลักๆ (12, 3, 6, 9)
-                        if i % 3 == 0:
-                            num = 12 if i == 0 else i
-                            tx, ty = cx + (r_clock - 25) * math.cos(rad), cy + (r_clock - 25) * math.sin(rad)
-                            svg += f'<text x="{tx}" y="{ty+5}" font-family="sans-serif" font-size="14" font-weight="bold" fill="#34495e" text-anchor="middle">{num}</text>'
+                        if is_major:
+                            num = 12 if i == 0 else i // 5
+                            tx, ty = cx + (r_clock - 22) * math.cos(rad), cy + (r_clock - 22) * math.sin(rad)
+                            svg += f'<text x="{tx}" y="{ty+4}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#34495e" text-anchor="middle">{num}</text>'
 
-                    # 💡 วาดเข็มนาฬิกา
-                    # เข็มยาว (ชี้เลข 12 เสมอ)
-                    svg += f'<line x1="{cx}" y1="{cy}" x2="{cx}" y2="{cy - 80}" stroke="#2c3e50" stroke-width="4" stroke-linecap="round"/>'
+                    # คำนวณองศาเข็ม (นับจากเลข 12)
+                    # *หมายเหตุ: คิดแบบโจทย์คณิตศาสตร์ประถมศึกษา (เข็มสั้นชี้ตรงเลขพอดี)*
+                    deg_min = min_num * 30  # เข็มยาว
+                    deg_hr = hr_num * 30    # เข็มสั้น
                     
-                    # เข็มสั้น (ชี้ตามชั่วโมงที่สุ่มได้)
-                    hr_rad = math.radians((hour * 30) - 90)
-                    hx, hy = cx + 60 * math.cos(hr_rad), cy + 60 * math.sin(hr_rad)
-                    svg += f'<line x1="{cx}" y1="{cy}" x2="{hx}" y2="{hy}" stroke="#e74c3c" stroke-width="6" stroke-linecap="round"/>'
+                    rad_min = math.radians(deg_min - 90)
+                    rad_hr = math.radians(deg_hr - 90)
+
+                    # 💡 เพิ่มเส้นประจากปลายเข็มถึงขอบนาฬิกา
+                    def dash_line(rad):
+                        x1, y1 = cx + 60 * math.cos(rad), cy + 60 * math.sin(rad)
+                        x2, y2 = cx + (r_clock - 5) * math.cos(rad), cy + (r_clock - 5) * math.sin(rad)
+                        return f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#7f8c8d" stroke-width="1.5" stroke-dasharray="4"/>'
                     
-                    # วาดส่วนโค้งมุม (แสดงระยะห่าง)
+                    svg += dash_line(rad_min)
+                    svg += dash_line(rad_hr)
+
+                    # วาดเข็มยาว (สีน้ำเงิน) และเข็มสั้น (สีแดง)
+                    svg += f'<line x1="{cx}" y1="{cy}" x2="{cx + 85*math.cos(rad_min)}" y2="{cy + 85*math.sin(rad_min)}" stroke="#2980b9" stroke-width="4" stroke-linecap="round"/>'
+                    svg += f'<line x1="{cx}" y1="{cy}" x2="{cx + 60*math.cos(rad_hr)}" y2="{cy + 60*math.sin(rad_hr)}" stroke="#e74c3c" stroke-width="6" stroke-linecap="round"/>'
+                    svg += f'<circle cx="{cx}" cy="{cy}" r="5" fill="#2c3e50"/>'
+
+                    # วาดส่วนโค้งมุม
+                    diff = abs(deg_min - deg_hr)
+                    angle_val = diff if diff <= 180 else 360 - diff
+                    
+                    # ถ้าโจทย์สั่งเป็นมุมกลับ
+                    actual_display_angle = 360 - angle_val if is_reflex else angle_val
+                    
                     arc_r = 30
-                    svg += f'<path d="M {cx} {cy-arc_r} A {arc_r} {arc_r} 0 0 1 {cx + arc_r*math.cos(hr_rad)} {cy + arc_r*math.sin(hr_rad)}" fill="none" stroke="#e74c3c" stroke-width="2"/>'
+                    large_arc = 1 if actual_display_angle > 180 else 0
+                    # ทิศทางการวาดเส้นโค้ง
+                    sweep = 1 # ตามเข็ม
                     
-                    return svg + '</svg></div>'
+                    # จุดเริ่มและจุดจบของส่วนโค้ง
+                    x_start, y_start = cx + arc_r*math.cos(rad_hr), cy + arc_r*math.sin(rad_hr)
+                    x_end, y_end = cx + arc_r*math.cos(rad_min), cy + arc_r*math.sin(rad_min)
+                    
+                    svg += f'<path d="M {x_start} {y_start} A {arc_r} {arc_r} 0 {large_arc} {sweep} {x_end} {y_end}" fill="none" stroke="#f39c12" stroke-width="3"/>'
+                    
+                    return svg + '</svg></div>', actual_display_angle
 
-                # สุ่มตัวเลขชั่วโมง (1-6 เพื่อให้เด็กมองมุมได้ชัดเจน)
-                hr_num = random.randint(1, 6)
-                ans_deg = hr_num * 30
+                # สุ่มเลข 1-12 สองตัวไม่ให้ซ้ำกัน
+                h_nums = random.sample(range(1, 13), 2)
+                h1, h2 = h_nums[0], h_nums[1]
                 
-                # ชนิดของมุม
-                a_type = "มุมแหลม" if ans_deg < 90 else "มุมฉาก" if ans_deg == 90 else "มุมป้าน" if ans_deg < 180 else "มุมตรง"
+                # สุ่มว่าจะเป็นมุมปรกติ หรือ มุมกลับ (0=ปรกติ, 1=มุมกลับ)
+                is_reflex_mode = random.choice([True, False])
+                target_text = "มุมกลับ" if is_reflex_mode else "มุม"
                 
-                svg_clock = draw_clock_svg(hr_num)
+                svg_clock, final_angle = draw_clock_advanced_svg(h1, h2, is_reflex_mode)
                 
-                q = f"จากรูปนาฬิกา เมื่อเข็มยาวชี้เลข 12 และเข็มสั้นชี้เลข <b>{hr_num}</b><br>เข็มนาฬิกาทั้งสองเล่มทำมุมกันกี่องศา และเป็นมุมชนิดใด?<br>{svg_clock}"
+                q = f"จากรูปนาฬิกา เข็มสั้นชี้ที่เลข <b>{h1}</b> และเข็มยาวชี้ที่เลข <b>{h2}</b><br>จงหาขนาดของ <b>{target_text}</b> ระหว่างเข็มทั้งสองเล่มนี้ว่ามีกี่องศา?<br>{svg_clock}"
                 
+                # เฉลย
+                diff_units = abs(h1 - h2)
+                if diff_units > 6: diff_units = 12 - diff_units # คิดระยะห่างที่สั้นที่สุดก่อน
+                
+                base_angle = diff_units * 30
+                
+                if is_reflex_mode:
+                    sol_step = f"1. ระยะห่างมุมแหลม/ป้าน คือ {diff_units} ช่อง × 30° = {base_angle}°<br>2. คำนวณมุมกลับ: 360° - {base_angle}° = <b>{360-base_angle}°</b>"
+                else:
+                    sol_step = f"คำนวณระยะห่าง: {diff_units} ช่อง × 30° = <b>{base_angle}°</b>"
+
                 sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
-                1. นาฬิกามีทั้งหมด 12 ช่องใหญ่ รอบวงกลมคือ 360 องศา<br>
-                2. ดังนั้น 1 ช่องตัวเลข (เช่น 12 ไป 1) กว้าง 360 ÷ 12 = <b>30 องศา</b><br>
-                3. ในรูป เข็มสั้นชี้ที่เลข {hr_num} หมายถึงห่างจากเลข 12 อยู่ {hr_num} ช่อง<br>
-                4. คำนวณ: {hr_num} ช่อง × 30 องศา = <b>{ans_deg} องศา</b><br>
-                <b>ตอบ: {ans_deg} องศา (จัดเป็น{a_type})</b></span>'''
+                👉 ระยะห่างระหว่างตัวเลข 1 ช่องนาฬิกา เท่ากับ 30 องศา (360 ÷ 12)<br>
+                👉 จากเลข {h1} ถึงเลข {h2} ห่างกัน {diff_units} ช่องตัวเลข<br>
+                👉 {sol_step}<br>
+                <b>ตอบ: {final_angle} องศา</b></span>'''
 
             elif actual_sub_t == "การหาความยาวรอบรูปสี่เหลี่ยมมุมฉาก":
                 def draw_rect_svg_local(w_val, h_val, w_lbl, h_lbl, fill_color="#eaf2f8"):
