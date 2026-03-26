@@ -4391,11 +4391,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 q = f"จากรูป มุม <b>{angle_name}</b> ที่มีขนาด <b>{angle}°</b> คือมุมชนิดใด?<br>{svg_html}<span style='font-size:18px; color:#7f8c8d;'>(มุมแหลม, มุมฉาก, มุมป้าน, มุมตรง, มุมกลับ)</span>"
                 sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 สังเกตจากรูปภาพมุมกาง <b>{angle}°</b><br>👉 ซึ่งมุม {angle}° {reason}<br>👉 ดังนั้นมุม {angle_name} จึงจัดเป็น <b>{angle_type}</b><br><b>ตอบ: {angle_type}</b></span>"
             elif actual_sub_t == "การวัดขนาดของมุม (ไม้โปรแทรกเตอร์)":
-                # 💡 1. ฟังก์ชันวาดไม้โปรแทรกเตอร์แบบละเอียดสมจริง
+                # 💡 1. ฟังก์ชันวาดไม้โปรแทรกเตอร์แบบละเอียดสมจริง (ขยายขอบป้องกันตัวอักษรขาด)
                 def draw_protractor_svg(deg1, deg2, p1_name, v_name, p2_name):
                     import math
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="420" height="230">'
-                    cx, cy = 210, 190
+                    # ขยาย width เป็น 500 และ height เป็น 260 เพื่อให้มีพื้นที่เหลือรอบด้าน
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="500" height="260">'
+                    cx, cy = 250, 220
                     r_outer = 170
                     r_inner = 110
                     
@@ -4426,7 +4427,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             tx_in = cx + (r_inner + 22) * cos_a
                             ty_in = cy - (r_inner + 22) * sin_a
                             
-                            # วาดตัวเลข (หลบซ้ายขวาให้สวยงาม)
                             if i not in [0, 180]:
                                 svg += f'<text x="{tx_out}" y="{ty_out+4}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2c3e50" text-anchor="middle">{out_txt}</text>'
                                 svg += f'<text x="{tx_in}" y="{ty_in+4}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#2980b9" text-anchor="middle">{in_txt}</text>'
@@ -4444,14 +4444,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                             tick_len = 5
                             stroke_w = 1
                             
-                        # ขีดวงนอก
                         x1 = cx + r_outer * cos_a
                         y1 = cy - r_outer * sin_a
                         x2 = cx + (r_outer - tick_len) * cos_a
                         y2 = cy - (r_outer - tick_len) * sin_a
                         svg += f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="#34495e" stroke-width="{stroke_w}"/>'
                         
-                        # ขีดวงใน
                         x3 = cx + r_inner * cos_a
                         y3 = cy - r_inner * sin_a
                         x4 = cx + (r_inner + tick_len) * cos_a
@@ -4473,18 +4471,17 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     svg += f'<circle cx="{cx}" cy="{cy}" r="5" fill="#c0392b"/>'
                     
-                    # ป้ายกำกับชื่อมุม (A, B, C) พร้อมเส้นขอบตัวหนังสือให้อ่านง่าย
-                    lbl_bg = 'font-family:Sarabun; font-size:20px; font-weight:bold; fill:#e74c3c; stroke:#ffffff; stroke-width:4px; paint-order:stroke;'
-                    lbl_fg = 'font-family:Sarabun; font-size:20px; font-weight:bold; fill:#c0392b;'
+                    lbl_bg = 'font-family:Sarabun; font-size:22px; font-weight:bold; fill:#e74c3c; stroke:#ffffff; stroke-width:5px; paint-order:stroke;'
+                    lbl_fg = 'font-family:Sarabun; font-size:22px; font-weight:bold; fill:#c0392b;'
                     
                     svg += f'<text x="{cx}" y="{cy+25}" {lbl_bg} text-anchor="middle">{v_name}</text>'
                     svg += f'<text x="{cx}" y="{cy+25}" {lbl_fg} text-anchor="middle">{v_name}</text>'
                     
                     def add_lbl(rad_val, name):
-                        tx = cx + (arm_len - 5) * math.cos(rad_val)
-                        ty = cy - (arm_len - 5) * math.sin(rad_val)
-                        ty = ty - 10 if math.sin(rad_val) > 0.5 else ty + 5
-                        tx = tx + 15 if math.cos(rad_val) > 0 else tx - 15
+                        # ปรับการดันตัวอักษรให้อยู่ห่างจากแขนเล็กน้อย และไม่ให้ตกขอบ
+                        tx = cx + (arm_len + 15) * math.cos(rad_val)
+                        ty = cy - (arm_len + 15) * math.sin(rad_val)
+                        ty = ty - 5 if math.sin(rad_val) > 0.5 else ty + 8
                         res = f'<text x="{tx}" y="{ty}" {lbl_bg} text-anchor="middle">{name}</text>'
                         res += f'<text x="{tx}" y="{ty}" {lbl_fg} text-anchor="middle">{name}</text>'
                         return res
@@ -4494,7 +4491,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     
                     return svg + '</svg></div>'
 
-                # 💡 2. ฟังก์ชันวาดมุมประกอบสมการเส้นตรง (เหมือนเดิม แต่เปลี่ยนชื่อหลบบั๊ก)
+                # 💡 2. ฟังก์ชันวาดมุมประกอบสมการเส้นตรง (ขยายขอบ)
                 def draw_angle_feature_pt(vx, vy, ax, ay, bx, by, r_arc, r_text, label, color_arc, color_text, is_x=False):
                     len_a, len_b = math.hypot(ax - vx, ay - vy), math.hypot(bx - vx, by - vy)
                     if len_a == 0 or len_b == 0: return ""
@@ -4508,14 +4505,19 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     return arc_svg + f'<text x="{tx}" y="{ty+4}" font-size="{"16px" if is_x else "13px"}" font-weight="bold" font-family="Sarabun" text-anchor="middle" fill="{color_text}">{label}</text>'
 
                 def draw_angle_svg_pt(val1, val2, val3="?"):
-                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="340" height="200">'
-                    lbl_st = 'font-family:Sarabun; font-size:16px; font-weight:bold; fill:#2c3e50;'
-                    vx, vy, phi = 170, 160, val2 
-                    ax, ay, cx, cy = 40, 160, 300, 160 
+                    # ขยาย SVG กว้างขึ้นเป็น 400 และขยับ Center (vx) ให้สมดุล
+                    svg = '<div style="text-align:center; margin:15px 0;"><svg width="400" height="200">'
+                    lbl_st = 'font-family:Sarabun; font-size:18px; font-weight:bold; fill:#2c3e50;'
+                    vx, vy, phi = 200, 160, val2 
+                    ax, ay, cx, cy = 50, 160, 350, 160 
                     bx, by = vx + 120 * math.cos(math.radians(phi)), vy - 120 * math.sin(math.radians(phi))
                     svg += f'<line x1="{ax}" y1="{ay}" x2="{cx}" y2="{cy}" stroke="#34495e" stroke-width="4"/>'
                     svg += f'<line x1="{vx}" y1="{vy}" x2="{bx}" y2="{by}" stroke="#c0392b" stroke-width="3"/>'
-                    svg += f'<circle cx="{bx}" cy="{by}" r="3" fill="#c0392b"/><text x="{ax-15}" y="{ay+5}" {lbl_st}>A</text><text x="{cx+5}" y="{cy+5}" {lbl_st}>B</text><text x="{bx-5}" y="{by-10}" {lbl_st}>C</text><text x="{vx-5}" y="{vy+20}" {lbl_st}>O</text>'
+                    svg += f'<circle cx="{bx}" cy="{by}" r="3" fill="#c0392b"/>'
+                    svg += f'<text x="{ax-20}" y="{ay+5}" {lbl_st}>A</text>'
+                    svg += f'<text x="{cx+10}" y="{cy+5}" {lbl_st}>B</text>'
+                    svg += f'<text x="{bx-10}" y="{by-15}" {lbl_st}>C</text>'
+                    svg += f'<text x="{vx-5}" y="{vy+25}" {lbl_st}>O</text>'
                     svg += draw_angle_feature_pt(vx, vy, ax, ay, bx, by, 28, 45, f"{val1}°", "#2ecc71", "#c0392b")
                     svg += draw_angle_feature_pt(vx, vy, bx, by, cx, cy, 28, 45, val3, "#2ecc71", "#2980b9", is_x=True)
                     return svg + '</svg></div>'
@@ -4526,15 +4528,13 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 p1, v, p2 = smpl[0], smpl[1], smpl[2]
                 ang_name = f"{p1}{v}{p2}"
 
-                # สุ่มโหมดระหว่าง อ่านโปรแทรกเตอร์ vs คำนวณมุมเส้นตรง
                 mode = random.choice(["read_protractor", "calc_angle"])
                 
                 if mode == "read_protractor":
-                    # สุ่มว่าแขนข้างนึงจะทาบกับ 0 พอดี (อ่านง่าย) หรือจะอยู่ตรงกลาง (อ่านยาก ต้องเอามาลบกัน)
                     start_pos = random.choice(["right", "left", "random"])
-                    if start_pos == "right": base_deg = 0 # ทาบ 0 ด้านขวา (วงใน)
-                    elif start_pos == "left": base_deg = 180 # ทาบ 0 ด้านซ้าย (วงนอก)
-                    else: base_deg = random.choice([10, 20, 30, 40, 140, 150, 160]) # ไม่อยู่ที่ 0
+                    if start_pos == "right": base_deg = 0
+                    elif start_pos == "left": base_deg = 180
+                    else: base_deg = random.choice([10, 20, 30, 40, 140, 150, 160])
                     
                     if base_deg < 90: angle = random.randint(25, 180 - base_deg)
                     else: angle = random.randint(25, base_deg)
