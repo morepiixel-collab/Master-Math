@@ -4657,113 +4657,152 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             elif actual_sub_t == "สมการเชิงตรรกะและตาชั่งปริศนา":
                 is_challenge = st.session_state.get("challenge_mode", False)
                 
-                # 🎲 กำหนดรูปทรงและสีสัน
+                # สุ่มโหมดความยากระดับแข่งขัน
+                if not is_challenge:
+                    scenario = random.choice(["diff_compare", "weight_sub"])
+                else:
+                    scenario = "sum_diff" # โหมดท้าทายจะเจอ ทฤษฎีผลบวก-ผลต่าง เสมอ
+                
                 shapes = [
-                    {"type": "circle", "color": "#e74c3c", "name": "วงกลม"},
-                    {"type": "square", "color": "#3498db", "name": "สี่เหลี่ยม"},
-                    {"type": "triangle", "color": "#2ecc71", "name": "สามเหลี่ยม"},
-                    {"type": "star", "color": "#f1c40f", "name": "ดาว"}
+                    {"type": "circle", "color": "#e74c3c", "name": "วงกลมสีแดง"},
+                    {"type": "square", "color": "#3498db", "name": "สี่เหลี่ยมสีฟ้า"},
+                    {"type": "triangle", "color": "#2ecc71", "name": "สามเหลี่ยมสีเขียว"},
+                    {"type": "star", "color": "#f1c40f", "name": "ดาวสีเหลือง"}
                 ]
                 selected = random.sample(shapes, 3)
                 s1, s2, s3 = selected[0], selected[1], selected[2]
                 
-                # ฟังก์ชันวาดรูปทรง SVG
                 def draw_shape(cx, cy, shape_type, color):
                     if shape_type == "circle":
-                        return f'<circle cx="{cx}" cy="{cy}" r="16" fill="{color}" stroke="#2c3e50" stroke-width="2"/>'
+                        return f'<circle cx="{cx}" cy="{cy}" r="18" fill="{color}" stroke="#2c3e50" stroke-width="2"/>'
                     elif shape_type == "square":
-                        return f'<rect x="{cx-15}" y="{cy-15}" width="30" height="30" rx="4" fill="{color}" stroke="#2c3e50" stroke-width="2"/>'
+                        return f'<rect x="{cx-16}" y="{cy-16}" width="32" height="32" rx="4" fill="{color}" stroke="#2c3e50" stroke-width="2"/>'
                     elif shape_type == "triangle":
-                        return f'<polygon points="{cx},{cy-16} {cx-16},{cy+14} {cx+16},{cy+14}" fill="{color}" stroke="#2c3e50" stroke-width="2" stroke-linejoin="round"/>'
+                        return f'<polygon points="{cx},{cy-18} {cx-18},{cy+14} {cx+18},{cy+14}" fill="{color}" stroke="#2c3e50" stroke-width="2" stroke-linejoin="round"/>'
                     else: # star
                         return f'<polygon points="{cx},{cy-18} {cx+4},{cy-5} {cx+18},{cy-5} {cx+7},{cy+4} {cx+11},{cy+17} {cx},{cy+9} {cx-11},{cy+17} {cx-7},{cy+4} {cx-18},{cy-5} {cx-4},{cy-5}" fill="{color}" stroke="#2c3e50" stroke-width="1.5" stroke-linejoin="round"/>'
 
-                # ฟังก์ชันวาดสมการ 1 บรรทัด
-                def draw_eq_row(y, items, result_val):
+                # ฟังก์ชันวาดสมการแบบปรับระยะกึ่งกลางอัตโนมัติ
+                def draw_eq_row(y, items):
                     row_svg = ""
-                    start_x = 120
-                    spacing = 50
-                    for i, item in enumerate(items):
-                        cx = start_x + (i * spacing)
-                        if item in ["+", "-", "x", "="]:
-                            # ถ้าเป็นเครื่องหมาย ให้ขยับ x ลงมานิดหน่อยเพื่อความสวยงาม
-                            display_op = "×" if item == "x" else item
-                            row_svg += f'<text x="{cx}" y="{y+8}" font-family="sans-serif" font-size="26" font-weight="bold" fill="#2c3e50" text-anchor="middle">{display_op}</text>'
+                    total_w = 0
+                    for item in items:
+                        if isinstance(item, str): total_w += 40
+                        elif isinstance(item, dict) and item.get("type") == "box": total_w += 70
+                        else: total_w += 45
+
+                    cx = 280 - (total_w / 2)
+                    for item in items:
+                        if isinstance(item, str):
+                            display_op = "×" if item == "x" else "÷" if item == "/" else item
+                            row_svg += f'<text x="{cx + 20}" y="{y+8}" font-family="sans-serif" font-size="28" font-weight="bold" fill="#2c3e50" text-anchor="middle">{display_op}</text>'
+                            cx += 40
+                        elif isinstance(item, dict) and item.get("type") == "box":
+                            val = item["val"]
+                            row_svg += f'<rect x="{cx}" y="{y-20}" width="70" height="40" rx="6" fill="#f39c12"/><text x="{cx+35}" y="{y+8}" font-family="sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">{val}</text>'
+                            cx += 70
                         else:
-                            row_svg += draw_shape(cx, y, item["type"], item["color"])
-                    
-                    # ใส่ผลลัพธ์
-                    res_x = start_x + (len(items) * spacing)
-                    row_svg += f'<rect x="{res_x-25}" y="{y-20}" width="60" height="40" rx="6" fill="#f39c12"/><text x="{res_x+5}" y="{y+7}" font-family="sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">{result_val}</text>'
+                            row_svg += draw_shape(cx + 22, y, item["type"], item["color"])
+                            cx += 45
                     return row_svg
 
-                if not is_challenge:
-                    # --- โหมดธรรมดา: การบวกลบพื้นฐาน ---
-                    val1 = random.randint(5, 12)
-                    val2 = random.randint(3, 9)
-                    val3 = random.randint(10, 25)
+                if scenario == "diff_compare":
+                    # เทคนิคที่ 1: การตัดออกเปรียบเทียบ (Elimination)
+                    val_a = random.randint(15, 35)
+                    val_b = random.randint(25, 60)
+                    val_c = random.randint(10, 30)
                     
-                    ans1 = val1 * 3
-                    ans2 = val1 + (val2 * 2)
-                    ans3 = val2 + val3
+                    ans1 = (val_a * 2) + val_b
+                    ans2 = val_a + val_b
+                    ans3 = val_b + (val_c * 2)
                     
                     svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
-                    svg += draw_eq_row(40, [s1, "+", s1, "+", s1, "="], ans1)
-                    svg += draw_eq_row(100, [s1, "+", s2, "+", s2, "="], ans2)
-                    svg += draw_eq_row(160, [s2, "+", s3, "="], ans3)
+                    svg += draw_eq_row(40, [s1, "+", s1, "+", s2, "=", {"type":"box", "val":ans1}])
+                    svg += draw_eq_row(100, [s1, "+", s2, "=", {"type":"box", "val":ans2}])
+                    svg += draw_eq_row(160, [s2, "+", s3, "+", s3, "=", {"type":"box", "val":ans3}])
                     svg += '</svg></div>'
                     
-                    q = f"จงวิเคราะห์ปริศนาสมการรูปทรงด้านล่างนี้ แล้วหาว่า <b>{s3['name']} 1 รูป มีค่าเท่ากับเท่าใด?</b><br>{svg}"
+                    q = f"จงวิเคราะห์สมการรูปทรงด้านล่างนี้ แล้วหาว่า <b>{s3['name']} 1 รูป มีค่าเท่าใด?</b><br>{svg}"
                     
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (วิเคราะห์สมการรูปทรง):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> สังเกตบรรทัดบนสุด ({s1['name']} บวกกัน 3 รูป = {ans1})<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>เคล็ดลับ:</b> เริ่มแก้จากบรรทัดที่มีรูปทรงหน้าตาเหมือนกันทั้งหมดก่อนเสมอ</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {s1['name']} 1 รูป = {ans1} ÷ 3 = <span style="color:#e74c3c;"><b>{val1}</b></span><br>
-                    👉 <b>ขั้นที่ 2:</b> พิจารณาบรรทัดที่สอง ({s1['name']} + {s2['name']} + {s2['name']} = {ans2})<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {s1['name']} ที่รู้แล้วลงไป: จะได้ {val1} + ({s2['name']} 2 รูป) = {ans2}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; กำจัด + {val1} ด้วยการลบออก: {s2['name']} 2 รูป = {ans2} - {val1} = {ans2 - val1}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s2['name']} 1 รูป = {ans2 - val1} ÷ 2 = <span style="color:#2980b9;"><b>{val2}</b></span><br>
-                    👉 <b>ขั้นที่ 3:</b> พิจารณาบรรทัดสุดท้าย ({s2['name']} + {s3['name']} = {ans3})<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {s2['name']} ลงไป: จะได้สมการ <span style="color:#2980b9;">{val2}</span> + {s3['name']} = {ans3}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s3['name']} = {ans3} - {val2} = <span style="color:#27ae60;"><b>{val3}</b></span><br>
-                    <b>ตอบ: {s3['name']} มีค่าเท่ากับ {val3}</b></span>'''
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการเปรียบเทียบ):</b><br>
+                    👉 <b>ขั้นที่ 1:</b> เปรียบเทียบสมการแถวที่ 1 และ 2<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แถวที่ 1: {s1['name']} + {s1['name']} + {s2['name']} = {ans1}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แถวที่ 2: {s1['name']} + {s2['name']} = {ans2}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>วิเคราะห์:</b> แถวที่ 1 มี {s1['name']} มากกว่าแถวที่ 2 อยู่ 1 รูป ดังนั้นส่วนต่างของผลลัพธ์ก็คือค่าของ {s1['name']} นั่นเอง</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {s1['name']} = {ans1} - {ans2} = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
+                    👉 <b>ขั้นที่ 2:</b> หาค่า {s2['name']} จากแถวที่ 2<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าที่รู้ลงไป: <span style="color:#e74c3c;">{val_a}</span> + {s2['name']} = {ans2}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {s2['name']} = {ans2} - {val_a} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
+                    👉 <b>ขั้นที่ 3:</b> หาค่า {s3['name']} จากแถวที่ 3<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แถวที่ 3 คือ: <span style="color:#2980b9;">{val_b}</span> + {s3['name']} + {s3['name']} = {ans3}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; นำ {val_b} ไปลบออก: {s3['name']} 2 รูป = {ans3} - {val_b} = {ans3 - val_b}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s3['name']} 1 รูป = {ans3 - val_b} ÷ 2 = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
+                    <b>ตอบ: {s3['name']} มีค่าเท่ากับ {val_c}</b></span>'''
+                    
+                elif scenario == "weight_sub":
+                    # เทคนิคที่ 2: การแทนค่าและจัดกลุ่ม (Substitution)
+                    val_a = random.randint(12, 25)
+                    val_b = val_a * 2
+                    val_c = random.randint(15, 45)
+                    
+                    ans2 = (val_b * 2) + val_a # เท่ากับ 5A
+                    ans3 = val_b + val_c
+                    
+                    svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
+                    svg += draw_eq_row(40, [s1, "+", s1, "=", s2])
+                    svg += draw_eq_row(100, [s2, "+", s2, "+", s1, "=", {"type":"box", "val":ans2}])
+                    svg += draw_eq_row(160, [s2, "+", s3, "=", {"type":"box", "val":ans3}])
+                    svg += '</svg></div>'
+                    
+                    q = f"จงวิเคราะห์ความสัมพันธ์ของสมการด้านล่าง แล้วหาว่า <b>{s3['name']} 1 รูป มีค่าเท่าใด?</b><br>{svg}"
+                    
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิคการแทนค่าจัดกลุ่ม):</b><br>
+                    👉 <b>ขั้นที่ 1:</b> สังเกตแถวที่ 1 ({s1['name']} + {s1['name']} = {s2['name']})<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>วิเคราะห์:</b> สมการนี้บอกเราว่า {s2['name']} 1 รูป มีค่าเท่ากับ {s1['name']} 2 รูป</span><br>
+                    👉 <b>ขั้นที่ 2:</b> นำไปแปลงร่างในแถวที่ 2<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แถวที่ 2 คือ {s2['name']} + {s2['name']} + {s1['name']} = {ans2}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; เปลี่ยน {s2['name']} ให้เป็น {s1['name']} จะได้: ({s1['name']} 2 รูป) + ({s1['name']} 2 รูป) + ({s1['name']} 1 รูป) = {ans2}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; รวมแล้วคือ {s1['name']} 5 รูป = {ans2}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {s1['name']} = {ans2} ÷ 5 = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; และส่งผลให้ {s2['name']} = {val_a} + {val_a} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
+                    👉 <b>ขั้นที่ 3:</b> หาค่า {s3['name']} จากแถวที่ 3<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {s2['name']}: <span style="color:#2980b9;">{val_b}</span> + {s3['name']} = {ans3}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s3['name']} = {ans3} - {val_b} = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
+                    <b>ตอบ: {s3['name']} มีค่าเท่ากับ {val_c}</b></span>'''
                     
                 else:
-                    # --- โหมดท้าทาย: มีการคูณ และ การผสมสมการ ---
-                    val1 = random.choice([4, 5, 6, 7, 8, 9]) # ใช้เลขที่คูณตัวเองแล้วลงตัว
-                    val2 = random.randint(3, 8)
-                    val3 = random.randint(15, 30)
+                    # โหมดท้าทาย: ทฤษฎีผลบวก-ผลต่าง (Sum-Difference Theorem)
+                    val_a = random.randint(35, 80)
+                    val_b = random.randint(15, val_a - 10) # ให้ A > B เสมอ
+                    val_c = random.randint(4, 9)
                     
-                    ans1 = val1 * val1
-                    ans2 = val1 * val2
-                    ans3 = val2 + val3 - val1
-                    
-                    final_q_ans = val3 + val2
+                    sum_val = val_a + val_b
+                    diff_val = val_a - val_b
+                    ans3 = (val_a * val_c) - val_b
                     
                     svg = f'<div style="text-align:center; margin:15px 0;"><svg width="560" height="200">'
-                    svg += draw_eq_row(40, [s1, "x", s1, "="], ans1)
-                    svg += draw_eq_row(100, [s1, "x", s2, "="], ans2)
-                    svg += draw_eq_row(160, [s2, "+", s3, "-", s1, "="], ans3)
+                    svg += draw_eq_row(40, [s1, "+", s2, "=", {"type":"box", "val":sum_val}])
+                    svg += draw_eq_row(100, [s1, "-", s2, "=", {"type":"box", "val":diff_val}])
+                    svg += draw_eq_row(160, [s1, "x", s3, "-", s2, "=", {"type":"box", "val":ans3}])
                     svg += '</svg></div>'
                     
-                    q = f"จงวิเคราะห์ปริศนาสมการรูปทรงด้านล่างนี้ แล้วหาว่า <b>({s3['name']} + {s2['name']}) มีค่ารวมกันเท่าใด?</b><br>{svg}"
+                    q = f"<b>[ข้อสอบแข่งขัน]</b> จงใช้ไหวพริบวิเคราะห์สมการต่อไปนี้ แล้วหาว่า <b>{s3['name']} 1 รูป มีค่าเท่าใด?</b><br>{svg}"
                     
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ระดับท้าทาย: สมการประยุกต์):</b><br>
-                    👉 <b>ขั้นที่ 1:</b> สังเกตบรรทัดบนสุด ({s1['name']} × {s1['name']} = {ans1})<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>การวิเคราะห์:</b> ต้องหาตัวเลขที่หน้าตาเหมือนกัน (ตัวเดียวกัน) คูณกันแล้วได้ {ans1}</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; เนื่องจาก {val1} × {val1} = {ans1} ดังนั้น {s1['name']} = <span style="color:#e74c3c;"><b>{val1}</b></span><br>
-                    👉 <b>ขั้นที่ 2:</b> พิจารณาบรรทัดที่สอง ({s1['name']} × {s2['name']} = {ans2})<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่า {s1['name']} ลงไป: <span style="color:#e74c3c;">{val1}</span> × {s2['name']} = {ans2}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; กำจัด × {val1} ด้วยการหารออก: {s2['name']} = {ans2} ÷ {val1} = <span style="color:#2980b9;"><b>{val2}</b></span><br>
-                    👉 <b>ขั้นที่ 3:</b> พิจารณาบรรทัดสุดท้าย ({s2['name']} + {s3['name']} - {s1['name']} = {ans3})<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าที่รู้แล้วลงไป: <span style="color:#2980b9;">{val2}</span> + {s3['name']} - <span style="color:#e74c3c;">{val1}</span> = {ans3}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จัดกลุ่มตัวเลข: {s3['name']} + ({val2} - {val1}) = {ans3} <br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {s3['name']} + ({val2 - val1}) = {ans3} <br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s3['name']} = {ans3} - ({val2 - val1}) = <span style="color:#27ae60;"><b>{val3}</b></span><br>
-                    👉 <b>ขั้นที่ 4:</b> หาคำตอบสุดท้าย<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>โจทย์ถามหา:</b> {s3['name']} + {s2['name']}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; นำค่ามาบวกกัน: {val3} + {val2} = <span style="color:#8e44ad;"><b>{final_q_ans}</b></span><br>
-                    <b>ตอบ: มีค่ารวมกันเท่ากับ {final_q_ans}</b></span>'''
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ระดับท้าทาย: ทฤษฎีผลบวก-ผลต่าง):</b><br>
+                    👉 <b>ขั้นที่ 1:</b> พิจารณาแถวที่ 1 และ 2<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ผลบวก ({s1['name']} + {s2['name']}) = {sum_val}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ผลต่าง ({s1['name']} - {s2['name']}) = {diff_val}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>สูตรลัดระดับแข่งขัน:</b> ค่าที่มากกว่า = (ผลบวก + ผลต่าง) ÷ 2</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ {s1['name']} = ({sum_val} + {diff_val}) ÷ 2 = {sum_val + diff_val} ÷ 2 = <span style="color:#e74c3c;"><b>{val_a}</b></span><br>
+                    👉 <b>ขั้นที่ 2:</b> หาค่า {s2['name']}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จากแถวที่ 1: <span style="color:#e74c3c;">{val_a}</span> + {s2['name']} = {sum_val}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s2['name']} = {sum_val} - {val_a} = <span style="color:#2980b9;"><b>{val_b}</b></span><br>
+                    👉 <b>ขั้นที่ 3:</b> หาค่า {s3['name']} จากแถวที่ 3<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; สมการคือ: ({s1['name']} × {s3['name']}) - {s2['name']} = {ans3}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แทนค่าตัวเลข: (<span style="color:#e74c3c;">{val_a}</span> × {s3['name']}) - <span style="color:#2980b9;">{val_b}</span> = {ans3}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; กำจัด - {val_b} ด้วยการบวกเข้า: (<span style="color:#e74c3c;">{val_a}</span> × {s3['name']}) = {ans3} + {val_b} = {ans3 + val_b}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {s3['name']} = {ans3 + val_b} ÷ {val_a} = <span style="color:#27ae60;"><b>{val_c}</b></span><br>
+                    <b>ตอบ: {s3['name']} มีค่าเท่ากับ {val_c}</b></span>'''
 
             elif actual_sub_t == "โจทย์ปัญหาสมการ: ตาชั่งผลไม้":
                 # สุ่มรูปแบบโจทย์ 4 สไตล์เพื่อความไม่จำเจ
