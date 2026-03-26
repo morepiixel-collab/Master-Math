@@ -4741,8 +4741,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 sol = f"<span style='color:#2c3e50;'><b>เฉลย:</b> มุมกาง {target_deg}° จัดเป็น <b>{a_type}</b></span>"
 
             elif actual_sub_t == "โจทย์ปัญหาเรื่องมุมจากเข็มนาฬิกา":
-                # 💡 1. ฟังก์ชันวาดนาฬิกาแบบอัพเกรด (Canvas 560x260)
-                def draw_clock_advanced_svg(hr_num, min_num, is_reflex=False):
+                def draw_clock_advanced_svg(m_hr, m_min, is_reflex=False):
                     import math
                     svg = '<div style="text-align:center; margin:15px 0;"><svg width="560" height="260">'
                     cx, cy = 280, 130
@@ -4751,117 +4750,90 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     # วาดตัวเรือน
                     svg += f'<circle cx="{cx}" cy="{cy}" r="{r_clock}" fill="#ffffff" stroke="#34495e" stroke-width="3"/>'
                     
-                    # 💡 แก้ไข: ปรับขีดสเกล (ชั่วโมง/นาที) เป็นสีน้ำเงินทั้งหมด
+                    # ขีดสเกลสีน้ำเงิน (60 ขีด)
                     tick_color = "#2980b9"
                     for i in range(60):
                         deg = i * 6
                         rad = math.radians(deg - 90)
                         is_major = (i % 5 == 0)
-                        t_len = 8 if is_major else 4
+                        t_len = 9 if is_major else 5
                         x1, y1 = cx + (r_clock - t_len) * math.cos(rad), cy + (r_clock - t_len) * math.sin(rad)
                         x2, y2 = cx + r_clock * math.cos(rad), cy + r_clock * math.sin(rad)
-                        svg += f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{tick_color}" stroke-width="{"2.5" if is_major else "1"}"/>'
+                        svg += f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{tick_color}" stroke-width="{"2.5" if is_major else "1.2"}"/>'
                         
                         if is_major:
                             num = 12 if i == 0 else i // 5
-                            tx, ty = cx + (r_clock - 22) * math.cos(rad), cy + (r_clock - 22) * math.sin(rad)
-                            svg += f'<text x="{tx}" y="{ty+4}" font-family="sans-serif" font-size="12" font-weight="bold" fill="#34495e" text-anchor="middle">{num}</text>'
+                            tx, ty = cx + (r_clock - 24) * math.cos(rad), cy + (r_clock - 24) * math.sin(rad)
+                            svg += f'<text x="{tx}" y="{ty+5}" font-family="sans-serif" font-size="13" font-weight="bold" fill="#34495e" text-anchor="middle">{num}</text>'
 
-                    # คำนวณองศาเข็ม (นับจากเลข 12)
-                    deg_min = min_num * 30  # เข็มยาว
-                    deg_hr = hr_num * 30    # เข็มสั้น
+                    # 💡 คำนวณองศาจากขีดนาที (0-59)
+                    deg_hr = m_hr * 6
+                    deg_min = m_min * 6
                     
-                    # ปรับมุม SVG (0 องศาอยู่ที่แกน Y ด้านบน)
-                    a_min = (deg_min - 90) % 360
                     a_hr = (deg_hr - 90) % 360
+                    a_min = (deg_min - 90) % 360
                     
-                    rad_min = math.radians(a_min)
                     rad_hr = math.radians(a_hr)
+                    rad_min = math.radians(a_min)
 
-                    # 💡 แก้ไข: เปลี่ยนเส้นประ Guild line เป็นสีแดง (#c0392b) และหนาขึ้น
+                    # เส้นประ Guild line สีแดงนำสายตาไปยังขีดสเกล
                     guide_color = "#c0392b"
                     def dash_line(rad):
-                        x1, y1 = cx + 60 * math.cos(rad), cy + 60 * math.sin(rad)
-                        x2, y2 = cx + (r_clock - 5) * math.cos(rad), cy + (r_clock - 5) * math.sin(rad)
+                        x1, y1 = cx + 65 * math.cos(rad), cy + 65 * math.sin(rad)
+                        x2, y2 = cx + (r_clock - 2) * math.cos(rad), cy + (r_clock - 2) * math.sin(rad)
                         return f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{guide_color}" stroke-width="1.8" stroke-dasharray="5,3"/>'
                     
-                    svg += dash_line(rad_min)
                     svg += dash_line(rad_hr)
+                    svg += dash_line(rad_min)
 
-                    # วาดเข็มยาว (สีน้ำเงิน) และเข็มสั้น (สีแดง)
+                    # เข็มนาฬิกา
                     svg += f'<line x1="{cx}" y1="{cy}" x2="{cx + 85*math.cos(rad_min)}" y2="{cy + 85*math.sin(rad_min)}" stroke="#2980b9" stroke-width="4" stroke-linecap="round"/>'
                     svg += f'<line x1="{cx}" y1="{cy}" x2="{cx + 60*math.cos(rad_hr)}" y2="{cy + 60*math.sin(rad_hr)}" stroke="#e74c3c" stroke-width="6" stroke-linecap="round"/>'
                     svg += f'<circle cx="{cx}" cy="{cy}" r="5" fill="#2c3e50"/>'
 
-                    # 💡 แก้ไข: อัพเกรดเส้นโค้งวัดมุม (Orange Arc) ให้อัจฉริยะขึ้น
-                    # คำนวณระยะห่างมุมที่ถูกต้อง (มุมในไม่เกิน 180)
-                    angle_diff = abs(deg_min - deg_hr)
-                    angle_val = angle_diff if angle_diff <= 180 else 360 - angle_diff
-                    
-                    # กำหนดค่าสุดท้ายที่จะแสดง (มุมใน หรือ มุมกลับ)
+                    # คำนวณมุม
+                    diff = abs(deg_min - deg_hr)
+                    angle_val = diff if diff <= 180 else 360 - diff
                     actual_display_angle = 360 - angle_val if is_reflex else angle_val
                     
-                    # ตัดตัดสินใจทิศทางการวาด (Clockwise vs Counter-Clockwise)
-                    # เราต้องการวาดจากเข็มสั้นไปเข็มยาวเสมอ
-                    
-                    # คำนวณมุม SVG ของเข็มทั้งสอง
-                    s_r = rad_hr
-                    e_r = rad_min
-                    
-                    # ตรวจสอบว่าต้องใช้ Large Arc flag หรือไม่ (ถ้ามุม > 180)
-                    large_arc = 1 if actual_display_angle > 180 else 0
-                    
-                    # ทิศทางการวาด (Sweep flag)
-                    # ตามปรกติ SVG จะวาดแบบ Large Arc เป็นไปตามเข็ม
-                    # เราต้องคำนวณทิศทางที่ถูกต้องระหว่าง hr -> min
-                    
-                    # หามุมSVGระหว่างสองเข็ม
+                    # วาดเส้นโค้งวัดมุมอัจฉริยะ
                     raw_diff = (a_min - a_hr) % 360
-                    
+                    large_arc = 1 if actual_display_angle > 180 else 0
                     if not is_reflex:
-                        # มุมปรกติ (<=180)
-                        if raw_diff <= 180: sweep = 1 # วาดตามเข็ม
-                        else: sweep = 0 # วาดทวนเข็ม
+                        sweep = 1 if raw_diff <= 180 else 0
                     else:
-                        # มุมกลับ (>180)
-                        if raw_diff <= 180: sweep = 0 # วาดทวนเข็ม
-                        else: sweep = 1 # วาดตามเข็ม
+                        sweep = 0 if raw_diff <= 180 else 1
                     
-                    # กำหนดรัศมีส่วนโค้ง
                     arc_r = 35
-                    x_start, y_start = cx + arc_r*math.cos(s_r), cy + arc_r*math.sin(s_r)
-                    x_end, y_end = cx + arc_r*math.cos(e_r), cy + arc_r*math.sin(e_r)
-                    
-                    svg += f'<path d="M {x_start} {y_start} A {arc_r} {arc_r} 0 {large_arc} {sweep} {x_end} {y_end}" fill="none" stroke="#f39c12" stroke-width="3"/>'
+                    x_s, y_s = cx + arc_r*math.cos(rad_hr), cy + arc_r*math.sin(rad_hr)
+                    x_e, y_e = cx + arc_r*math.cos(rad_min), cy + arc_r*math.sin(rad_min)
+                    svg += f'<path d="M {x_s} {y_s} A {arc_r} {arc_r} 0 {large_arc} {sweep} {x_e} {y_e}" fill="none" stroke="#f39c12" stroke-width="3"/>'
                     
                     return svg + '</svg></div>', actual_display_angle
 
-                # สุ่มเลข 1-12 สองตัวไม่ให้ซ้ำกัน
-                h_nums = random.sample(range(1, 13), 2)
-                h1, h2 = h_nums[0], h_nums[1]
+                # 🎲 สุ่มตำแหน่งขีดนาที (0-59) แทนที่จะสุ่มแค่เลขชั่วโมง
+                m_nums = random.sample(range(0, 60), 2)
+                m1, m2 = m_nums[0], m_nums[1]
                 
-                # สุ่มว่าจะเป็นมุมปรกติ หรือ มุมกลับ (True=มุมกลับ)
                 is_reflex_mode = random.choice([True, False])
                 target_text = "มุมกลับ" if is_reflex_mode else "มุม"
                 
-                svg_clock, final_angle = draw_clock_advanced_svg(h1, h2, is_reflex_mode)
+                svg_clock, final_angle = draw_clock_advanced_svg(m1, m2, is_reflex_mode)
                 
-                q = f"จากรูปนาฬิกา เข็มสั้นชี้ที่เลข <b>{h1}</b> และเข็มยาวชี้ที่เลข <b>{h2}</b><br>จงหาขนาดของ <b>{target_text}</b> ระหว่างเข็มทั้งสองเล่มนี้ว่ามีกี่องศา?<br>{svg_clock}"
+                q = f"จากรูปนาฬิกา เข็มสั้นชี้ที่ขีดนาทีที่ <b>{m1}</b> และเข็มยาวชี้ที่ขีดนาทีที่ <b>{m2}</b><br>จงหาขนาดของ <b>{target_text}</b> ระหว่างเข็มทั้งสองเล่มนี้ว่ามีกี่องศา?<br>{svg_clock}"
                 
-                # เฉลย
-                diff_units = abs(h1 - h2)
-                if diff_units > 6: diff_units = 12 - diff_units # คิดระยะห่างที่สั้นที่สุดก่อน
-                
-                base_angle = diff_units * 30
+                # เฉลยแบบละเอียดตามขีดสเกล
+                diff_units = abs(m1 - m2)
+                dist = diff_units if diff_units <= 30 else 60 - diff_units
                 
                 if is_reflex_mode:
-                    sol_step = f"1. ระยะห่างมุมแหลม/ป้าน คือ {diff_units} ช่อง × 30° = {base_angle}°<br>2. คำนวณมุมกลับ: 360° - {base_angle}° = <b>{360-base_angle}°</b>"
+                    sol_step = f"1. ระยะห่างมุมปรกติคือ {dist} ขีดนาที × 6° = {dist * 6}°<br>2. คำนวณมุมกลับ: 360° - {dist * 6}° = <b>{360 - (dist * 6)}°</b>"
                 else:
-                    sol_step = f"คำนวณระยะห่าง: {diff_units} ช่อง × 30° = <b>{base_angle}°</b>"
+                    sol_step = f"คำนวณระยะห่าง: {dist} ขีดนาที × 6° = <b>{dist * 6}°</b>"
 
                 sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
-                👉 ระยะห่างระหว่างตัวเลข 1 ช่องนาฬิกา เท่ากับ 30 องศา (360 ÷ 12)<br>
-                👉 จากเลข {h1} ถึงเลข {h2} ห่างกัน {diff_units} ช่องตัวเลข<br>
+                👉 สเกลนาฬิกา 1 ขีดนาที มีขนาดเท่ากับ 6 องศา (360 ÷ 60 ขีด)<br>
+                👉 จากตำแหน่งขีดที่ {m1} ถึงขีดที่ {m2} นับระยะห่างที่สั้นที่สุดได้ {dist} ขีดนาที<br>
                 👉 {sol_step}<br>
                 <b>ตอบ: {final_angle} องศา</b></span>'''
 
