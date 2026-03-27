@@ -6033,26 +6033,24 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     &nbsp;&nbsp;&nbsp;&nbsp; A = {math.ceil(sum_others/9)*9 if sum_others%9!=0 else sum_others+9} - {sum_others} = <span style="color:#e74c3c;"><b>{target_A}</b></span><br>
                     <b>ตอบ: A = {target_A} และ B = {target_B}</b></span>'''
 
+            # --- ดัก Error ของ ป.6 ---
             else:
-                q = f"⚠️ [ระบบผิดพลาด] ยังไม่ได้เขียนโค้ดสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
+                q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
 
             # ==================================================
-            # ระบบเช็คโจทย์ซ้ำ (ยันต์กันค้างที่แท้จริง!)
+            # ระบบเช็คโจทย์ซ้ำ (ยันต์กันค้าง ของแท้ดั้งเดิม!)
             # ==================================================
-            if q not in seen:
+            if q not in seen: 
                 seen.add(q)
                 questions.append({"question": q, "solution": sol})
-                break  # 🛑 สำคัญมาก! ต้องมี break เพื่อหยุดเมื่อได้โจทย์ครบ 1 ข้อ
-            
-            attempts += 1
-            
-            # ป้องกันระบบค้างถ้าสุ่มจนหมดมุก
-            if attempts >= 300:
-                if len(questions) < num_questions:
-                    questions.append({"question": "⚠️ สร้างโจทย์ได้ไม่ครบ (รูปแบบโจทย์อาจหมดแล้ว)", "solution": "กรุณากดสร้างใหม่อีกครั้ง"})
+                break 
+            elif attempts >= 299:
+                questions.append({"question": q, "solution": sol})
                 break
                 
+            attempts += 1  
+            
     return questions
 # ==========================================
 # UI Rendering
