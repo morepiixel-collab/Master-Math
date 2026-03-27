@@ -6080,20 +6080,20 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
             sol = "Error"
 
-            # ==================================================
-            # ระบบเช็คโจทย์ซ้ำ (ยันต์กันค้าง)
-            # ==================================================
-            if q not in seen: 
-                seen.add(q)
-                questions.append({"question": q, "solution": sol})
-                break 
-            elif attempts >= 299:
-                questions.append({"question": q, "solution": sol})
-                break
-                
-            attempts += 1  
+        # ==================================================
+        # ระบบเช็คโจทย์ซ้ำ (ยันต์กันค้าง)
+        # ==================================================
+        if q not in seen: 
+            seen.add(q)
+            questions.append({"question": q, "solution": sol})
+            break 
+        elif attempts >= 299:
+            questions.append({"question": q, "solution": sol})
+            break
             
-    return questions
+        attempts += 1  
+        
+return questions
 # ==========================================
 # UI Rendering
 # ==========================================
