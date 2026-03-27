@@ -5789,6 +5789,231 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b> : <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} - {a:,} = {c:,}</b></div>"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้ายตัวเลข <b>-{a:,}</b> ไปอยู่อีกฝั่ง โดยเปลี่ยนเครื่องหมายลบเป็นบวก<br>👉 จะได้: {var} = {c:,} + {a:,}<br>👉 คำนวณ: {var} = <b>{ans:,}</b><br><b>ตอบ: {ans:,}</b></span>"
 
+# ================= หมวด ป.6 (เนื้อหาเฉพาะ Gifted / สอบเข้า ม.1) =================
+            elif actual_sub_t in ["การหา ห.ร.ม.", "การหา ค.ร.น."]:
+                mode = "gcd" if actual_sub_t == "การหา ห.ร.ม." else "lcm"
+                a, b, c = random.randint(12, 45), random.randint(20, 60), random.randint(30, 90)
+                div_html, divs, rems = render_short_div([a, b, c], mode)
+                
+                if mode == "gcd":
+                    ans = math.prod(divs) if divs else 1
+                    q = f"จงหา <b>ห.ร.ม.</b> ของ <b>{a}, {b} และ {c}</b>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำ (ตั้งหารสั้น):</b><br>{div_html}👉 นำตัวหารทั้งหมดมาคูณกัน: {' × '.join(map(str, divs))} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+                else:
+                    lcm_factors = divs + [x for x in rems if x > 1]
+                    if not lcm_factors: lcm_factors = rems 
+                    ans = math.prod(divs) * math.prod(rems) if divs else math.prod(rems)
+                    q = f"จงหา <b>ค.ร.น.</b> ของ <b>{a}, {b} และ {c}</b>"
+                    sol = f"<span style='color:#2c3e50;'><b>วิธีทำ (ตั้งหารสั้น):</b><br>{div_html}👉 นำตัวหารด้านหน้าและเศษด้านล่าง (ตัว L) มาคูณกัน<br>👉 {' × '.join(map(str, lcm_factors))} = <b>{ans}</b><br><b>ตอบ: {ans}</b></span>"
+
+            elif actual_sub_t == "โจทย์ปัญหาเศษส่วนซ้อน (สอบเข้า ม.1)":
+                a, b, c = random.randint(1, 3), random.randint(1, 3), random.randint(2, 5)
+                # คำนวณคำตอบ
+                num = a * (b * c + 1) + c
+                den = b * c + 1
+                
+                # ฟังก์ชันวาดเศษส่วนซ้อน
+                def draw_nested_frac(v_a, v_b, v_c):
+                    return f"""<div style='display:inline-block; vertical-align:middle; text-align:center; font-size:24px; font-family:"Sarabun"; line-height:1.2;'>
+                        <div style='display:flex; align-items:center;'>
+                            <div>{v_a} +&nbsp;</div>
+                            <div style='display:flex; flex-direction:column; align-items:center;'>
+                                <div style='border-bottom:2px solid #2c3e50; padding:0 8px; width:100%;'>1</div>
+                                <div style='display:flex; align-items:center; padding-top:4px;'>
+                                    <div>{v_b} +&nbsp;</div>
+                                    <div style='display:flex; flex-direction:column; align-items:center;'>
+                                        <div style='border-bottom:2px solid #2c3e50; padding:0 4px;'>1</div>
+                                        <div>{v_c}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>"""
+                
+                q = f"จงหาผลลัพธ์ของเศษส่วนซ้อนต่อไปนี้ ให้อยู่ในรูปเศษเกิน:<br><br>{draw_nested_frac(a, b, c)} = ?"
+                
+                step1_n, step1_d = (b * c + 1), c
+                sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ทำจากล่างขึ้นบน):</b><br>
+                <b>ขั้นที่ 1:</b> คิดก้อนล่างสุดก่อน คือ <b>{b} + 1/{c}</b><br>
+                👉 ทำส่วนให้เท่ากัน: ({b}×{c}/{c}) + 1/{c} = <b>{step1_n}/{step1_d}</b><br><br>
+                <b>ขั้นที่ 2:</b> พลิกเศษส่วน (เมื่อ 1 หารด้วยเศษส่วน ให้กลับเศษเป็นส่วน)<br>
+                👉 1 ÷ ({step1_n}/{step1_d}) = <b>{step1_d}/{step1_n}</b><br><br>
+                <b>ขั้นที่ 3:</b> นำไปบวกกับตัวหน้าสุด ({a})<br>
+                👉 {a} + {step1_d}/{step1_n} = ({a}×{step1_n}/{step1_n}) + {step1_d}/{step1_n}<br>
+                👉 ({a*step1_n} + {step1_d}) / {step1_n} = <b>{num}/{den}</b><br>
+                <b>ตอบ: {num}/{den}</b></span>"""
+
+            elif actual_sub_t == "งานและการทำงาน (ช่วยกันทำงาน)":
+                worker1 = random.choice(["ช่าง A", "พ่อ", "พี่ชาย"])
+                worker2 = random.choice(["ช่าง B", "ลูก", "น้องชาย"])
+                days_A = random.choice([10, 12, 15, 20])
+                days_B = random.choice([20, 30, 60])
+                while days_A == days_B: days_B = random.choice([20, 30, 60])
+                
+                lcm = (days_A * days_B) // math.gcd(days_A, days_B)
+                rate_A = lcm // days_A
+                rate_B = lcm // days_B
+                ans = lcm // (rate_A + rate_B)
+                
+                q = f"ในการทาสีบ้านหลังหนึ่ง ถ้าให้ <b>{worker1}</b> ทำคนเดียวจะเสร็จใน <b>{days_A} วัน</b> <br>แต่ถ้าให้ <b>{worker2}</b> ทำคนเดียวจะเสร็จใน <b>{days_B} วัน</b> <br>หากทั้งสองคนมา <b>ช่วยกันทาสี</b> บ้านหลังนี้จะเสร็จในกี่วัน?"
+                
+                sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เทคนิคสมมติปริมาณงาน):</b><br>
+                👉 เพื่อให้คิดง่ายขึ้น เราจะสมมติให้งานชิ้นนี้มีจำนวน "หน่วย" เท่ากับ ค.ร.น. ของเวลาทั้งสองคน<br>
+                👉 ค.ร.น. ของ {days_A} และ {days_B} คือ <b>{lcm} หน่วย</b> (สมมติว่าต้องทาสี {lcm} ตารางเมตร)<br><br>
+                <b>ขั้นที่ 1: หาความเร็วในการทำงานของแต่ละคน (ต่อ 1 วัน)</b><br>
+                👉 {worker1}: {lcm} ÷ {days_A} = ทำได้ <b>{rate_A} หน่วย/วัน</b><br>
+                👉 {worker2}: {lcm} ÷ {days_B} = ทำได้ <b>{rate_B} หน่วย/วัน</b><br><br>
+                <b>ขั้นที่ 2: หาความเร็วเมื่อช่วยกันทำ</b><br>
+                👉 ถ้ารวมพลังกัน 1 วันจะทำได้: {rate_A} + {rate_B} = <b>{rate_A + rate_B} หน่วย/วัน</b><br><br>
+                <b>ขั้นที่ 3: หาเวลาที่ใช้ทั้งหมด</b><br>
+                👉 เวลารวม = งานทั้งหมด ÷ ความเร็วที่ช่วยกัน<br>
+                👉 {lcm} ÷ {rate_A + rate_B} = <b>{ans} วัน</b><br>
+                <b>ตอบ: เสร็จใน {ans} วัน</b></span>"""
+
+            elif actual_sub_t == "แผนภาพเวนน์-ออยเลอร์ (เซต 2 วง)":
+                total = random.randint(40, 60)
+                both = random.randint(5, 15)
+                only_m = random.randint(10, 20)
+                only_e = random.randint(10, 20)
+                
+                like_m = only_m + both
+                like_e = only_e + both
+                neither = total - (only_m + only_e + both)
+                
+                q = f"นักเรียนห้องหนึ่งมี <b>{total} คน</b> จากการสำรวจพบว่า:<br>• มีคนชอบเรียนวิชาคณิตศาสตร์ <b>{like_m} คน</b><br>• มีคนชอบเรียนวิชาภาษาอังกฤษ <b>{like_e} คน</b><br>• มีคนชอบเรียน<b>ทั้งสองวิชา {both} คน</b><br>อยากทราบว่า มีนักเรียนที่ <b>ไม่ชอบเรียนทั้งสองวิชานี้เลย</b> กี่คน?"
+                
+                sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (วาดเซต 2 วง):</b><br>
+                👉 สูตร: n(A ∪ B) = n(A) + n(B) - n(A ∩ B)<br>
+                👉 จำนวนคนที่ชอบเรียน "อย่างน้อย 1 วิชา" = คนชอบคณิต + คนชอบอังกฤษ - คนชอบทั้งคู่ (เพราะถูกนับซ้ำไปแล้ว)<br>
+                👉 แทนค่า: {like_m} + {like_e} - {both} = <b>{like_m + like_e - both} คน</b><br><br>
+                <b>หาคนที่ไม่ชอบเลย:</b><br>
+                👉 นำจำนวนคนทั้งห้อง หักออกด้วยคนที่ชอบอย่างน้อย 1 วิชา<br>
+                👉 {total} - {like_m + like_e - both} = <b>{neither} คน</b><br>
+                <b>ตอบ: {neither} คน</b></span>"""
+
+            elif actual_sub_t == "โจทย์ปัญหาอัตราส่วนและสัดส่วน":
+                # อัตราส่วน A:B และ B:C
+                m1, m2 = random.randint(2, 4), random.randint(3, 5)
+                m3, m4 = random.randint(2, 4), random.randint(3, 5)
+                while math.gcd(m1, m2) > 1: m2 += 1
+                while math.gcd(m3, m4) > 1: m4 += 1
+                
+                b_lcm = (m2 * m3) // math.gcd(m2, m3)
+                a_ratio = m1 * (b_lcm // m2)
+                b_ratio = b_lcm
+                c_ratio = m4 * (b_lcm // m3)
+                
+                q = f"กำหนดให้อัตราส่วนเงินเก็บของ <b>ก : ข = {m1} : {m2}</b> <br>และอัตราส่วนเงินเก็บของ <b>ข : ค = {m3} : {m4}</b> <br>ถ้า <b>ค มีเงินเก็บ {c_ratio * 100} บาท</b> อยากทราบว่า <b>ก มีเงินเก็บกี่บาท?</b>"
+                
+                sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (เชื่อมโยงอัตราส่วน):</b><br>
+                <b>ขั้นที่ 1: ทำให้ตัวเชื่อม (ข) มีค่าเท่ากัน</b><br>
+                👉 ก : <b>ข</b> = {m1} : <b>{m2}</b><br>
+                👉 <b>ข</b> : ค = <b>{m3}</b> : {m4}<br>
+                👉 หา ค.ร.น. ของ {m2} และ {m3} ซึ่งก็คือ <b>{b_lcm}</b><br>
+                👉 ปรับอัตราส่วน ก:ข ใหม่ (คูณ {b_lcm//m2}): ก:ข = <b>{a_ratio} : {b_ratio}</b><br>
+                👉 ปรับอัตราส่วน ข:ค ใหม่ (คูณ {b_lcm//m3}): ข:ค = <b>{b_ratio} : {c_ratio}</b><br><br>
+                <b>ขั้นที่ 2: เขียนอัตราส่วนรวม ก : ข : ค</b><br>
+                👉 ก : ข : ค = <b>{a_ratio} : {b_ratio} : {c_ratio}</b><br><br>
+                <b>ขั้นที่ 3: เทียบสัดส่วนหาเงินของ ก</b><br>
+                👉 ค มีสัดส่วน {c_ratio} ส่วน คิดเป็นเงิน {c_ratio * 100} บาท (แสดงว่า 1 ส่วน = 100 บาท)<br>
+                👉 ก มีสัดส่วน {a_ratio} ส่วน คิดเป็นเงิน {a_ratio} × 100 = <b>{a_ratio * 100} บาท</b><br>
+                <b>ตอบ: ก มีเงินเก็บ {a_ratio * 100} บาท</b></span>"""
+
+            elif actual_sub_t == "โจทย์ปัญหาร้อยละ (กำไร-ขาดทุน ซับซ้อน)":
+                cost = random.choice([500, 1000, 1200, 2000])
+                markup = random.choice([20, 30, 40, 50])
+                discount = random.choice([10, 15, 20])
+                
+                price_tag = cost + (cost * markup // 100)
+                sell_price = price_tag - (price_tag * discount // 100)
+                profit = sell_price - cost
+                profit_percent = (profit * 100) / cost
+                
+                q = f"ร้านค้าซื้อรองเท้ามาคู่หนึ่งราคา <b>{cost} บาท</b> <br>นำมาติดป้ายขายโดย <b>บวกกำไรเพิ่ม {markup}%</b> <br>แต่เมื่อลูกค้ามาซื้อ ร้านค้าได้จัดโปรโมชั่น <b>ลดราคาให้ {discount}% จากป้าย</b> <br>สรุปแล้วร้านค้าขายรองเท้าคู่นี้ <b>ได้กำไร หรือ ขาดทุน กี่เปอร์เซ็นต์?</b>"
+                
+                sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (ร้อยละ 2 ขั้นตอน):</b><br>
+                <b>ขั้นที่ 1: หาราคาป้ายที่ติดไว้ (ทุน + {markup}%)</b><br>
+                👉 กำไร {markup}% ของทุน = ({markup}/100) × {cost} = {cost * markup // 100} บาท<br>
+                👉 นำไปบวกทุน จะได้ราคาป้าย = {cost} + {cost * markup // 100} = <b>{price_tag} บาท</b><br><br>
+                <b>ขั้นที่ 2: หาราคาขายจริง (ลด {discount}% จากป้าย)</b><br>
+                👉 ลดราคา = ({discount}/100) × ราคาป้าย ({price_tag}) = {price_tag * discount // 100} บาท<br>
+                👉 ราคาขายจริง = {price_tag} - {price_tag * discount // 100} = <b>{sell_price} บาท</b><br><br>
+                <b>ขั้นที่ 3: สรุปกำไร/ขาดทุน</b><br>
+                👉 ทุน {cost} ขายได้ {sell_price} แสดงว่า <b>ได้กำไร</b> = {sell_price} - {cost} = {profit} บาท<br>
+                👉 คิดเป็นเปอร์เซ็นต์ = (กำไร ÷ ทุน) × 100 = ({profit}/{cost}) × 100 = <b>{profit_percent:g}%</b><br>
+                <b>ตอบ: ได้กำไร {profit_percent:g}%</b></span>"""
+
+            elif actual_sub_t == "มุมภายในและมุมเข็มนาฬิกา":
+                polygon_n = random.randint(5, 10)
+                poly_names = {5:"ห้า", 6:"หก", 7:"เจ็ด", 8:"แปด", 9:"เก้า", 10:"สิบ"}
+                sum_interior = (polygon_n - 2) * 180
+                
+                q = f"จงหา <b>ผลรวมของมุมภายใน</b> ของรูป<b>{poly_names[polygon_n]}เหลี่ยม</b> ว่ามีขนาดกี่องศา?"
+                
+                sol = f"""<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด (สูตรมุมภายในรูปหลายเหลี่ยม):</b><br>
+                👉 <b>สูตร:</b> ผลรวมมุมภายใน = ( N - 2 ) × 180° &nbsp;&nbsp;&nbsp;<i>(เมื่อ N คือจำนวนเหลี่ยม)</i><br>
+                👉 <b>เหตุผล:</b> รูปหลายเหลี่ยมสามารถถูกลากเส้นแบ่งด้านในให้กลายเป็นรูปสามเหลี่ยมได้ (N-2) รูป และสามเหลี่ยมแต่ละรูปมีมุมรวม 180° เสมอ<br><br>
+                <b>แทนค่าในสูตร:</b><br>
+                👉 รูป{poly_names[polygon_n]}เหลี่ยม มี N = {polygon_n}<br>
+                👉 คำนวณ: ({polygon_n} - 2) × 180°<br>
+                👉 = {polygon_n - 2} × 180° = <b>{sum_interior}°</b><br>
+                <b>ตอบ: {sum_interior} องศา</b></span>"""
+            
+            # รวมกับ 5 หัวข้อ ป.6 ที่เคยเขียนไว้ก่อนหน้านี้ (แรเงาวงกลม, วิ่งไล่, จับมือ, ของผสม, Telescoping)
+            elif actual_sub_t == "พื้นที่ส่วนที่แรเงา (วงกลมซ้อนเหลี่ยม)":
+                side = random.choice([14, 28, 42, 56]) 
+                radius = side // 2
+                area_sq = side * side
+                area_cir = int((22/7) * radius * radius)
+                ans = area_sq - area_cir
+                
+                svg = f'<div style="text-align:center; margin:15px 0;"><svg width="200" height="200">'
+                svg += f'<rect x="10" y="10" width="180" height="180" fill="#bdc3c7" stroke="#2c3e50" stroke-width="3"/>'
+                svg += f'<circle cx="100" cy="100" r="90" fill="#ffffff" stroke="#2c3e50" stroke-width="2"/>'
+                svg += f'<line x1="10" y1="195" x2="190" y2="195" stroke="#e74c3c" stroke-width="2" stroke-dasharray="4,4"/>'
+                svg += f'<line x1="10" y1="190" x2="10" y2="200" stroke="#e74c3c" stroke-width="2"/>'
+                svg += f'<line x1="190" y1="190" x2="190" y2="200" stroke="#e74c3c" stroke-width="2"/>'
+                svg += f'<text x="100" y="215" font-family="Sarabun" font-size="16" font-weight="bold" fill="#c0392b" text-anchor="middle">{side} ซม.</text>'
+                svg += '</svg></div>'
+                q = f"จากรูป สี่เหลี่ยมจัตุรัสมีความยาวด้านละ <b>{side} เซนติเมตร</b> มีวงกลมแนบในพอดี<br>จงหาพื้นที่ของส่วนที่แรเงาตามมุมทั้งสี่? (กำหนดให้ <b>π = 22/7</b>)<br>{svg}"
+                frac_pi = f"<div style='display:inline-block; vertical-align:middle; text-align:center;'><div style='border-bottom:1px solid #2c3e50; padding:0 2px;'>22</div><div>7</div></div>"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 พื้นที่แรเงา = พื้นที่สี่เหลี่ยมจัตุรัส - พื้นที่วงกลม<br>👉 พื้นที่สี่เหลี่ยม = {side} × {side} = {area_sq:,} ตร.ซม.<br>👉 พื้นที่วงกลม = πr² = {frac_pi} × {radius} × {radius} = {area_cir:,} ตร.ซม.<br>👉 {area_sq:,} - {area_cir:,} = <b>{ans:,} ตร.ซม.</b><br><b>ตอบ: {ans:,} ตารางเซนติเมตร</b></span>"
+
+            elif actual_sub_t == "ความเร็ว ระยะทาง เวลา (รถไฟ/วิ่งไล่กัน)":
+                v_a, v_rel, t_head = random.randint(50, 80), random.choice([10, 20, 25, 30]), random.randint(1, 3)
+                v_b = v_a + v_rel
+                catch_time = (v_a * t_head) / v_rel
+                while not catch_time.is_integer():
+                    v_a, v_rel, t_head = random.randint(50, 80), random.choice([10, 20, 25, 30]), random.randint(1, 3)
+                    v_b, catch_time = v_a + v_rel, (v_a * t_head) / v_rel
+                catch_time, dist = int(catch_time), int(catch_time * v_b)
+                q = f"รถยนต์ A ขับออกจากเมืองด้วยความเร็ว <b>{v_a} กม./ชม.</b> หลังจากนั้นอีก <b>{t_head} ชั่วโมง</b> รถยนต์ B จึงขับตามออกไปด้วยความเร็ว <b>{v_b} กม./ชม.</b><br>รถยนต์ B จะใช้เวลาขับกี่ชั่วโมงจึงจะตามรถยนต์ A ทัน และจุดที่ตามทันอยู่ห่างจากเมืองกี่กิโลเมตร?"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ระยะห่างเริ่มต้น = รถ A นำไปก่อน = {v_a} × {t_head} = {v_a * t_head} กม.<br>👉 ความเร็วที่เข้าใกล้กัน (ความเร็วสัมพัทธ์) = {v_b} - {v_a} = {v_rel} กม./ชม.<br>👉 เวลาที่ใช้ = ระยะห่าง ÷ ความเร็วสัมพัทธ์ = {v_a * t_head} ÷ {v_rel} = <b>{catch_time} ชั่วโมง</b><br>👉 ระยะทาง = ความเร็วรถ B × เวลา = {v_b} × {catch_time} = <b>{dist:,} กิโลเมตร</b><br><b>ตอบ: ตามทันใน {catch_time} ชั่วโมง ที่ระยะ {dist:,} กม.</b></span>"
+
+            elif actual_sub_t == "การจับมือและการแข่งขัน (Combinatorics)":
+                n = random.randint(8, 20)
+                ans = n * (n - 1) // 2
+                q = f"ในงานเลี้ยงสังสรรค์ มีผู้เข้าร่วมงานทั้งหมด <b>{n} คน</b> <br>ถ้าทุกคนต้อง <b>จับมือทักทาย</b> กันให้ครบทุกคนแบบไม่ซ้ำกัน จะมีการจับมือเกิดขึ้นทั้งหมดกี่ครั้ง?"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 <b>สูตรลัดจับมือ:</b> ( N × (N - 1) ) ÷ 2<br>👉 แทนค่า: ({n} × {n-1}) ÷ 2 = <b>{ans} ครั้ง</b><br><b>ตอบ: {ans} ครั้ง</b></span>"
+
+            elif actual_sub_t == "โจทย์ปัญหาของผสม (ความเข้มข้น)":
+                vol1, c1, vol2, c2 = 200, 20, 300, 40
+                total_vol = vol1 + vol2
+                total_content = ((vol1 * c1) + (vol2 * c2)) / 100
+                final_c = int((total_content / total_vol) * 100)
+                q = f"น้ำเกลือขวดที่ 1 เข้มข้น <b>{c1}%</b> ปริมาตร <b>{vol1} มล.</b> ผสมกับน้ำเกลือขวดที่ 2 เข้มข้น <b>{c2}%</b> ปริมาตร <b>{vol2} มล.</b><br>สารละลายผสมใหม่ จะมีความเข้มข้นกี่เปอร์เซ็นต์?"
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ปริมาณเกลือขวด 1 = ({c1}/100) × {vol1} = {int((vol1 * c1)/100)} มล.<br>👉 ปริมาณเกลือขวด 2 = ({c2}/100) × {vol2} = {int((vol2 * c2)/100)} มล.<br>👉 เกลือรวม = {int(total_content)} มล. | ปริมาตรรวม = {total_vol} มล.<br>👉 ความเข้มข้น = ({int(total_content)} ÷ {total_vol}) × 100 = <b>{final_c}%</b><br><b>ตอบ: {final_c}%</b></span>"
+
+            elif actual_sub_t == "อนุกรมเศษส่วน (Telescoping Sum)":
+                diff = random.choice([2, 3])
+                end_idx = random.choice([10, 15, 20])
+                nn_2 = 1 + ((end_idx+1)*diff)
+                q = f"จงหาผลบวกอนุกรม: <br>1/(1×{1+diff}) + 1/({1+diff}×{1+2*diff}) + ... + 1/({1+end_idx*diff}×{nn_2})"
+                ans_num = nn_2 - 1
+                ans_den = nn_2 * 1 * diff
+                g = math.gcd(ans_num, ans_den)
+                sol = f"<span style='color:#2c3e50;'><b>วิธีทำ (สูตรลัด Telescoping):</b><br>👉 ผลรวม = (1/ระยะห่าง) × (1/หัวแรก - 1/หางสุดท้าย)<br>👉 (1/{diff}) × (1/1 - 1/{nn_2}) = (1/{diff}) × ({nn_2-1}/{nn_2})<br>👉 ทอนเป็นเศษส่วนอย่างต่ำ จะได้ <b>{ans_num//g}/{ans_den//g}</b><br><b>ตอบ: {ans_num//g}/{ans_den//g}</b></span>"
+
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
