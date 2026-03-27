@@ -6127,8 +6127,8 @@ def create_page(grade, sub_t, questions, is_key=False, q_margin="20px", ws_heigh
     <div class="header"><h2>{title} - {grade}</h2><p><b>หมวดหมู่:</b> {sub_t}</p></div>
     {student_info}"""
     
-    for i, item in enumerate(questions, 1):
-        html += f'<div class="q-box"><b>ข้อที่ {i}.</b> '
+    for i, item in enumerate(qs):
+        html_content += f'<div class="q-box"><b>ข้อที่ {i+1}.</b> {item["question"]} <br><div class="workspace">...'
         if is_key:
             if "(แบบตั้งหลัก)" in sub_t or "หารยาว" in sub_t or "การคูณและการหารทศนิยม" in sub_t or "การบวกและการลบทศนิยม" in sub_t: 
                 html += f'{item["solution"]}'
