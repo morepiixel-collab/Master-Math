@@ -762,10 +762,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
         
         while attempts < 300:
             actual_sub_t = sub_t
-            if sub_t == "แบบทดสอบรวมปลายภาค":
-                all_mains = [m for m in curriculum_db[grade].keys()]
-                rand_main = random.choice(all_mains)
-                actual_sub_t = random.choice(curriculum_db[grade][rand_main])
 
             prefix = get_prefix(grade)
 
