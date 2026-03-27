@@ -5797,147 +5797,197 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
         # เริ่มหมวด ป.6 (ระดับ Gifted / สอบเข้า ม.1)
         # ==========================================
             elif grade == "ป.6":
-             if actual_sub_t == "การหา ห.ร.ม.":
+            # ==========================================
+            # 1. การหา ห.ร.ม.
+            # ==========================================
+            if actual_sub_t == "การหา ห.ร.ม.":
                 is_challenge = st.session_state.get("challenge_mode", False)
                 import math
                 
                 if not is_challenge:
-                    # โหมดธรรมดา: ห.ร.ม. 3 จำนวน
-                    factor = random.choice([6, 8, 12, 15, 24])
+                    factor = random.choice([4, 5, 6, 8, 12])
+                    n1 = factor * random.randint(2, 5)
+                    n2 = factor * random.randint(6, 9)
+                    nums = [n1, n2]
+                    nums_str = f"{n1} และ {n2}"
+                else:
+                    factor = random.choice([6, 8, 10, 12, 15])
                     n1 = factor * random.randint(2, 4)
                     n2 = factor * random.randint(5, 7)
                     n3 = factor * random.randint(8, 11)
+                    nums = [n1, n2, n3]
+                    nums_str = f"{n1}, {n2} และ {n3}"
+                
+                q = f"จงหา ห.ร.ม. (หารร่วมมาก) ของ <b>{nums_str}</b>"
+                
+                gcd_val = math.gcd(nums[0], nums[1])
+                if len(nums) == 3:
+                    gcd_val = math.gcd(gcd_val, nums[2])
                     
-                    q = f"จงหา ห.ร.ม. (หารร่วมมาก) ของ <b>{n1}, {n2} และ {n3}</b>"
-                    
-                    gcd_val = math.gcd(math.gcd(n1, n2), n3)
-                    
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
-                    👉 <b>ขั้นที่ 1:</b> นำ <b>{n1}, {n2}, {n3}</b> ไปตั้งหารสั้น โดยหาจำนวนเฉพาะที่หาร <b>"ลงตัวทุกจำนวน"</b><br>
-                    👉 <b>ขั้นที่ 2:</b> นำตัวหารทั้งหมดมาคูณกัน (คูณเป็นรูปตัว I)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ผลคูณตัวหารร่วมทั้งหมดคือ <b>{gcd_val}</b><br>
-                    <b>ตอบ: ห.ร.ม. คือ {gcd_val}</b></span>'''
-                    
-                else:
-                    # โหมดท้าทาย: ห.ร.ม. แบบเหลือเศษ
-                    gcd_target = random.choice([12, 15, 18, 24, 30])
-                    r = random.randint(2, 9)
-                    
-                    A = (gcd_target * random.randint(3, 5)) + r
-                    B = (gcd_target * random.randint(6, 8)) + r
-                    C = (gcd_target * random.randint(9, 12)) + r
-                    
-                    q = f"<b>[ข้อสอบเข้า ม.1]</b> จงหาจำนวนนับที่ <b>มากที่สุด</b> ที่นำไปหาร <b>{A}, {B} และ {C}</b> แล้วเหลือเศษ <b>{r} เท่ากันทุกจำนวน</b>"
-                    
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิค ห.ร.ม. แบบเหลือเศษ):</b><br>
-                    👉 <b>ขั้นที่ 1: วิเคราะห์โจทย์</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 คีย์เวิร์ด:</b> "นำไปหาร...แล้วเหลือเศษ" และถามหาค่า "มากที่สุด" นี่คือโจทย์ <b>ห.ร.ม. แบบเหลือเศษ</b> ครับ!</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>สูตรลัด:</b> ให้นำตัวเลขทั้งหมดไป <b>"ลบเศษทิ้งก่อน"</b> แล้วค่อยนำผลลัพธ์ไปหา ห.ร.ม.<br>
-                    👉 <b>ขั้นที่ 2: ลบเศษออกจากทุกจำนวน</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {A} - {r} = <b>{A - r}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {B} - {r} = <b>{B - r}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {C} - {r} = <b>{C - r}</b><br>
-                    👉 <b>ขั้นที่ 3: หา ห.ร.ม. ของจำนวนใหม่</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; นำ <b>{A-r}, {B-r}, {C-r}</b> ไปตั้งหารสั้นเพื่อหา ห.ร.ม.<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ ห.ร.ม. = <span style="color:#e74c3c;"><b>{gcd_target}</b></span><br>
-                    <b>ตอบ: จำนวนนับที่มากที่สุดนั้นคือ {gcd_target}</b></span>'''
+                def generate_short_division_gcd(numbers):
+                    current_nums = list(numbers)
+                    divisors = []
+                    div_html = '<div style="font-family: monospace; font-size: 18px; margin-left: 20px;">'
+                    while True:
+                        common_div = None
+                        for d in [2, 3, 5, 7, 11, 13]:
+                            if all(n % d == 0 for n in current_nums):
+                                common_div = d
+                                break
+                        if not common_div:
+                            break 
+                        divisors.append(common_div)
+                        div_html += f'<div style="display: flex; align-items: center;">'
+                        div_html += f'<div style="width: 30px; text-align: right; color: #e74c3c; font-weight: bold;">{common_div}</div>'
+                        div_html += f'<div style="margin: 0 10px;">|</div>'
+                        div_html += f'<div style="border-bottom: 2px solid #2c3e50; padding-bottom: 2px; letter-spacing: 15px;">{" ".join(str(n) for n in current_nums)}</div>'
+                        div_html += f'</div>'
+                        current_nums = [n // common_div for n in current_nums]
+                        
+                    div_html += f'<div style="display: flex; align-items: center;">'
+                    div_html += f'<div style="width: 30px;"></div>'
+                    div_html += f'<div style="margin: 0 10px; color: transparent;">|</div>'
+                    div_html += f'<div style="letter-spacing: 15px; border-bottom: 2px double #2c3e50; font-weight: bold;">{" ".join(str(n) for n in current_nums)}</div>'
+                    div_html += f'</div></div>'
+                    return div_html, divisors
 
+                div_ui, div_list = generate_short_division_gcd(nums)
+                calc_str = " × ".join(str(d) for d in div_list) if div_list else "1"
+
+                sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (การตั้งหารสั้น):</b><br>
+                👉 <b>ขั้นที่ 1: ตั้งหารสั้น</b><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; หาจำนวนเฉพาะที่สามารถหารตัวเลข <b>ทั้งหมด</b> ลงตัวมาหารไปเรื่อยๆ<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>⚠️ กฎของ ห.ร.ม.:</b> ตัวหารจะต้องหารเลข "ทุกตัว" ลงตัวเท่านั้น ถ้ามีตัวไหนหารไม่ลงตัว ถือว่าสิ้นสุดการหารทันที!</span><br>
+                <br>
+                {div_ui}
+                <br>
+                👉 <b>ขั้นที่ 2: สรุปผล ห.ร.ม.</b><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>วิธีคิด:</b> นำ "ตัวหาร" ด้านหน้าทั้งหมด (ตัวเลขสีแดง) มาคูณกัน (จำง่ายๆ ว่าคูณเป็นรูปตัว <b>I</b>)</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; ห.ร.ม. = {calc_str}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; ห.ร.ม. = <span style="color:#27ae60;"><b>{gcd_val}</b></span><br>
+                <b>ตอบ: ห.ร.ม. ของ {nums_str} คือ {gcd_val}</b></span>'''
+
+            # ==========================================
+            # 2. การหา ค.ร.น.
+            # ==========================================
             elif actual_sub_t == "การหา ค.ร.น.":
                 is_challenge = st.session_state.get("challenge_mode", False)
                 import math
                 
                 if not is_challenge:
+                    n1 = random.randint(8, 20)
+                    n2 = random.randint(12, 30)
+                    nums = [n1, n2]
+                    nums_str = f"{n1} และ {n2}"
+                else:
                     n1 = random.randint(12, 24)
                     n2 = random.randint(15, 36)
                     n3 = random.randint(18, 40)
-                    
-                    q = f"จงหา ค.ร.น. (คูณร่วมน้อย) ของ <b>{n1}, {n2} และ {n3}</b>"
-                    
-                    lcm_val = n1
-                    for n in [n2, n3]:
-                        lcm_val = (lcm_val * n) // math.gcd(lcm_val, n)
+                    nums = [n1, n2, n3]
+                    nums_str = f"{n1}, {n2} และ {n3}"
+                
+                q = f"จงหา ค.ร.น. (คูณร่วมน้อย) ของ <b>{nums_str}</b>"
+                
+                def generate_short_division_lcm(numbers):
+                    current_nums = list(numbers)
+                    divisors = []
+                    div_html = '<div style="font-family: monospace; font-size: 18px; margin-left: 20px;">'
+                    while True:
+                        common_div = None
+                        for d in [2, 3, 5, 7, 11, 13]:
+                            divisible_count = sum(1 for n in current_nums if n % d == 0)
+                            if divisible_count >= 2 or (len(current_nums)==2 and divisible_count==2):
+                                common_div = d
+                                break
+                        if not common_div:
+                            break 
+                        divisors.append(common_div)
+                        div_html += f'<div style="display: flex; align-items: center;">'
+                        div_html += f'<div style="width: 30px; text-align: right; color: #2980b9; font-weight: bold;">{common_div}</div>'
+                        div_html += f'<div style="margin: 0 10px;">|</div>'
+                        div_html += f'<div style="border-bottom: 2px solid #2c3e50; padding-bottom: 2px; letter-spacing: 15px;">{" ".join(str(n) for n in current_nums)}</div>'
+                        div_html += f'</div>'
+                        current_nums = [(n // common_div if n % common_div == 0 else n) for n in current_nums]
                         
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด:</b><br>
-                    👉 <b>ขั้นที่ 1:</b> นำ <b>{n1}, {n2}, {n3}</b> ไปตั้งหารสั้น<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>⚠️ กฎ ค.ร.น.:</b> หารลงตัวแค่ 2 จำนวนขึ้นไปก็หารต่อได้! ตัวไหนหารไม่ลงตัวให้ดึงเลขนั้นลงมา</span><br>
-                    👉 <b>ขั้นที่ 2:</b> นำตัวหารด้านหน้า และ เศษที่เหลือด้านล่าง มาคูณกันทั้งหมด (รูปตัว L)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ผลคูณคือ <b>{lcm_val}</b><br>
-                    <b>ตอบ: ค.ร.น. คือ {lcm_val}</b></span>'''
-                    
-                else:
-                    # โหมดท้าทาย: ค.ร.น. แบบเหลือเศษ
-                    t1 = random.choice([8, 10, 12])
-                    t2 = random.choice([15, 18, 20])
-                    t3 = random.choice([24, 25, 30])
-                    r = random.randint(3, 7)
-                    
-                    lcm_base = t1
-                    for n in [t2, t3]:
-                        lcm_base = (lcm_base * n) // math.gcd(lcm_base, n)
-                        
-                    ans = lcm_base + r
-                    
-                    q = f"<b>[ข้อสอบเข้า ม.1]</b> จงหาจำนวนนับที่ <b>น้อยที่สุด</b> ที่เมื่อนำ <b>{t1}, {t2} และ {t3}</b> ไปหาร แล้วจะเหลือเศษ <b>{r} เท่ากันเสมอ</b>"
-                    
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (เทคนิค ค.ร.น. แบบเหลือเศษ):</b><br>
-                    👉 <b>ขั้นที่ 1: วิเคราะห์โจทย์</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 คีย์เวิร์ด:</b> "นำเลขไปหาร..." และถามหาค่า "น้อยที่สุด" นี่คือโจทย์ <b>ค.ร.น. แบบเหลือเศษ</b> ครับ!</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <b>สูตรลัด:</b> ให้หา ค.ร.น. ตามปกติก่อน แล้วค่อยนำผลลัพธ์มา <b>"บวกเศษเพิ่ม"</b> ทีหลัง<br>
-                    👉 <b>ขั้นที่ 2: หา ค.ร.น. ของตัวเลขทั้งหมด</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; หา ค.ร.น. ของ <b>{t1}, {t2}, {t3}</b> โดยการตั้งหารสั้น<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ ค.ร.น. = <b>{lcm_base}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#95a5a6;">(หมายความว่า {lcm_base} คือเลขที่น้อยที่สุดที่หารลงตัวพอดี ไม่มีเศษ)</span><br>
-                    👉 <b>ขั้นที่ 3: บวกเศษเข้าไป</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; โจทย์ต้องการให้เหลือเศษ {r} เสมอ จึงต้องบวกเพิ่มเข้าไป<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {lcm_base} + {r} = <span style="color:#e74c3c;"><b>{ans}</b></span><br>
-                    <b>ตอบ: จำนวนนับที่น้อยที่สุดนั้นคือ {ans}</b></span>'''
+                    div_html += f'<div style="display: flex; align-items: center;">'
+                    div_html += f'<div style="width: 30px;"></div>'
+                    div_html += f'<div style="margin: 0 10px; color: transparent;">|</div>'
+                    div_html += f'<div style="letter-spacing: 15px; border-bottom: 2px double #2c3e50; font-weight: bold; color: #8e44ad;">{" ".join(str(n) for n in current_nums)}</div>'
+                    div_html += f'</div></div>'
+                    return div_html, divisors, current_nums
 
+                div_ui, div_list, remainders = generate_short_division_lcm(nums)
+                
+                lcm_val = nums[0]
+                for n in nums[1:]:
+                    lcm_val = (lcm_val * n) // math.gcd(lcm_val, n)
+                
+                calc_factors = div_list + [r for r in remainders if r > 1] 
+                calc_str = " × ".join(str(d) for d in calc_factors)
+
+                sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (การตั้งหารสั้น):</b><br>
+                👉 <b>ขั้นที่ 1: ตั้งหารสั้น</b><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; หาจำนวนเฉพาะมาหาร <br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>⚠️ กฎของ ค.ร.น.:</b> ไม่จำเป็นต้องหารลงตัวทุกตัว <b>แค่หารลงตัว 2 จำนวนขึ้นไปก็หารต่อได้เลย!</b> ตัวไหนหารไม่ลงตัว ให้ดึงเลขนั้นลงมาด้านล่างครับ</span><br>
+                <br>
+                {div_ui}
+                <br>
+                👉 <b>ขั้นที่ 2: สรุปผล ค.ร.น.</b><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>วิธีคิด:</b> นำ "ตัวหารด้านหน้า" (สีฟ้า) <b>มาคูณรวมกับ</b> "เศษที่เหลือด้านล่าง" (สีม่วง) ให้หมดทุกตัว (จำง่ายๆ ว่าคูณเป็นรูปตัว <b>L</b>)</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp; ค.ร.น. = {calc_str}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp; ค.ร.น. = <span style="color:#27ae60;"><b>{lcm_val}</b></span><br>
+                <b>ตอบ: ค.ร.น. ของ {nums_str} คือ {lcm_val}</b></span>'''
+
+            # ==========================================
+            # 3. โจทย์ปัญหา ห.ร.ม. และ ค.ร.น.
+            # ==========================================
             elif actual_sub_t == "โจทย์ปัญหา ห.ร.ม. และ ค.ร.น. (ขั้นสูง)":
                 is_challenge = st.session_state.get("challenge_mode", False)
                 import math
-                scenario = random.choice(["gcd_tree", "lcm_bell_3rd"])
+                scenario = random.choice(["gcd_tile", "lcm_bell"])
                 
-                if scenario == "gcd_tree":
-                    gcd_target = random.choice([4, 5, 6, 8])
-                    width = gcd_target * random.randint(5, 9)
-                    length = gcd_target * random.randint(10, 15)
+                if scenario == "gcd_tile":
+                    gcd_target = random.choice([4, 5, 6, 8, 12])
+                    w_mul = random.randint(3, 7)
+                    l_mul = random.randint(8, 12)
+                    width = gcd_target * w_mul
+                    length = gcd_target * l_mul
                     
-                    q = f"<b>[แนวข้อสอบ Gifted]</b> สระน้ำรูปสี่เหลี่ยมผืนผ้า กว้าง <b>{width} ม.</b> ยาว <b>{length} ม.</b> ต้องการปลูกต้นไม้รอบขอบสระน้ำ ให้แต่ละต้นมีระยะห่างเท่าๆ กัน และให้ห่างกัน <b>'มากที่สุด'</b> โดยต้องปลูกที่มุมสระทั้ง 4 มุมด้วย<br>จะต้องใช้ต้นไม้ทั้งหมด<b>กี่ต้น?</b>"
+                    q = f"<b>[แนวข้อสอบเข้า ม.1]</b> แผ่นไม้อัดกว้าง <b>{width}</b> เซนติเมตร ยาว <b>{length}</b> เซนติเมตร ต้องการตัดเป็นแผ่นรูปสี่เหลี่ยมจัตุรัสขนาดเท่าๆ กัน ให้มีขนาด <b>'ใหญ่ที่สุด'</b> โดยไม่เหลือเศษ<br>อยากทราบว่าจะตัดแผ่นไม้ได้<b>ทั้งหมดกี่แผ่น?</b>"
                     
-                    space = math.gcd(width, length)
-                    perimeter = 2 * (width + length)
-                    trees = perimeter // space
+                    sq_size = math.gcd(width, length)
+                    w_pieces = width // sq_size
+                    l_pieces = length // sq_size
+                    total_pieces = w_pieces * l_pieces
                     
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ประยุกต์ ห.ร.ม. กับ เรขาคณิต):</b><br>
-                    👉 <b>ขั้นที่ 1: หาระยะห่างของต้นไม้ (หา ห.ร.ม.)</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; คำว่า "ห่างเท่าๆ กันและมากที่สุด" หมายถึงให้หา <b>ห.ร.ม.</b> ของความกว้างและความยาว<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ห.ร.ม. ของ {width} และ {length} คือ <b>{space} เมตร</b> (นี่คือระยะห่างของต้นไม้แต่ละต้น)<br>
-                    👉 <b>ขั้นที่ 2: หาความยาวรอบสระน้ำ</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ความยาวรอบรูป = 2 × (กว้าง + ยาว)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ความยาวรอบรูป = 2 × ({width} + {length}) = <b>{perimeter} เมตร</b><br>
-                    👉 <b>ขั้นที่ 3: หาจำนวนต้นไม้ <span style="color:#e74c3c;">(จุดหลอกข้อสอบ!)</span></b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 ทริคสำคัญ:</b> การปลูกต้นไม้แบบ "รอบวงปิด" (เช่น สี่เหลี่ยม, วงกลม) จำนวนต้นไม้จะเท่ากับ จำนวนช่องว่างพอดี! ไม่ต้องบวก 1 หรือลบ 1 ครับ</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จำนวนต้นไม้ = ความยาวรอบสระ ÷ ระยะห่าง<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จำนวนต้นไม้ = {perimeter} ÷ {space} = <span style="color:#27ae60;"><b>{trees} ต้น</b></span><br>
-                    <b>ตอบ: ต้องใช้ต้นไม้ทั้งหมด {trees} ต้น</b></span>'''
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (โจทย์ปัญหา ห.ร.ม.):</b><br>
+                    👉 <b>ขั้นที่ 1: วิเคราะห์โจทย์ (หาคีย์เวิร์ด)</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 คีย์เวิร์ด:</b> การ "ตัดแบ่งให้เท่ากัน" และต้องการขนาด "ใหญ่ที่สุด" เป็นสัญญาณว่าเราต้องหา <b>ห.ร.ม.</b> ของความกว้างและความยาวครับ!</span><br>
+                    👉 <b>ขั้นที่ 2: หาขนาดของสี่เหลี่ยมจัตุรัส (หา ห.ร.ม.)</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; หา ห.ร.ม. ของ {width} และ {length}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; นำตัวเลขไปตั้งหารสั้น จะได้ ห.ร.ม. = <span style="color:#e74c3c;"><b>{sq_size}</b></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แสดงว่า สี่เหลี่ยมจัตุรัสจะมีขนาด <b>{sq_size} × {sq_size} ซม.</b><br>
+                    👉 <b>ขั้นที่ 3: หาจำนวนแผ่นที่ตัดได้ <span style="color:#e74c3c;">(ระวังโดนหลอก!)</span></b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>⚠️ จุดพลาดประจำ:</b> เด็กหลายคนมักจะตอบ {sq_size} เลย ซึ่งผิดครับ! {sq_size} คือ "ขนาด" ไม่ใช่ "จำนวนแผ่น"</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ด้านกว้างตัดได้: {width} ÷ {sq_size} = <b>{w_pieces} แผ่น</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ด้านยาวตัดได้: {length} ÷ {sq_size} = <b>{l_pieces} แผ่น</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จำนวนแผ่นรวมทั้งหมด = {w_pieces} × {l_pieces} = <span style="color:#27ae60;"><b>{total_pieces} แผ่น</b></span><br>
+                    <b>ตอบ: ตัดแผ่นไม้ได้ทั้งหมด {total_pieces} แผ่น</b></span>'''
                     
                 else:
-                    t1 = random.choice([12, 15, 20])
-                    t2 = random.choice([18, 30])
-                    t3 = random.choice([40, 45])
+                    t1 = random.choice([10, 15, 20])
+                    t2 = random.choice([25, 30])
+                    t3 = random.choice([40, 45, 60])
                     
                     lcm_val = t1
                     for n in [t2, t3]:
                         lcm_val = (lcm_val * n) // math.gcd(lcm_val, n)
                         
-                    start_hr = random.randint(6, 8)
-                    start_min = random.choice(["00", "15"])
+                    start_hr = random.randint(6, 9)
+                    start_min = random.choice(["00", "15", "30"])
                     
-                    target_time = random.choice([3, 4])
-                    total_wait_mins = lcm_val * (target_time - 1)
-                    
-                    add_hrs = total_wait_mins // 60
-                    add_mins = total_wait_mins % 60
+                    add_hrs = lcm_val // 60
+                    add_mins = lcm_val % 60
                     
                     end_min = int(start_min) + add_mins
                     end_hr = start_hr + add_hrs
@@ -5946,111 +5996,103 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         end_min -= 60
                     end_time_str = f"{end_hr:02d}:{end_min:02d}"
                     
-                    q = f"<b>[แนวข้อสอบ Gifted]</b> รถไฟ 3 ขบวน ออกเดินทางทุกๆ <b>{t1}, {t2} และ {t3} นาที</b> ตามลำดับ<br>ถ้ารถไฟทั้ง 3 ขบวนออกเดินทางพร้อมกัน <b>ครั้งที่ 1</b> เวลา <b>{start_hr:02d}:{start_min} น.</b><br>รถไฟทั้ง 3 ขบวนนี้จะออกเดินทางพร้อมกันเป็น <b>ครั้งที่ {target_time}</b> ในเวลาใด?"
+                    q = f"<b>[แนวข้อสอบเข้า ม.1]</b> สถานีรถไฟมีรถไฟ 3 ขบวน ออกเดินทางทุกๆ <b>{t1} นาที, {t2} นาที และ {t3} นาที</b> ตามลำดับ<br>ถ้ารถไฟทั้ง 3 ขบวนออกเดินทางพร้อมกันครั้งแรกเวลา <b>{start_hr:02d}:{start_min} น.</b><br>รถไฟทั้ง 3 ขบวนนี้จะออกเดินทาง <b>พร้อมกันอีกครั้ง</b> ในเวลาใด?"
                     
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ค.ร.น. สับขาหลอก):</b><br>
-                    👉 <b>ขั้นที่ 1: หาเวลารอบปกติ (หา ค.ร.น.)</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; หา ค.ร.น. ของ {t1}, {t2}, {t3} จะได้ = <b>{lcm_val} นาที</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; แสดงว่ารถไฟจะออกพร้อมกัน 1 รอบ ใช้เวลา {lcm_val} นาที<br>
-                    👉 <b>ขั้นที่ 2: วิเคราะห์คำว่า "ครั้งที่ {target_time}"</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>⚠️ จุดพลาดประจำ:</b> โจทย์บอกว่าเวลาเริ่มคือ "ครั้งที่ 1" ไปแล้ว ถ้าต้องการให้ดังครั้งที่ {target_time} แปลว่าต้องรอรอบ ค.ร.น. อีกแค่ <b>{target_time - 1} รอบ</b>เท่านั้น!</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; เวลาที่ต้องรอทั้งหมด = {target_time - 1} × {lcm_val} = <b>{total_wait_mins} นาที</b><br>
-                    👉 <b>ขั้นที่ 3: แปลงหน่วยและบวกเวลา</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; {total_wait_mins} นาที = <b>{add_hrs} ชั่วโมง {add_mins} นาที</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; เริ่มต้น {start_hr:02d}:{start_min} น. + {add_hrs} ชม. {add_mins} นาที = <span style="color:#27ae60;"><b>{end_time_str} น.</b></span><br>
-                    <b>ตอบ: จะออกพร้อมกันครั้งที่ {target_time} เวลา {end_time_str} น.</b></span>'''
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (โจทย์ปัญหา ค.ร.น.):</b><br>
+                    👉 <b>ขั้นที่ 1: วิเคราะห์โจทย์ (หาคีย์เวิร์ด)</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 คีย์เวิร์ด:</b> การเกิดเหตุการณ์ซ้ำๆ และถามหาเวลาที่จะ "พร้อมกันอีกครั้ง" เป็นการหาจุดร่วมในอนาคต ดังนั้นต้องใช้ <b>ค.ร.น.</b> ครับ!</span><br>
+                    👉 <b>ขั้นที่ 2: หาเวลาที่ใช้ (หา ค.ร.น.)</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; หา ค.ร.น. ของ {t1}, {t2} และ {t3} (หน่วยเป็นนาที)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; นำไปตั้งหารสั้น จะได้ ค.ร.น. = <span style="color:#2980b9;"><b>{lcm_val} นาที</b></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;">นั่นหมายความว่า อีก {lcm_val} นาทีข้างหน้า รถไฟจะออกพร้อมกันอีกครั้ง!</span><br>
+                    👉 <b>ขั้นที่ 3: แปลงหน่วยเวลาและบวกเพิ่ม</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แปลง {lcm_val} นาที ให้เป็นชั่วโมง<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; {lcm_val} นาที = <b>{add_hrs} ชั่วโมง {add_mins} นาที</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; นำไปบวกกับเวลาเริ่มต้น ({start_hr:02d}:{start_min} น.)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้เวลา: <span style="color:#27ae60;"><b>{end_time_str} น.</b></span><br>
+                    <b>ตอบ: รถไฟจะออกพร้อมกันอีกครั้งเวลา {end_time_str} น.</b></span>'''
 
+            # ==========================================
+            # 4. กฎการหารลงตัว
+            # ==========================================
             elif actual_sub_t == "กฎการหารลงตัว (Divisibility Rules)":
                 is_challenge = st.session_state.get("challenge_mode", False)
                 import math
                 
                 if not is_challenge:
-                    valid_found = False
-                    while not valid_found:
-                        d1 = random.randint(1, 9)
-                        d2 = random.randint(0, 9)
-                        d3 = random.randint(0, 9)
-                        d4 = random.randint(1, 9)
-                        diff = abs((d1 + d3) - (d2 + d4))
-                        if diff == 0 or diff % 11 == 0:
-                            valid_found = True
-                            
-                    hide_pos = random.choice([2, 3])
-                    if hide_pos == 2:
-                        ans_A = d2
-                        q_str = f"{d1}A{d3}{d4}"
-                        sum_odd_str = f"{d1} + {d3} = {d1+d3}"
-                        sum_even_str = f"A + {d4}"
-                        known_sum = d1+d3
-                        un_part = d4
-                    else:
-                        ans_A = d3
-                        q_str = f"{d1}{d2}A{d4}"
-                        sum_odd_str = f"{d1} + A"
-                        sum_even_str = f"{d2} + {d4} = {d2+d4}"
-                        known_sum = d2+d4
-                        un_part = d1
+                    n1 = random.randint(2, 6)
+                    n2 = random.randint(1, 5)
+                    n3 = random.randint(1, 5)
                     
-                    q = f"<b>[เทคนิคการหารลงตัว]</b> กำหนดให้จำนวน 4 หลักคือ <b>{q_str}</b> สามารถหารด้วย <b>11 ลงตัว</b> พอดี<br>จงหาว่าตัวเลข <b>A</b> คือเลขโดดใด?"
-                    
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (กฎแม่ 11):</b><br>
-                    👉 <b>ขั้นที่ 1: ทบทวนกฎแม่ 11</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 กฎทองคำ:</b> ให้หาผลบวกของเลขหลักเว้นหลัก แล้วนำผลบวกทั้งสองชุดมาลบกัน ถ้าผลลบเป็น <b>0 หรือ 11</b> แสดงว่าหาร 11 ลงตัวครับ</span><br>
-                    👉 <b>ขั้นที่ 2: จับคู่ผลบวกหลักเว้นหลัก</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ชุดที่ 1 (หลักที่ 1 และ 3): {sum_odd_str}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ชุดที่ 2 (หลักที่ 2 และ 4): {sum_even_str}<br>
-                    👉 <b>ขั้นที่ 3: หาค่า A</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; เพื่อให้ผลลบของสองชุดเป็น 0 (ทำให้ชุดที่ 1 เท่ากับ ชุดที่ 2)<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; เราจะต้องทำให้ {un_part} + A = {known_sum}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น A = {known_sum} - {un_part} = <span style="color:#27ae60;"><b>{ans_A}</b></span><br>
-                    <b>ตอบ: ตัวเลข A คือ {ans_A}</b></span>'''
-                    
-                else:
-                    target_B = random.choice([0, 5])
-                    n1 = random.randint(3, 8)
-                    n2 = random.randint(1, 6)
-                    n3 = random.randint(1, 9)
-                    
-                    sum_others = n1 + n2 + n3 + target_B
+                    sum_others = n1 + n2 + n3
                     remainder = sum_others % 9
                     target_A = (9 - remainder) % 9
-                    if target_A == 0 and target_B == 0: target_A = 9
+                    if target_A == 0: target_A = 9 
                     
-                    q = f"<b>[ข้อสอบเข้า ม.1 ห้อง Gifted]</b> กำหนดให้จำนวน 5 หลักคือ <b>{n1}{n2}A{n3}B</b> สามารถหารด้วย <b>45 ลงตัว</b> พอดี<br>ถ้ากำหนดให้ <b>B เป็นเลข{'คู่' if target_B==0 else 'คี่'}</b> จงหาว่าตัวเลข <b>A และ B</b> มีค่าเท่าใด?"
+                    num_str = f"{n1}A{n2}{n3}"
                     
-                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (วิเคราะห์การหารด้วย 45):</b><br>
-                    👉 <b>ขั้นที่ 1: แตกตัวประกอบของ 45</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; การที่จำนวนใดจะหาร 45 ลงตัว แสดงว่าจำนวนนั้นต้องหารด้วย <b>5 และ 9 ลงตัว</b> พร้อมกันครับ! (เพราะ 5 × 9 = 45)<br>
-                    👉 <b>ขั้นที่ 2: หาค่า B (ใช้กฎแม่ 5)</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 กฎแม่ 5:</b> ตัวเลขต้องลงท้ายด้วย <b>0 หรือ 5 เท่านั้น</b></span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; โจทย์ระบุชัดเจนว่า B เป็นเลข{'คู่' if target_B==0 else 'คี่'} ดังนั้น <b>B = <span style="color:#2980b9;">{target_B}</span></b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; จำนวนตอนนี้คือ: <b>{n1}{n2}A{n3}{target_B}</b><br>
-                    👉 <b>ขั้นที่ 3: หาค่า A (ใช้กฎแม่ 9)</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 กฎแม่ 9:</b> ผลบวกของเลขโดดทุกหลักรวมกัน ต้องหารด้วย 9 ลงตัว</span><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; นำเลขที่เราทราบมารวมกัน: {n1} + {n2} + {n3} + {target_B} = <b>{sum_others}</b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; พหุคูณของ 9 ถัดจาก {sum_others} คือ <b>{math.ceil(sum_others/9)*9 if sum_others%9!=0 else sum_others+9}</b><br>
+                    q = f"<b>[เทคนิคการหารลงตัว]</b> กำหนดให้จำนวน 4 หลักคือ <b>{num_str}</b> สามารถหารด้วย <b>9 ลงตัว</b><br>จงหาว่าตัวเลข <b>A</b> คือเลขโดดใด?"
+                    
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (ใช้กฎการหารลงตัว):</b><br>
+                    👉 <b>ขั้นที่ 1: ทบทวนกฎแม่ 9</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 กฎทองคำ:</b> จำนวนใดๆ จะหารด้วย 9 ลงตัว ก็ต่อเมื่อ <b>"ผลรวมของเลขโดดทุกหลัก"</b> ต้องหารด้วย 9 ลงตัว (เช่น ต้องรวมได้ 9, 18, 27)</span><br>
+                    👉 <b>ขั้นที่ 2: หาผลรวมของเลขที่รู้แล้ว</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; เลขโดดที่เรามีคือ {n1}, {n2} และ {n3}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; นำมารวมกัน: {n1} + {n2} + {n3} = <b>{sum_others}</b><br>
+                    👉 <b>ขั้นที่ 3: หาค่า A</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ตอนนี้ผลรวมคือ {sum_others} เราต้องบวก A เพิ่มเข้าไปเพื่อให้ผลรวมไปถึงสูตรคูณแม่ 9 ตัวถัดไป<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; พหุคูณของ 9 ตัวถัดจาก {sum_others} คือ <b>{math.ceil(sum_others/9)*9 if sum_others%9!=0 else sum_others+9}</b><br>
                     &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น {sum_others} + A = {math.ceil(sum_others/9)*9 if sum_others%9!=0 else sum_others+9}<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp; A = {math.ceil(sum_others/9)*9 if sum_others%9!=0 else sum_others+9} - {sum_others} = <span style="color:#e74c3c;"><b>{target_A}</b></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; A = {math.ceil(sum_others/9)*9 if sum_others%9!=0 else sum_others+9} - {sum_others} = <span style="color:#27ae60;"><b>{target_A}</b></span><br>
+                    <b>ตอบ: ตัวเลข A คือ {target_A}</b></span>'''
+                    
+                else:
+                    target_B = 5
+                    n1 = random.randint(3, 8)
+                    n2 = random.randint(1, 6)
+                    
+                    sum_others = n1 + n2 + target_B
+                    remainder = sum_others % 9
+                    target_A = (9 - remainder) % 9
+                    if target_A == 0: target_A = 9
+                    
+                    q = f"<b>[ระดับแข่งขัน]</b> กำหนดให้จำนวน 4 หลักคือ <b>{n1}A{n2}B</b> สามารถหารด้วย <b>5 และ 9 ลงตัว</b> พอดี<br>ถ้า <b>B เป็นเลขคี่</b> จงหาว่าตัวเลข <b>A</b> และ <b>B</b> มีค่าเท่าใด?"
+                    
+                    sol = f'''<span style="color:#2c3e50;"><b>วิธีทำอย่างละเอียด (วิเคราะห์กฎการหารทีละตัว):</b><br>
+                    👉 <b>ขั้นที่ 1: หาค่า B (ใช้กฎแม่ 5)</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 กฎแม่ 5:</b> จำนวนที่หารด้วย 5 ลงตัว จะต้องลงท้ายด้วยเลข <b>0 หรือ 5 เท่านั้น</b></span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; แต่โจทย์กำหนดว่า <b>B ต้องเป็นเลขคี่</b> ดังนั้น 0 จึงใช้ไม่ได้!<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; สรุปได้ทันทีว่า <b>B = <span style="color:#2980b9;">{target_B}</span></b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ตอนนี้ตัวเลขของเราคือ <b>{n1}A{n2}{target_B}</b><br>
+                    👉 <b>ขั้นที่ 2: หาค่า A (ใช้กฎแม่ 9)</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#e67e22;"><b>💡 กฎแม่ 9:</b> "ผลรวมของเลขโดดทุกหลัก" ต้องหารด้วย 9 ลงตัว</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; นำเลขที่มีมารวมกัน: {n1} + {n2} + {target_B} (ค่า B ที่หาได้) = <b>{sum_others}</b><br>
+                    👉 <b>ขั้นที่ 3: สรุปผล A</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; พหุคูณของ 9 ตัวถัดจาก {sum_others} คือ <b>{math.ceil(sum_others/9)*9 if sum_others%9!=0 else sum_others+9}</b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; จะได้ว่า {sum_others} + A = {math.ceil(sum_others/9)*9 if sum_others%9!=0 else sum_others+9}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น A = {math.ceil(sum_others/9)*9 if sum_others%9!=0 else sum_others+9} - {sum_others} = <b><span style="color:#e74c3c;">{target_A}</span></b><br>
                     <b>ตอบ: A = {target_A} และ B = {target_B}</b></span>'''
 
-            # --- ดัก Error ของ ป.6 ---
+            # ==========================================
+            # ตัวดัก Error (กรณีชื่อหัวข้อไม่ตรง)
+            # ==========================================
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
 
-            # ==================================================
-            # ระบบเช็คโจทย์ซ้ำ (ยันต์กันค้าง ของแท้ดั้งเดิม!)
-            # ==================================================
-            if q not in seen: 
-                seen.add(q)
-                questions.append({"question": q, "solution": sol})
-                break 
-            elif attempts >= 299:
-                questions.append({"question": q, "solution": sol})
-                break
-                
-            attempts += 1  
+        # ==================================================
+        # ระบบเช็คโจทย์ซ้ำ (ยันต์กันค้าง ของแท้ดั้งเดิม)
+        # ==================================================
+        if q not in seen: 
+            seen.add(q)
+            questions.append({"question": q, "solution": sol})
+            break 
+        elif attempts >= 299:
+            questions.append({"question": q, "solution": sol})
+            break
             
+        attempts += 1  
+        
     return questions
 # ==========================================
 # UI Rendering
