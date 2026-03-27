@@ -6037,20 +6037,22 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 q = f"⚠️ [ระบบผิดพลาด] ยังไม่ได้เขียนโค้ดสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
 
-        # ==================================================
-        # ระบบเช็คโจทย์ซ้ำ (เขียนลูปใหม่ให้เป๊ะ ไม่มี break ขัดจังหวะ)
-        # ==================================================
-        if q not in seen:
-            seen.add(q)
-            questions.append({"question": q, "solution": sol})
-        
-        attempts += 1
-        
-        if attempts >= 300:
-            if len(questions) < num_questions:
-                questions.append({"question": "⚠️ สร้างโจทย์ได้ไม่ครบตามจำนวนที่ระบุ (โจทย์ซ้ำเกินขีดจำกัด)", "solution": "กรุณากดสร้างใหม่อีกครั้ง"})
-            break
+            # ==================================================
+            # ระบบเช็คโจทย์ซ้ำ (ยันต์กันค้างที่แท้จริง!)
+            # ==================================================
+            if q not in seen:
+                seen.add(q)
+                questions.append({"question": q, "solution": sol})
+                break  # 🛑 สำคัญมาก! ต้องมี break เพื่อหยุดเมื่อได้โจทย์ครบ 1 ข้อ
             
+            attempts += 1
+            
+            # ป้องกันระบบค้างถ้าสุ่มจนหมดมุก
+            if attempts >= 300:
+                if len(questions) < num_questions:
+                    questions.append({"question": "⚠️ สร้างโจทย์ได้ไม่ครบ (รูปแบบโจทย์อาจหมดแล้ว)", "solution": "กรุณากดสร้างใหม่อีกครั้ง"})
+                break
+                
     return questions
 # ==========================================
 # UI Rendering
