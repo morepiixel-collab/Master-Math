@@ -5797,13 +5797,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
         # เริ่มหมวด ป.6 (ระดับ Gifted / สอบเข้า ม.1)
         # ==========================================
             elif grade == "ป.6":
-            
              if actual_sub_t == "การหา ห.ร.ม.":
                 is_challenge = st.session_state.get("challenge_mode", False)
                 import math
                 
                 if not is_challenge:
-                    # โหมดธรรมดา: ห.ร.ม. ของเลข 3 จำนวน
+                    # โหมดธรรมดา: ห.ร.ม. 3 จำนวน
                     factor = random.choice([6, 8, 12, 15, 24])
                     n1 = factor * random.randint(2, 4)
                     n2 = factor * random.randint(5, 7)
@@ -5820,7 +5819,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     <b>ตอบ: ห.ร.ม. คือ {gcd_val}</b></span>'''
                     
                 else:
-                    # โหมดท้าทาย (สอบเข้า ม.1): ห.ร.ม. แบบเหลือเศษเท่ากัน
+                    # โหมดท้าทาย: ห.ร.ม. แบบเหลือเศษ
                     gcd_target = random.choice([12, 15, 18, 24, 30])
                     r = random.randint(2, 9)
                     
@@ -5899,7 +5898,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 scenario = random.choice(["gcd_tree", "lcm_bell_3rd"])
                 
                 if scenario == "gcd_tree":
-                    # โจทย์ปราบเซียน: ปลูกต้นไม้รอบขอบสระ (หาความยาวรอบรูป / ห.ร.ม.)
                     gcd_target = random.choice([4, 5, 6, 8])
                     width = gcd_target * random.randint(5, 9)
                     length = gcd_target * random.randint(10, 15)
@@ -5924,7 +5922,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     <b>ตอบ: ต้องใช้ต้นไม้ทั้งหมด {trees} ต้น</b></span>'''
                     
                 else:
-                    # ค.ร.น.: นาฬิกาปลุก แต่ถาม "ครั้งที่ 3"
                     t1 = random.choice([12, 15, 20])
                     t2 = random.choice([18, 30])
                     t3 = random.choice([40, 45])
@@ -5936,7 +5933,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     start_hr = random.randint(6, 8)
                     start_min = random.choice(["00", "15"])
                     
-                    # ถามครั้งที่ 3 แปลว่าต้องผ่านไปอีก 2 รอบ ค.ร.น. (รอบแรกนับเป็นครั้งที่ 1)
                     target_time = random.choice([3, 4])
                     total_wait_mins = lcm_val * (target_time - 1)
                     
@@ -5969,15 +5965,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 import math
                 
                 if not is_challenge:
-                    # แม่ 11 (ผลรวมสลับหลัก ลบกันได้ 0 หรือ 11)
-                    A_val = random.randint(1, 9)
-                    d1 = random.randint(1, 9)
-                    d2 = random.randint(1, 9)
-                    d4 = random.randint(1, 9)
-                    
-                    # sum_odd = d1 + d2
-                    # sum_even = A_val + d4
-                    # เราจะสุ่มค่า A ไว้แล้ว ค่อยหาตัวเลขอื่นๆ ให้มัน match แม่ 11 ดีกว่า เพื่อความชัวร์
                     valid_found = False
                     while not valid_found:
                         d1 = random.randint(1, 9)
@@ -5988,7 +5975,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                         if diff == 0 or diff % 11 == 0:
                             valid_found = True
                             
-                    # ซ่อนตัวแปรไว้ 1 ตัว
                     hide_pos = random.choice([2, 3])
                     if hide_pos == 2:
                         ans_A = d2
@@ -6020,7 +6006,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     <b>ตอบ: ตัวเลข A คือ {ans_A}</b></span>'''
                     
                 else:
-                    # โหมดท้าทาย: หารด้วย 45 ลงตัว (แม่ 5 และ แม่ 9) 
                     target_B = random.choice([0, 5])
                     n1 = random.randint(3, 8)
                     n2 = random.randint(1, 6)
@@ -6029,7 +6014,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     sum_others = n1 + n2 + n3 + target_B
                     remainder = sum_others % 9
                     target_A = (9 - remainder) % 9
-                    if target_A == 0 and target_B == 0: target_A = 9 # เลี่ยง A เป็น 0
+                    if target_A == 0 and target_B == 0: target_A = 9
                     
                     q = f"<b>[ข้อสอบเข้า ม.1 ห้อง Gifted]</b> กำหนดให้จำนวน 5 หลักคือ <b>{n1}{n2}A{n3}B</b> สามารถหารด้วย <b>45 ลงตัว</b> พอดี<br>ถ้ากำหนดให้ <b>B เป็นเลข{'คู่' if target_B==0 else 'คี่'}</b> จงหาว่าตัวเลข <b>A และ B</b> มีค่าเท่าใด?"
                     
@@ -6050,10 +6035,10 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
 
             else:
                 q = f"⚠️ [ระบบผิดพลาด] ยังไม่ได้เขียนโค้ดสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
-                sol = "รอติดตามการอัปเดตในแพทช์ถัดไปครับ"
+                sol = "Error"
 
         # ==================================================
-        # ระบบเช็คโจทย์ซ้ำ (เขียนลูปให้ถูกต้อง ไม่มีคำว่า break ตัดจบ)
+        # ระบบเช็คโจทย์ซ้ำ (เขียนลูปใหม่ให้เป๊ะ ไม่มี break ขัดจังหวะ)
         # ==================================================
         if q not in seen:
             seen.add(q)
@@ -6061,7 +6046,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
         
         attempts += 1
         
-        # ป้องกัน Infinite Loop ถ้าสุ่มจนหมดมุกแล้วจริงๆ
         if attempts >= 300:
             if len(questions) < num_questions:
                 questions.append({"question": "⚠️ สร้างโจทย์ได้ไม่ครบตามจำนวนที่ระบุ (โจทย์ซ้ำเกินขีดจำกัด)", "solution": "กรุณากดสร้างใหม่อีกครั้ง"})
