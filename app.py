@@ -5797,7 +5797,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
         # เริ่มหมวด ป.6
         # ==========================================
             elif grade == "ป.6":
-                if actual_sub_t == "การหา ห.ร.ม.":
+   if actual_sub_t == "การหา ห.ร.ม.":
                 is_challenge = st.session_state.get("challenge_mode", False)
                 
                 if not is_challenge:
@@ -6071,7 +6071,6 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     &nbsp;&nbsp;&nbsp;&nbsp; ดังนั้น A = {math.ceil(sum_others/9)*9 if sum_others%9!=0 else sum_others+9} - {sum_others} = <b><span style="color:#e74c3c;">{target_A}</span></b><br>
                     <b>ตอบ: A = {target_A} และ B = {target_B}</b></span>'''
 
-            # --- ใส่ Placeholder สำหรับหัวข้อของ ป.6 ที่เหลือ ป้องกัน Error ---
             else:
                 q = f"กำลังก่อสร้างเนื้อหาหัวข้อ <b>{actual_sub_t}</b> สำหรับสอบเข้า ม.1 ครับ!"
                 sol = "รอติดตามการอัปเดตสุดพรีเมียมจากทีมงานในเร็วๆ นี้ครับ 🚀"
