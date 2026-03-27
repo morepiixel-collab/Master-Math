@@ -6077,21 +6077,18 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                 q = f"⚠️ [ระบบผิดพลาด] ไม่พบเงื่อนไขสำหรับหัวข้อ: <b>{actual_sub_t}</b>"
                 sol = "Error"
 
-        # ==================================================
-        # ระบบเช็คโจทย์ซ้ำและเก็บลงลิสต์ (ยันต์กันค้างที่ถูกต้อง 100%)
-        # ⚠️ สังเกตว่า 'if' ตัวนี้ต้องเยื้องตรงกับ 'elif grade == "ป.6":' ด้านบนนะครับ
-        # ==================================================
-        if q not in seen: 
-            seen.add(q)
-            questions.append({"question": q, "solution": sol})
-            
-        attempts += 1  
-        
-        # ป้องกันลูปค้างกรณีสุ่มจนโจทย์หมดมุกจริงๆ
-        if attempts >= 300:
-            if len(questions) < num_input:
-                questions.append({"question": "⚠️ สร้างโจทย์ได้ไม่ครบจำนวน", "solution": "รูปแบบโจทย์อาจจะซ้ำหมดแล้ว ลองกดสร้างใหม่ดูครับ"})
-            break
+            # ==================================================
+            # ระบบเช็คโจทย์ซ้ำ (ยันต์กันค้าง)
+            # ==================================================
+            if q not in seen: 
+                seen.add(q)
+                questions.append({"question": q, "solution": sol})
+                break 
+            elif attempts >= 299:
+                questions.append({"question": q, "solution": sol})
+                break
+                
+            attempts += 1  
             
     return questions
 # ==========================================
