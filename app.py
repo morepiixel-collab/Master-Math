@@ -5800,7 +5800,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             # ==========================================
             # 1. การหา ห.ร.ม.
             # ==========================================
-            if actual_sub_t == "การหา ห.ร.ม.":
+             if actual_sub_t == "การหา ห.ร.ม.":
                 is_challenge = st.session_state.get("challenge_mode", False)
                 import math
                 
