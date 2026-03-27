@@ -6093,7 +6093,7 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
             
         attempts += 1  
         
-return questions
+    return questions
 # ==========================================
 # UI Rendering
 # ==========================================
