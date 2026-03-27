@@ -5796,8 +5796,8 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
         # ==========================================
         # เริ่มหมวด ป.6
         # ==========================================
-        elif grade == "ป.6":
-            if actual_sub_t == "การหา ห.ร.ม.":
+            elif grade == "ป.6":
+                if actual_sub_t == "การหา ห.ร.ม.":
                 is_challenge = st.session_state.get("challenge_mode", False)
                 
                 if not is_challenge:
