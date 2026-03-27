@@ -5793,12 +5793,12 @@ def generate_questions_logic(grade, main_t, sub_t, num_q, is_challenge=False):
                     q = f"จงแก้สมการเพื่อหาค่าของ <b>{var}</b> : <br><div style='text-align:center; font-size:24px; margin: 15px 0;'><b>{var} - {a:,} = {c:,}</b></div>"
                     sol = f"<span style='color:#2c3e50;'><b>วิธีทำอย่างละเอียด:</b><br>👉 ย้ายตัวเลข <b>-{a:,}</b> ไปอยู่อีกฝั่ง โดยเปลี่ยนเครื่องหมายลบเป็นบวก<br>👉 จะได้: {var} = {c:,} + {a:,}<br>👉 คำนวณ: {var} = <b>{ans:,}</b><br><b>ตอบ: {ans:,}</b></span>"
 
-            # ==========================================
+        # ==========================================
         # เริ่มหมวด ป.6 (ระดับ Gifted / สอบเข้า ม.1)
         # ==========================================
-        elif grade == "ป.6":
+            elif grade == "ป.6":
             
-            if actual_sub_t == "การหา ห.ร.ม.":
+             if actual_sub_t == "การหา ห.ร.ม.":
                 is_challenge = st.session_state.get("challenge_mode", False)
                 import math
                 
